@@ -174,16 +174,39 @@ Platform turnamen paling fleksibel & mudah digunakan di Indonesia.
 
 ---
 
-### Format
+### 📋 Format & Penjelasan Teknis ERD
 
-<details>
-<summary>Jenis format</summary>
+Berdasarkan rancangan basis data (*Entity Relationship Diagram*), tiap format di atas saling terhubung melalui *Entity* **Stage**, **Group**, **Match**, dan **Game**. Berikut adalah detail teknis implementasinya:
 
-* Single Elimination
-* Double Elimination
-* Round Robin
-* Swiss
+<details open>
+<summary><b>1. Single Elimination (Sistem Gugur)</b></summary>
+Format gugur di mana peserta/tim yang kalah langsung tereliminasi.
 
+* **Skema ERD (`Match`)**: Setiap pertandingan mempunyai relasi `next_match_winner_id` yang akan mendorong pemenang melaju ke *Match* ronde selanjutnya.
+* **Penentuan Pemenang**: Bergantung pada kolom `bo_format` (Best of 1, 3, 5, 7) di entitas `Stage`. Total poin masing-masing perlombaan direkam di `Game` (`score_p1` & `score_p2`), dan entitas tim yang merajai pertandingan direkam pada `winner_id` di `Match`.
+</details>
+
+<details open>
+<summary><b>2. Double Elimination (Sistem Gugur Ganda)</b></summary>
+Peserta mendapat satu kali "nyawa kedua". Jika kalah, mereka turun bermain ke *Lower Bracket*.
+
+* **Skema ERD (`Match`)**: Sistem memanfaatkan kolom `bracket_side` yang menyimpan tipe ENUM (`upper`, `lower`, `grand_final`). 
+* **Alur Kalah/Menang**: Jika berada di *Upper Bracket* dan kalah, peserta dialihkan paksa oleh sistem menggunakan *foreign key* `next_match_loser_id` menuju slot pertandingan kosong di *Lower Bracket*. Sementara sang pemenang tetap melaju lewat `next_match_winner_id`.
+</details>
+
+<details open>
+<summary><b>3. Round Robin (Sistem Liga / Fase Grup)</b></summary>
+Seluruh peserta di dalam satu wadah akan saling berhadapan untuk menghasilkan perhitungan poin (klasemen).
+
+* **Skema ERD (`Stage` -> `Group` -> `Match`)**: Di skema ini, `Stage` akan memecah peserta ke dalam tabel `Group` (misal Grup A, Grup B). Lalu, seluruh `Match` akan dipasangkan dengan mereferensikan `group_id` tempat mereka berada.
+* **Sistem Lolos**: Peserta teratas akan diurutkan berdasarkan matriks perhitungan `Game`. Peserta yang berhak melanjutkan ke *Stage* berikutnya ditentukan oleh batas angka di kolom `participants_advance` pada tabel `Stage`.
+</details>
+
+<details open>
+<summary><b>4. Swiss (Sistem Swiss / Klasemen Dinamis)</b></summary>
+Peserta dengan rasio kemenangan yang sama akan dipertemukan di babak selanjutnya. Tidak ada yang tereliminasi di awal (mirip liga), namun lawan selalu seimbang.
+
+* **Skema ERD (`Round` di `Match`)**: Berbeda dengan *Round Robin*, sistem Swiss tidak memakai `group_id`. Sistem akan mengevaluasi kemenangan yang terakumulasi di riwayat tabel `Match`, lalu otomatis meng-*(generate)* baris `Match` baru dengan nilai `round` berikutnya dengan mempertemukan tim yang memiliki rekor menang/kalah *(W/L)* yang persis sama.
 </details>
 
 ---
