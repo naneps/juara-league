@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Juara League — ERD</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#f8f9fa;color:#111827}
+header{background:#1A56DB;color:#fff;padding:14px 28px;display:flex;align-items:center;justify-content:space-between}
+header h1{font-size:18px;font-weight:700}
+header span{font-size:12px;opacity:.75}
+.toolbar{background:#fff;border-bottom:1px solid #e5e7eb;padding:10px 28px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.toolbar button{padding:6px 14px;border:1.5px solid #e5e7eb;background:#fff;border-radius:8px;font-size:12px;cursor:pointer;color:#374151;transition:all .15s;font-family:Arial,sans-serif}
+.toolbar button:hover{border-color:#1A56DB;color:#1A56DB}
+.toolbar button.active{background:#1A56DB;border-color:#1A56DB;color:#fff}
+.toolbar .sep{width:1px;height:24px;background:#e5e7eb;margin:0 4px}
+.legend{display:flex;gap:20px;flex-wrap:wrap;padding:10px 28px;background:#fff;border-bottom:1px solid #e5e7eb;font-size:11px;color:#6b7280}
+.legend-item{display:flex;align-items:center;gap:6px}
+.legend-pill{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600}
+canvas-wrap{display:block;overflow:auto;background:#f8f9fa}
+#canvas{display:block;cursor:grab}
+#canvas:active{cursor:grabbing}
+.info-bar{background:#fff;border-top:1px solid #e5e7eb;padding:8px 28px;font-size:11px;color:#9ca3af;display:flex;gap:24px}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>JUARA LEAGUE — Entity Relationship Diagram</h1>
+    <span>v1.0 · Nandang Eka Prasetya · 12 Entities</span>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button onclick="zoom(1.2)" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:13px">+</button>
+    <button onclick="zoom(0.8)" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:13px">−</button>
+    <button onclick="resetView()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px">Reset</button>
+  </div>
+</header>
+<div class="toolbar">
+  <span style="font-size:12px;color:#6b7280;font-weight:500">Highlight:</span>
+  <button onclick="highlight('all')" class="active" id="btn-all">Semua</button>
+  <button onclick="highlight('user')" id="btn-user">User & Auth</button>
+  <button onclick="highlight('team')" id="btn-team">Tim</button>
+  <button onclick="highlight('tournament')" id="btn-tournament">Turnamen</button>
+  <button onclick="highlight('match')" id="btn-match">Match & Game</button>
+  <div class="sep"></div>
+  <span style="font-size:11px;color:#9ca3af">Drag untuk geser · Scroll untuk zoom</span>
+</div>
+<div class="legend">
+  <div class="legend-item"><span class="legend-pill" style="background:#EBF2FF;color:#1A56DB;border:1px solid #1A56DB">PK</span> Primary Key</div>
+  <div class="legend-item"><span class="legend-pill" style="background:#FEF3C7;color:#92400E;border:1px solid #D97706">FK</span> Foreign Key</div>
+  <div class="legend-item"><span class="legend-pill" style="background:#D1FAE5;color:#065F46;border:1px solid #059669">UK</span> Unique Key</div>
+  <div class="legend-item" style="display:flex;align-items:center;gap:4px"><svg width="40" height="12"><line x1="0" y1="6" x2="40" y2="6" stroke="#1A56DB" stroke-width="1.5"/></svg> One</div>
+  <div class="legend-item" style="display:flex;align-items:center;gap:4px"><svg width="40" height="12"><line x1="0" y1="6" x2="32" y2="6" stroke="#1A56DB" stroke-width="1.5"/><line x1="32" y1="2" x2="40" y2="6" stroke="#1A56DB" stroke-width="1.5"/><line x1="32" y1="10" x2="40" y2="6" stroke="#1A56DB" stroke-width="1.5"/><circle cx="6" cy="6" r="3" fill="none" stroke="#1A56DB" stroke-width="1.5"/></svg> Many (optional)</div>
+  <div class="legend-item" style="display:flex;align-items:center;gap:4px"><svg width="40" height="12"><line x1="0" y1="6" x2="32" y2="6" stroke="#1A56DB" stroke-width="1.5"/><line x1="32" y1="2" x2="40" y2="6" stroke="#1A56DB" stroke-width="1.5"/><line x1="32" y1="10" x2="40" y2="6" stroke="#1A56DB" stroke-width="1.5"/></svg> Many (required)</div>
+</div>
+
+<canvas id="canvas"></canvas>
+
+<div class="info-bar">
+  <span id="info-scale">Zoom: 100%</span>
+  <span>12 entities · 18 relasi</span>
+  <span>Juara League ERD v1.0</span>
+</div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+let scale = 0.75, offsetX = 0, offsetY = 0;
+let dragging = false, lastX, lastY;
+let activeGroup = 'all';
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight - 160;
+
+const COLORS = {
+  user:       { header: '#1A56DB', headerText: '#fff', bg: '#EBF2FF', border: '#93C5FD', text: '#111827' },
+  team:       { header: '#059669', headerText: '#fff', bg: '#D1FAE5', border: '#6EE7B7', text: '#111827' },
+  tournament: { header: '#7C3AED', headerText: '#fff', bg: '#EDE9FE', border: '#C4B5FD', text: '#111827' },
+  match:      { header: '#DC2626', headerText: '#fff', bg: '#FEE2E2', border: '#FCA5A5', text: '#111827' },
+  support:    { header: '#D97706', headerText: '#fff', bg: '#FEF3C7', border: '#FCD34D', text: '#111827' },
+};
+
+const GROUPS = {
+  user: ['User'],
+  team: ['Team', 'TeamMember'],
+  tournament: ['Tournament', 'TournamentMember', 'Stage', 'Group'],
+  match: ['Match', 'Game'],
+};
+
+const TABLES = [
+  {
+    id: 'User', group: 'user', x: 60, y: 60,
+    fields: [
+      { name: 'id', type: 'UUID', key: 'PK' },
+      { name: 'name', type: 'VARCHAR(100)', key: '' },
+      { name: 'email', type: 'VARCHAR(255)', key: 'UK' },
+      { name: 'password_hash', type: 'VARCHAR(255)', key: '' },
+      { name: 'avatar_url', type: 'TEXT', key: '' },
+      { name: 'auth_provider', type: 'ENUM(email,google)', key: '' },
+      { name: 'is_verified', type: 'BOOLEAN', key: '' },
+      { name: 'created_at', type: 'TIMESTAMP', key: '' },
+      { name: 'updated_at', type: 'TIMESTAMP', key: '' },
+    ]
+  },
+  {
+    id: 'Sport', group: 'support', x: 60, y: 420,
+    fields: [
+      { name: 'id', type: 'UUID', key: 'PK' },
+      { name: 'name', type: 'VARCHAR(100)', key: 'UK' },
+      { name: 'type', type: 'ENUM(sport,esport)', key: '' },
+      { name: 'icon_url', type: 'TEXT', key: '' },
+      { name: 'is_active', type: 'BOOLEAN', key: '' },
+    ]
+  },
+  {
+    id: 'Team', group: 'team', x: 420, y: 60,
+    fields: [
+      { name: 'id', type: 'UUID', key: 'PK' },
+      { name: 'name', type: 'VARCHAR(100)', key: '' },
+      { name: 'logo_url', type: 'TEXT', key: '' },
+      { name: 'captain_id', type: 'UUID', key: 'FK→User' },
+      { name: 'status', type: 'ENUM(active,archived)', key: '' },
+      { name: 'created_at', type: 'TIMESTAMP', key: '' },
+    ]
+  },
+  {
+    id: 'TeamMember', group: 'team', x: 420, y: 340,
+    fields: [
+      { name: 'id', type: 'UUID', key: 'PK' },
+      { name: 'team_id', type: 'UUID', key: 'FK→Team' },
+      { name: 'user_id', type: 'UUID', key: 'FK→User' },
+      { name: 'role', type: 'ENUM(captain,member)', key: '' },
+      { name: 'joined_at', type: 'TIMESTAMP', key: '' },
+    ]
+  },
+  {
+    id: 'Tournament', group: 'tournament', x: 820, y: 60,
+    fields: [
+      { name: 'id', type: 'UUID', key: 'PK' },
+      { name: 'name', type: 'VARCHAR(150)', key: '' },
+      { name: 'sport_id', type: 'UUID', key: 'FK→Sport' },
+      { name: 'participant_type', type: 'ENUM(individual,team)', key: '' },
+      { name: 'registration_mode', type: 'ENUM(open,invite)', key: '' },
+      { name: 'max_participants', type: 'INT', key: '' },
+      { name: 'entry_fee', type: 'DECIMAL(12,2)', key: '' },
+      { name: 'prize_pool', type: 'DECIMAL(12,2)', key: '' },
+      { name: 'prize_description', type: 'TEXT', key: '' },
+      { name: 'status', type: 'ENUM(draft,registration,ongoing,completed)', key: '' },
+      { name: 'banner_url', type: 'TEXT', key: '' },
+      { name: 'description', type: 'TEXT', key: '' },
+      { name: 'public_slug', type: 'VARCHAR(100)', key: 'UK' },
+      { name: 'created_by', type: 'UUID', key: 'FK→User' },
+      { name: 'reg_deadline', type: 'TIMESTAMP', key: '' },
+      { name: 'created_at', type: 'TIMESTAMP', key: '' },
+      { name: 'updated_at', type: 'TIMESTAMP', key: '' },
+    ]
+  },
+  {
+    id: 'TournamentMember', group: 'tournament', x: 420, y: 600,
+    fields: [
+      { name: 'id', type: 'UUID', key: 'PK' },
+      { name: 'tournament_id', type: 'UUID', key: 'FK→Tournament' },
+      { name: 'user_id', type: 'UUID', key: 'FK→User (nullable)' },
+      { name: 'team_id', type: 'UUID', key: 'FK→Team (nullable)' },
+      { name: 'role', type: 'ENUM(owner,co_organizer,referee,participant)', key: '' },
+      { name: 'seed', type: 'INT', key: '' },
+      { name: 'payment_status', type: 'ENUM(free,pending,paid)', key: '' },
+      { name: 'payment_method', type: 'VARCHAR(100)', key: '' },
+      { name: 'registration_status', type: 'ENUM(pending,approved,rejected,disqualified)', key: '' },
+      { name: 'joined_at', type: 'TIMESTAMP', key: '' },
+    ]
+  },
+  {
+    id: 'Stage', group: 'tournament', x: 1240, y: 60,
+    fields: [
+      { name: 'id', type: 'UUID', key: 'PK' },
+      { name: 'tournament_id', type: 'UUID', key: 'FK→Tournament' },
+      { name: 'name', type: 'VARCHAR(100)', key: '' },
+      { name: 'format', type: 'ENUM(single_elim,double_elim,round_robin,swiss)', key: '' },
+      { name: 'bo_format', type: 'ENUM(bo1,bo3,bo5,bo7)', key: '' },
+      { name: 'participants_advance', type: 'INT', key: '' },
+      { name: 'order', type: 'INT', key: '' },
+      { name: 'status', type: 'ENUM(pending,ongoing,completed)', key: '' },
+      { name: 'created_at', type: 'TIMESTAMP', key: '' },
+    ]
+  },
+  {
+    id: 'Group', group: 'tournament', x: 1240, y: 420,
+    fields: [
+      { name: 'id', type: 'UUID', key: 'PK' },
+      { name: 'stage_id', type: 'UUID', key: 'FK→Stage' },
+      { name: 'name', type: 'VARCHAR(50)', key: '' },
+      { name: 'order', type: 'INT', key: '' },
+    ]
+  },
+  {
+    id: 'Match', group: 'match', x: 820, y: 560,
+    fields: [
+      { name: 'id', type: 'UUID', key: 'PK' },
+      { name: 'stage_id', type: 'UUID', key: 'FK→Stage' },
+      { name: 'group_id', type: 'UUID', key: 'FK→Group (nullable)' },
+      { name: 'participant_1_id', type: 'UUID', key: 'FK→TournamentMember' },
+      { name: 'participant_2_id', type: 'UUID', key: 'FK→TournamentMember' },
+      { name: 'winner_id', type: 'UUID', key: 'FK→TournamentMember' },
+      { name: 'next_match_winner_id', type: 'UUID', key: 'FK→Match (self)' },
+      { name: 'next_match_loser_id', type: 'UUID', key: 'FK→Match (self)' },
+      { name: 'bracket_side', type: 'ENUM(upper,lower,grand_final)', key: '' },
+      { name: 'round', type: 'INT', key: '' },
+      { name: 'match_number', type: 'INT', key: '' },
+      { name: 'status', type: 'ENUM(upcoming,ongoing,completed)', key: '' },
+      { name: 'scheduled_at', type: 'TIMESTAMP', key: '' },
+      { name: 'completed_at', type: 'TIMESTAMP', key: '' },
+    ]
+  },
+  {
+    id: 'Game', group: 'match', x: 820, y: 1060,
+    fields: [
+      { name: 'id', type: 'UUID', key: 'PK' },
+      { name: 'match_id', type: 'UUID', key: 'FK→Match' },
+      { name: 'game_number', type: 'INT', key: '' },
+      { name: 'winner_id', type: 'UUID', key: 'FK→TournamentMember' },
+      { name: 'score_p1', type: 'INT', key: '' },
+      { name: 'score_p2', type: 'INT', key: '' },
+      { name: 'played_at', type: 'TIMESTAMP', key: '' },
+    ]
+  },
+  {
+    id: 'Notification', group: 'support', x: 60, y: 700,
+    fields: [
+      { name: 'id', type: 'UUID', key: 'PK' },
+      { name: 'user_id', type: 'UUID', key: 'FK→User' },
+      { name: 'tournament_id', type: 'UUID', key: 'FK→Tournament (nullable)' },
+      { name: 'type', type: 'VARCHAR(50)', key: '' },
+      { name: 'title', type: 'VARCHAR(200)', key: '' },
+      { name: 'body', type: 'TEXT', key: '' },
+      { name: 'channel', type: 'ENUM(inapp,email,whatsapp)', key: '' },
+      { name: 'is_read', type: 'BOOLEAN', key: '' },
+      { name: 'created_at', type: 'TIMESTAMP', key: '' },
+    ]
+  },
+  {
+    id: 'Payment', group: 'support', x: 60, y: 1000,
+    fields: [
+      { name: 'id', type: 'UUID', key: 'PK' },
+      { name: 'tournament_member_id', type: 'UUID', key: 'FK→TournamentMember' },
+      { name: 'amount', type: 'DECIMAL(12,2)', key: '' },
+      { name: 'status', type: 'ENUM(pending,confirmed,rejected)', key: '' },
+      { name: 'method', type: 'VARCHAR(100)', key: '' },
+      { name: 'proof_url', type: 'TEXT', key: '' },
+      { name: 'confirmed_by', type: 'UUID', key: 'FK→User' },
+      { name: 'confirmed_at', type: 'TIMESTAMP', key: '' },
+      { name: 'created_at', type: 'TIMESTAMP', key: '' },
+    ]
+  },
+];
+
+const RELATIONS = [
+  { from: 'Team', to: 'User', fromField: 'captain_id', type: 'many-one', label: 'captain' },
+  { from: 'TeamMember', to: 'Team', fromField: 'team_id', type: 'many-one', label: '' },
+  { from: 'TeamMember', to: 'User', fromField: 'user_id', type: 'many-one', label: '' },
+  { from: 'Tournament', to: 'Sport', fromField: 'sport_id', type: 'many-one', label: '' },
+  { from: 'Tournament', to: 'User', fromField: 'created_by', type: 'many-one', label: 'owner' },
+  { from: 'TournamentMember', to: 'Tournament', fromField: 'tournament_id', type: 'many-one', label: '' },
+  { from: 'TournamentMember', to: 'User', fromField: 'user_id', type: 'many-one-opt', label: '' },
+  { from: 'TournamentMember', to: 'Team', fromField: 'team_id', type: 'many-one-opt', label: '' },
+  { from: 'Stage', to: 'Tournament', fromField: 'tournament_id', type: 'many-one', label: '' },
+  { from: 'Group', to: 'Stage', fromField: 'stage_id', type: 'many-one', label: '' },
+  { from: 'Match', to: 'Stage', fromField: 'stage_id', type: 'many-one', label: '' },
+  { from: 'Match', to: 'Group', fromField: 'group_id', type: 'many-one-opt', label: '' },
+  { from: 'Match', to: 'TournamentMember', fromField: 'participant_1_id', type: 'many-one', label: 'p1' },
+  { from: 'Match', to: 'TournamentMember', fromField: 'winner_id', type: 'many-one-opt', label: 'winner' },
+  { from: 'Match', to: 'Match', fromField: 'next_match_winner_id', type: 'self', label: 'next' },
+  { from: 'Game', to: 'Match', fromField: 'match_id', type: 'many-one', label: '' },
+  { from: 'Notification', to: 'User', fromField: 'user_id', type: 'many-one', label: '' },
+  { from: 'Payment', to: 'TournamentMember', fromField: 'tournament_member_id', type: 'many-one', label: '' },
+];
+
+function getTable(id){ return TABLES.find(t=>t.id===id); }
+
+function tableHeight(t){ return 36 + t.fields.length * 24 + 8; }
+function tableWidth(){ return 280; }
+
+function getConnectPoint(t, side){
+  const w = tableWidth(), h = tableHeight(t);
+  const cx = t.x + w/2, cy = t.y + h/2;
+  if(side==='right') return [t.x+w, cy];
+  if(side==='left')  return [t.x, cy];
+  if(side==='bottom') return [cx, t.y+h];
+  if(side==='top')    return [cx, t.y];
+  return [cx, cy];
+}
+
+function bestSides(from, to){
+  const fw = tableWidth(), tw = tableWidth();
+  const fcx = from.x+fw/2, fcy = from.y+tableHeight(from)/2;
+  const tcx = to.x+tw/2,   tcy = to.y+tableHeight(to)/2;
+  const dx = tcx-fcx, dy = tcy-fcy;
+  if(Math.abs(dx) > Math.abs(dy)){
+    return dx>0 ? ['right','left'] : ['left','right'];
+  } else {
+    return dy>0 ? ['bottom','top'] : ['top','bottom'];
+  }
+}
+
+function drawTable(t, dimmed){
+  const w = tableWidth(), h = tableHeight(t);
+  const color = COLORS[t.group] || COLORS.support;
+  const alpha = dimmed ? 0.25 : 1;
+
+  ctx.globalAlpha = alpha;
+
+  // Shadow
+  ctx.shadowColor = 'rgba(0,0,0,0.08)';
+  ctx.shadowBlur = 8;
+  ctx.shadowOffsetY = 2;
+
+  // Body
+  ctx.fillStyle = color.bg;
+  ctx.strokeStyle = color.border;
+  ctx.lineWidth = 1.5;
+  roundRect(t.x, t.y, w, h, 10);
+  ctx.fill(); ctx.stroke();
+
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
+
+  // Header
+  ctx.fillStyle = color.header;
+  roundRect(t.x, t.y, w, 36, [10,10,0,0]);
+  ctx.fill();
+
+  // Header text
+  ctx.fillStyle = color.headerText;
+  ctx.font = 'bold 13px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText(t.id, t.x+w/2, t.y+22);
+
+  // Fields
+  t.fields.forEach((f,i)=>{
+    const fy = t.y + 36 + 8 + i*24;
+
+    // Alt row
+    if(i%2===1){
+      ctx.fillStyle = 'rgba(0,0,0,0.03)';
+      ctx.fillRect(t.x+1, fy-4, w-2, 24);
+    }
+
+    // Key badge
+    if(f.key){
+      let bColor = '#EBF2FF', bText = '#1A56DB', bBorder = '#1A56DB';
+      if(f.key==='UK'){ bColor='#D1FAE5'; bText='#065F46'; bBorder='#059669'; }
+      else if(f.key.startsWith('FK')){ bColor='#FEF3C7'; bText='#92400E'; bBorder='#D97706'; }
+      ctx.fillStyle = bColor;
+      ctx.strokeStyle = bBorder;
+      ctx.lineWidth = 0.8;
+      roundRect(t.x+8, fy-2, f.key==='PK'?22:24, 14, 3);
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = bText;
+      ctx.font = 'bold 9px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(f.key.split('→')[0], t.x+8+(f.key==='PK'?11:12), fy+8);
+    }
+
+    // Field name
+    ctx.fillStyle = color.text;
+    ctx.font = '11px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText(f.name, t.x+38, fy+9);
+
+    // Field type
+    ctx.fillStyle = '#9CA3AF';
+    ctx.font = '10px Arial';
+    ctx.textAlign = 'right';
+    const typeText = f.type.length > 22 ? f.type.substring(0,20)+'…' : f.type;
+    ctx.fillText(typeText, t.x+w-8, fy+9);
+  });
+
+  ctx.globalAlpha = 1;
+}
+
+function drawRelation(rel, dimmed){
+  const from = getTable(rel.from);
+  const to = getTable(rel.to);
+  if(!from||!to) return;
+
+  if(rel.type==='self'){
+    // Self-referencing
+    const w = tableWidth();
+    const sx = from.x+w, sy = from.y+tableHeight(from)/2;
+    ctx.globalAlpha = dimmed?0.15:0.7;
+    ctx.strokeStyle = '#1A56DB';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([5,3]);
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.lineTo(sx+40, sy);
+    ctx.lineTo(sx+40, sy-60);
+    ctx.lineTo(sx, sy-60);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    drawArrow(sx+1, sy-60, 'left', dimmed);
+    ctx.globalAlpha = 1;
+    return;
+  }
+
+  const [fs, ts] = bestSides(from, to);
+  const [fx, fy] = getConnectPoint(from, fs);
+  const [tx, ty] = getConnectPoint(to, ts);
+
+  ctx.globalAlpha = dimmed?0.12:0.65;
+  ctx.strokeStyle = '#1A56DB';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash(rel.type==='many-one-opt'?[5,3]:[]);
+
+  ctx.beginPath();
+  ctx.moveTo(fx, fy);
+
+  // Route with bend
+  if(fs==='right'&&ts==='left'){
+    const mx = (fx+tx)/2;
+    ctx.lineTo(mx, fy); ctx.lineTo(mx, ty); ctx.lineTo(tx, ty);
+  } else if(fs==='left'&&ts==='right'){
+    const mx = (fx+tx)/2;
+    ctx.lineTo(mx, fy); ctx.lineTo(mx, ty); ctx.lineTo(tx, ty);
+  } else if(fs==='bottom'&&ts==='top'){
+    const my = (fy+ty)/2;
+    ctx.lineTo(fx, my); ctx.lineTo(tx, my); ctx.lineTo(tx, ty);
+  } else if(fs==='top'&&ts==='bottom'){
+    const my = (fy+ty)/2;
+    ctx.lineTo(fx, my); ctx.lineTo(tx, my); ctx.lineTo(tx, ty);
+  } else {
+    ctx.lineTo(tx, ty);
+  }
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  drawArrow(tx, ty, ts, dimmed);
+  ctx.globalAlpha = 1;
+}
+
+function drawArrow(x, y, side, dimmed){
+  ctx.globalAlpha = dimmed?0.2:0.85;
+  ctx.fillStyle = '#1A56DB';
+  ctx.beginPath();
+  const s = 7;
+  if(side==='left'){ ctx.moveTo(x,y); ctx.lineTo(x+s,y-s/2); ctx.lineTo(x+s,y+s/2); }
+  else if(side==='right'){ ctx.moveTo(x,y); ctx.lineTo(x-s,y-s/2); ctx.lineTo(x-s,y+s/2); }
+  else if(side==='top'){ ctx.moveTo(x,y); ctx.lineTo(x-s/2,y+s); ctx.lineTo(x+s/2,y+s); }
+  else if(side==='bottom'){ ctx.moveTo(x,y); ctx.lineTo(x-s/2,y-s); ctx.lineTo(x+s/2,y-s); }
+  ctx.closePath();
+  ctx.fill();
+}
+
+function roundRect(x,y,w,h,r){
+  if(typeof r==='number') r=[r,r,r,r];
+  ctx.beginPath();
+  ctx.moveTo(x+r[0],y);
+  ctx.lineTo(x+w-r[1],y); ctx.arcTo(x+w,y,x+w,y+r[1],r[1]);
+  ctx.lineTo(x+w,y+h-r[2]); ctx.arcTo(x+w,y+h,x+w-r[2],y+h,r[2]);
+  ctx.lineTo(x+r[3],y+h); ctx.arcTo(x,y+h,x,y+h-r[3],r[3]);
+  ctx.lineTo(x,y+r[0]); ctx.arcTo(x,y,x+r[0],y,r[0]);
+  ctx.closePath();
+}
+
+function getActiveTables(){
+  if(activeGroup==='all') return TABLES.map(t=>t.id);
+  return GROUPS[activeGroup]||[];
+}
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.save();
+  ctx.translate(offsetX, offsetY);
+  ctx.scale(scale, scale);
+
+  const active = getActiveTables();
+
+  // Draw relations first
+  RELATIONS.forEach(r=>{
+    const fromActive = active.includes(r.from);
+    const toActive = active.includes(r.to);
+    const dimmed = activeGroup!=='all' && (!fromActive||!toActive);
+    drawRelation(r, dimmed);
+  });
+
+  // Draw tables
+  TABLES.forEach(t=>{
+    const dimmed = activeGroup!=='all' && !active.includes(t.id);
+    drawTable(t, dimmed);
+  });
+
+  ctx.restore();
+  document.getElementById('info-scale').textContent = 'Zoom: '+Math.round(scale*100)+'%';
+}
+
+function zoom(factor){
+  scale *= factor;
+  scale = Math.max(0.2, Math.min(3, scale));
+  draw();
+}
+
+function resetView(){
+  scale = 0.75; offsetX = 0; offsetY = 0;
+  draw();
+}
+
+function highlight(group){
+  activeGroup = group;
+  document.querySelectorAll('.toolbar button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('btn-'+group).classList.add('active');
+  draw();
+}
+
+// Drag
+canvas.addEventListener('mousedown', e=>{ dragging=true; lastX=e.clientX; lastY=e.clientY; });
+canvas.addEventListener('mousemove', e=>{
+  if(!dragging) return;
+  offsetX += e.clientX-lastX; offsetY += e.clientY-lastY;
+  lastX=e.clientX; lastY=e.clientY;
+  draw();
+});
+canvas.addEventListener('mouseup', ()=>dragging=false);
+canvas.addEventListener('mouseleave', ()=>dragging=false);
+
+// Scroll zoom
+canvas.addEventListener('wheel', e=>{
+  e.preventDefault();
+  const factor = e.deltaY<0?1.1:0.9;
+  scale = Math.max(0.2, Math.min(3, scale*factor));
+  draw();
+}, {passive:false});
+
+// Touch
+let lastDist = 0;
+canvas.addEventListener('touchstart', e=>{
+  if(e.touches.length===1){ dragging=true; lastX=e.touches[0].clientX; lastY=e.touches[0].clientY; }
+  if(e.touches.length===2){ lastDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY); }
+});
+canvas.addEventListener('touchmove', e=>{
+  e.preventDefault();
+  if(e.touches.length===1&&dragging){
+    offsetX+=e.touches[0].clientX-lastX; offsetY+=e.touches[0].clientY-lastY;
+    lastX=e.touches[0].clientX; lastY=e.touches[0].clientY; draw();
+  }
+  if(e.touches.length===2){
+    const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+    scale=Math.max(0.2,Math.min(3,scale*(d/lastDist))); lastDist=d; draw();
+  }
+},{passive:false});
+canvas.addEventListener('touchend',()=>dragging=false);
+
+window.addEventListener('resize',()=>{ canvas.width=window.innerWidth; canvas.height=window.innerHeight-160; draw(); });
+
+// Initial center
+offsetX = 20;
+offsetY = 20;
+draw();
+</script>
+</body>
+</html>

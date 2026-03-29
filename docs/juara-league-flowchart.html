@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Juara League — Flowchart Document</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#f8f9fa;color:#111827}
+header{background:#1A56DB;color:#fff;padding:16px 32px;display:flex;align-items:center;gap:12px}
+header h1{font-size:20px;font-weight:700;letter-spacing:.5px}
+header span{font-size:13px;opacity:.75}
+.nav{background:#fff;border-bottom:1px solid #e5e7eb;padding:12px 32px;display:flex;gap:8px;flex-wrap:wrap}
+.nav button{padding:7px 14px;border:1.5px solid #e5e7eb;background:#fff;border-radius:8px;font-size:12px;cursor:pointer;color:#374151;transition:all .15s;font-family:Arial,sans-serif}
+.nav button:hover{border-color:#1A56DB;color:#1A56DB}
+.nav button.active{background:#1A56DB;border-color:#1A56DB;color:#fff;font-weight:600}
+.legend{display:flex;gap:16px;flex-wrap:wrap;padding:12px 32px;background:#fff;border-bottom:1px solid #e5e7eb;font-size:12px}
+.legend-item{display:flex;align-items:center;gap:6px;color:#6b7280}
+.legend-dot{width:14px;height:14px;border-radius:3px;flex-shrink:0}
+.chart-wrap{padding:24px 32px;overflow-x:auto}
+.chart-title{font-size:16px;font-weight:700;color:#111827;margin-bottom:4px}
+.chart-meta{font-size:12px;color:#6b7280;margin-bottom:20px}
+svg.fc{width:100%;font-family:Arial,sans-serif}
+.node-process rect{fill:#EBF2FF;stroke:#1A56DB;stroke-width:1.5}
+.node-process text{fill:#0C447C;font-size:13px}
+.node-decision polygon{fill:#FEF3C7;stroke:#D97706;stroke-width:1.5}
+.node-decision text{fill:#78350F;font-size:12px}
+.node-start ellipse,.node-end ellipse{fill:#1A56DB;stroke:#1A56DB}
+.node-start text,.node-end text{fill:#fff;font-size:13px;font-weight:600}
+.node-ok rect{fill:#D1FAE5;stroke:#059669;stroke-width:1.5}
+.node-ok text{fill:#065F46;font-size:13px;font-weight:600}
+.node-fail rect{fill:#FEE2E2;stroke:#DC2626;stroke-width:1.5}
+.node-fail text{fill:#7F1D1D;font-size:13px}
+.node-neutral rect{fill:#F3F4F6;stroke:#9CA3AF;stroke-width:1.5}
+.node-neutral text{fill:#374151;font-size:13px}
+.node-continue rect{fill:#EDE9FE;stroke:#7C3AED;stroke-width:1.5}
+.node-continue text{fill:#4C1D95;font-size:13px;font-weight:600}
+.arr{stroke:#6B7280;stroke-width:1.5;fill:none;marker-end:url(#arr)}
+.arr-label{font-size:11px;fill:#6B7280}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>JUARA LEAGUE</h1>
+    <span>Flowchart Document v1.0 — Nandang Eka Prasetya</span>
+  </div>
+</header>
+
+<div class="nav" id="nav"></div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#1A56DB"></div>Mulai / Selesai</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#EBF2FF;border:1.5px solid #1A56DB"></div>Proses / Aksi</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#FEF3C7;border:1.5px solid #D97706;transform:rotate(45deg)"></div>Keputusan</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#D1FAE5;border:1.5px solid #059669"></div>Hasil Berhasil</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#FEE2E2;border:1.5px solid #DC2626"></div>Hasil Gagal / Ditolak</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#F3F4F6;border:1.5px solid #9CA3AF"></div>Hasil Netral</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#EDE9FE;border:1.5px solid #7C3AED"></div>Lanjut ke bagian berikutnya</div>
+</div>
+
+<div class="chart-wrap" id="chart-wrap"></div>
+
+<script>
+const CHARTS = [
+  { id:'fc01', label:'FC-01 Login & Registrasi', actor:'Guest / User', desc:'Alur pendaftaran akun baru dan masuk ke platform' },
+  { id:'fc02a', label:'FC-02A Organizer Setup', actor:'Owner / Co-Organizer', desc:'Buat turnamen, konfigurasi stage, buka pendaftaran' },
+  { id:'fc02b', label:'FC-02B Organizer Run', actor:'Owner / Co-Organizer / Referee', desc:'Mulai stage, input hasil, advance hingga selesai' },
+  { id:'fc03', label:'FC-03 Peserta Individual', actor:'User (Peserta)', desc:'Daftar hingga bertanding sebagai individu' },
+  { id:'fc04a', label:'FC-04A Tim Setup', actor:'Captain / Member', desc:'Buat tim, daftarkan ke turnamen' },
+  { id:'fc04b', label:'FC-04B Tim Bertanding', actor:'Captain / Member', desc:'Jadwal match hingga juara atau gugur' },
+  { id:'fc05', label:'FC-05 Match & Advance', actor:'Owner / Co-Organizer / Referee', desc:'Input hasil match dan transisi antar stage' },
+  { id:'fc06', label:'FC-06 Public Viewer', actor:'Public Viewer', desc:'Akses informasi turnamen tanpa login' },
+];
+
+const SVGS = {};
+
+const ARROW_DEFS = `<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1L9 5L1 9" fill="none" stroke="#6B7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>`;
+
+function P(x,y,w,h,label,label2){
+  const cx=x+w/2, cy=y+h/2;
+  return `<g class="node-process"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8"/>
+  <text text-anchor="middle" dominant-baseline="central" x="${cx}" y="${label2?cy-9:cy}">${label}</text>
+  ${label2?`<text text-anchor="middle" dominant-baseline="central" x="${cx}" y="${cy+9}" style="font-size:11px;fill:#185FA5">${label2}</text>`:''}
+  </g>`;
+}
+function D(cx,cy,hw,hh,label,label2){
+  const pts=`${cx},${cy-hh} ${cx+hw},${cy} ${cx},${cy+hh} ${cx-hw},${cy}`;
+  return `<g class="node-decision"><polygon points="${pts}"/>
+  <text text-anchor="middle" dominant-baseline="central" x="${cx}" y="${label2?cy-8:cy}">${label}</text>
+  ${label2?`<text text-anchor="middle" dominant-baseline="central" x="${cx}" y="${cy+9}" style="font-size:11px;fill:#92400E">${label2}</text>`:''}
+  </g>`;
+}
+function S(cx,cy,label){return `<g class="node-start"><ellipse cx="${cx}" cy="${cy}" rx="60" ry="22"/><text text-anchor="middle" dominant-baseline="central" x="${cx}" y="${cy}">${label}</text></g>`}
+function E(cx,cy,label){return `<g class="node-end"><ellipse cx="${cx}" cy="${cy}" rx="60" ry="22"/><text text-anchor="middle" dominant-baseline="central" x="${cx}" y="${cy}">${label}</text></g>`}
+function OK(x,y,w,h,label){const cx=x+w/2,cy=y+h/2;return `<g class="node-ok"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8"/><text text-anchor="middle" dominant-baseline="central" x="${cx}" y="${cy}">${label}</text></g>`}
+function FAIL(x,y,w,h,label){const cx=x+w/2,cy=y+h/2;return `<g class="node-fail"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8"/><text text-anchor="middle" dominant-baseline="central" x="${cx}" y="${cy}">${label}</text></g>`}
+function NEU(x,y,w,h,label){const cx=x+w/2,cy=y+h/2;return `<g class="node-neutral"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8"/><text text-anchor="middle" dominant-baseline="central" x="${cx}" y="${cy}">${label}</text></g>`}
+function CONT(x,y,w,h,label){const cx=x+w/2,cy=y+h/2;return `<g class="node-continue"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8"/><text text-anchor="middle" dominant-baseline="central" x="${cx}" y="${cy}">${label}</text></g>`}
+function L(x1,y1,x2,y2,lbl,lx,ly){return `<line class="arr" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>${lbl?`<text class="arr-label" x="${lx||((x1+x2)/2+5)}" y="${ly||((y1+y2)/2)}">${lbl}</text>`:''}`}
+function PATH(d,lbl,lx,ly){return `<path class="arr" d="${d}"/>${lbl?`<text class="arr-label" x="${lx}" y="${ly}">${lbl}</text>`:''}`}
+
+SVGS.fc01 = `<svg class="fc" viewBox="0 0 700 820">${ARROW_DEFS}
+${S(350,40,'Mulai')}
+${L(350,62,350,100)}
+${D(350,130,90,34,'Punya akun?')}
+${PATH('M260,130 L140,130 L140,240','')}
+${PATH('M440,130 L560,130 L560,240','')}
+${P(90,240,200,44,'Buka halaman','Registrasi')}
+${P(460,240,200,44,'Buka halaman','Login')}
+${L(190,284,190,340)}
+${D(190,374,90,34,'Pilih metode')}
+${PATH('M100,374 L60,374 L60,460','Email',-5,430)}
+${PATH('M280,374 L320,374 L320,460','Google',285,430)}
+${P(20,460,160,44,'Isi nama, email','& password')}
+${P(270,460,160,44,'OAuth Google','')}
+${L(100,504,100,560)}
+${P(40,560,200,44,'Kirim email','verifikasi')}
+${L(140,604,140,660)}
+${D(140,694,90,34,'Email terverifikasi?')}
+${PATH('M230,694 L310,694 L310,780','Ya',235,764)}
+${PATH('M50,694 L50,604 L40,604','Ulang',52,640)}
+${P(260,730,160,44,'Akun aktif','')}
+${L(420,752,560,752)}
+${L(560,240,560,284)}
+${P(460,284,200,44,'Masukkan email','& password')}
+${L(560,328,560,380)}
+${D(560,414,90,34,'Kredensial valid?')}
+${PATH('M470,414 L400,414 L400,480','Tidak',340,430)}
+${FAIL(300,480,200,44,'Tampilkan error','')}
+${PATH('M400,524 L400,560 L460,560','',)}
+${L(560,448,560,510)}
+${OK(460,510,200,44,'Dashboard','')}
+${L(560,554,560,620)}
+${E(560,642,'Selesai')}
+<text class="arr-label" x="365" y="120">Tidak</text>
+<text class="arr-label" x="445" y="120">Ya</text>
+</svg>`;
+
+SVGS.fc02a = `<svg class="fc" viewBox="0 0 700 920">${ARROW_DEFS}
+${S(350,40,'Mulai')}
+${L(350,62,350,110)}
+${P(230,110,240,44,'Login sebagai Organizer','')}
+${L(350,154,350,210)}
+${P(220,210,260,44,'Buat Turnamen baru','')}
+${L(350,254,350,310)}
+${P(175,310,350,44,'Isi nama, sport, tipe peserta, entry fee','')}
+${L(350,354,350,410)}
+${P(175,410,350,44,'Konfigurasi registrasi','(Open/Invite, batas peserta)')}
+${L(350,454,350,510)}
+${P(220,510,260,44,'Tambah Stage','')}
+${L(350,554,350,610)}
+${P(155,610,390,44,'Pilih format','(Single/Double Elim, Round Robin, Swiss)')}
+${L(350,654,350,710)}
+${P(210,710,280,44,'Set BO & peserta lolos','')}
+${L(350,754,350,800)}
+${D(350,834,100,34,'Tambah stage lagi?')}
+${PATH('M450,834 L520,834 L520,510 L480,510','Ya',525,680)}
+${L(350,868,350,910)}
+${CONT(220,910,260,44,'Lanjut ke Bagian 2','')}
+<text class="arr-label" x="358" y="890">Tidak</text>
+</svg>`;
+
+SVGS.fc02b = `<svg class="fc" viewBox="0 0 700 860">${ARROW_DEFS}
+${S(350,40,'Dari Bagian 1')}
+${L(350,62,350,110)}
+${D(350,144,100,34,'Tambah staff?')}
+${PATH('M450,144 L540,144 L540,240','Ya',545,200)}
+${P(440,240,200,44,'Undang Co-Organizer','/ Referee')}
+${L(350,178,350,240)}
+${P(220,240,260,44,'Publikasikan Turnamen','')}
+${PATH('M540,284 L540,262 L480,262','')}
+${L(350,284,350,340)}
+${P(210,340,280,44,'Kelola pendaftaran peserta','')}
+${L(350,384,350,430)}
+${D(350,464,100,34,'Kuota penuh / deadline?')}
+${PATH('M250,464 L180,464 L180,384 L210,384','Belum',120,430)}
+${L(350,498,350,550)}
+${P(215,550,270,44,'Seeding peserta (opsional)','')}
+${L(350,594,350,650)}
+${P(230,650,240,44,'Mulai Stage','')}
+${L(350,694,350,750)}
+${P(185,750,330,44,'Sistem generate bracket / jadwal','')}
+${L(350,794,350,840)}
+${P(220,840,260,44,'Input hasil match','')}
+<text class="arr-label" x="358" y="490">Ya</text>
+<text class="arr-label" x="240" y="135">Tidak</text>
+</svg>`;
+
+SVGS.fc02b += `<svg class="fc" viewBox="0 0 700 440">${ARROW_DEFS}
+${S(350,30,'Lanjutan Input Match')}
+${L(350,52,350,100)}
+${D(350,134,110,34,'Semua match selesai?')}
+${PATH('M240,134 L160,134 L160,840','Belum — lihat di atas',80,200)}
+${L(350,168,350,224)}
+${D(350,258,110,34,'Ada stage berikutnya?')}
+${PATH('M460,258 L560,258 L560,134 L560,70 L430,70','Ya',565,180)}
+${L(350,292,350,348)}
+${OK(220,348,260,44,'Turnamen Selesai','')}
+${L(350,392,350,410)}
+${E(350,420,'Selesai')}
+<text class="arr-label" x="358" y="285">Tidak</text>
+</svg>`;
+
+SVGS.fc03 = `<svg class="fc" viewBox="0 0 700 900">${ARROW_DEFS}
+${S(350,40,'Mulai')}
+${L(350,62,350,110)}
+${P(195,110,310,44,'Temukan turnamen (link / cari)','')}
+${L(350,154,350,210)}
+${P(185,210,330,44,'Lihat detail di halaman publik','')}
+${L(350,254,350,310)}
+${D(350,344,100,34,'Punya akun?')}
+${PATH('M250,344 L150,344 L150,430','Tidak',120,400)}
+${PATH('M450,344 L550,344 L550,430','Ya',555,400)}
+${P(60,430,180,44,'Register & Login','')}
+${P(460,430,180,44,'Login','')}
+${L(150,474,150,520)}
+${L(550,474,550,520)}
+${P(215,520,270,44,'Klik Daftar Sekarang','')}
+${PATH('M150,520 L215,520','')}
+${PATH('M550,520 L485,520','')}
+${L(350,564,350,620)}
+${D(350,654,100,34,'Turnamen berbayar?')}
+${PATH('M450,654 L540,654 L540,740','Ya',545,710)}
+${P(440,740,200,44,'Lihat info fee','& cara bayar')}
+${L(350,688,350,790)}
+${P(195,790,310,44,'Konfirmasi pendaftaran','')}
+${PATH('M540,784 L540,812 L505,812','')}
+${L(350,834,350,880)}
+${CONT(205,880,290,44,'Lanjut ke Bagian Bertanding','')}
+<text class="arr-label" x="358" y="680">Tidak</text>
+</svg>`;
+
+SVGS.fc03 += `<svg class="fc" viewBox="0 0 700 680">${ARROW_DEFS}
+${S(350,30,'Dari pendaftaran approved')}
+${L(350,52,350,100)}
+${P(185,100,330,44,'Lihat jadwal match di dashboard','')}
+${L(350,144,350,200)}
+${P(195,200,310,44,'Ikuti match sesuai jadwal','')}
+${L(350,244,350,300)}
+${P(185,300,330,44,'Organizer input hasil match','')}
+${L(350,344,350,400)}
+${D(350,434,80,34,'Menang?')}
+${PATH('M430,434 L510,434 L510,530','Ya',515,495)}
+${PATH('M270,434 L170,434 L170,530','Tidak',105,495)}
+${D(510,564,80,34,'Ronde berikutnya?')}
+${PATH('M510,598 L510,630','Tidak')}
+${PATH('M430,564 L350,564 L350,100','Ya — balik ke jadwal',260,340)}
+${OK(450,630,150,44,'JUARA!','')}
+${D(170,564,80,34,'Second chance?')}
+${PATH('M250,564 L350,564','')}
+${PATH('M170,598 L170,640','Tidak')}
+${NEU(100,640,160,44,'Gugur','')}
+<text class="arr-label" x="518" y="555">Ya</text>
+<text class="arr-label" x="115" y="555">Tidak</text>
+</svg>`;
+
+SVGS.fc04a = `<svg class="fc" viewBox="0 0 700 880">${ARROW_DEFS}
+${S(350,40,'Mulai')}
+${L(350,62,350,110)}
+${P(230,110,240,44,'Login sebagai User','')}
+${L(350,154,350,210)}
+${D(350,244,90,34,'Punya tim?')}
+${PATH('M260,244 L160,244 L160,330','Tidak',100,295)}
+${PATH('M440,244 L520,244','Ya Captain',445,235)}
+${PATH('M350,278 L350,330','Ya Member',355,315)}
+${P(80,330,160,44,'Buat tim baru','(nama + logo)')}
+${P(275,330,160,44,'Tunggu Captain','daftarkan tim')}
+${L(160,374,160,430)}
+${P(80,430,160,44,'Jadi Captain','otomatis')}
+${L(160,474,160,530)}
+${P(60,530,200,44,'Undang member','ke roster (opsional)')}
+${L(160,574,160,620)}
+${P(175,620,350,44,'Temukan turnamen bertipe Tim','')}
+${PATH('M275,374 L350,374 L350,620 L525,620','')}
+${PATH('M520,244 L590,244 L590,620 L525,620','')}
+${L(350,664,350,720)}
+${P(210,720,280,44,'Klik Daftar Tim','')}
+${L(350,764,350,820)}
+${P(185,820,330,44,'Pilih tim yang akan didaftarkan','')}
+${L(350,864,350,880)}
+${CONT(205,870,290,44,'Lanjut ke proses bayar','')}
+</svg>`;
+
+SVGS.fc04a += `<svg class="fc" viewBox="0 0 700 640">${ARROW_DEFS}
+${S(350,30,'Dari: pilih tim')}
+${L(350,52,350,100)}
+${D(350,134,100,34,'Turnamen berbayar?')}
+${PATH('M450,134 L540,134 L540,220','Ya',545,190)}
+${P(440,220,200,44,'Lihat info fee','& cara bayar')}
+${L(540,264,540,320)}
+${P(390,320,200,44,'Bayar di luar platform','')}
+${L(350,168,350,320)}
+${P(175,320,170,44,'Konfirmasi','pendaftaran')}
+${PATH('M540,364 L540,392 L505,392','')}
+${PATH('M175,364 L175,392 L345,392','')}
+${L(350,392,350,440)}
+${D(350,474,90,34,'Mode registrasi?')}
+${PATH('M260,474 L160,474 L160,550','Open',115,525)}
+${PATH('M440,474 L540,474 L540,550','Invite',545,525)}
+${P(80,550,160,44,'Status: Pending','')}
+${P(460,550,160,44,'Status: Approved','')}
+${L(160,594,160,630)}
+${D(160,630,80,28,'Diapprove?')}
+${PATH('M80,630 L40,630 L40,550 L80,550','Tidak',-5,595)}
+${PATH('M240,630 L540,630 L540,594','')}
+${OK(460,594,160,44,'Approved','')}
+<text class="arr-label" x="248" y="621">Ya</text>
+<text class="arr-label" x="358" y="460">Tidak</text>
+</svg>`;
+
+SVGS.fc04b = `<svg class="fc" viewBox="0 0 700 620">${ARROW_DEFS}
+${S(350,40,'Tim Approved')}
+${L(350,62,350,110)}
+${P(175,110,350,44,'Semua member lihat jadwal match','')}
+${L(350,154,350,210)}
+${P(185,210,330,44,'Tim ikuti match sesuai jadwal','')}
+${L(350,254,350,310)}
+${P(175,310,350,44,'Organizer input hasil match','')}
+${L(350,354,350,410)}
+${D(350,444,90,34,'Tim menang?')}
+${PATH('M440,444 L540,444 L540,520','Ya',545,495)}
+${PATH('M260,444 L160,444 L160,520','Tidak',90,495)}
+${D(540,554,80,28,'Ronde berikutnya?')}
+${PATH('M540,582 L540,610','Tidak')}
+${PATH('M460,554 L350,554 L350,110','Ya',260,340)}
+${OK(470,610,150,44,'TIM JUARA!','')}
+${D(160,554,80,28,'Second chance?')}
+${PATH('M240,554 L350,554','')}
+${PATH('M160,582 L160,610','Tidak')}
+${NEU(90,610,160,44,'Tim gugur','')}
+<text class="arr-label" x="548" y="545">Ya</text>
+<text class="arr-label" x="100" y="545">Tidak</text>
+</svg>`;
+
+SVGS.fc05 = `<svg class="fc" viewBox="0 0 700 840">${ARROW_DEFS}
+${S(350,40,'Stage Dimulai')}
+${L(350,62,350,110)}
+${P(175,110,350,44,'Sistem generate semua match','')}
+${L(350,154,350,210)}
+${P(175,210,350,44,'Staff set jadwal match (opsional)','')}
+${L(350,254,350,310)}
+${P(215,310,270,44,'Match: Upcoming','')}
+${L(350,354,350,410)}
+${P(185,410,330,44,'Staff ubah status jadi Ongoing','')}
+${L(350,454,350,510)}
+${D(350,544,80,34,'Format BO?')}
+${PATH('M270,544 L160,544 L160,630','BO3/5/7',100,600)}
+${PATH('M430,544 L540,544 L540,630','BO1',545,600)}
+${P(80,630,160,44,'Input skor game','')}
+${L(160,674,160,720)}
+${D(160,754,80,28,'Ada pemenang?')}
+${PATH('M80,754 L80,630','Belum',-5,690)}
+${PATH('M240,754 L540,754 L540,674','Ya',400,745)}
+${P(460,630,160,44,'Input pemenang','langsung')}
+${L(350,578,350,630)}
+${P(215,630,270,44,'Match: Completed','')}
+${L(350,674,350,730)}
+${P(185,730,330,44,'Update bracket / standing','')}
+${L(350,774,350,800)}
+${CONT(205,800,290,44,'Lanjut ke Advance Stage','')}
+</svg>`;
+
+SVGS.fc05 += `<svg class="fc" viewBox="0 0 700 560">${ARROW_DEFS}
+${S(350,30,'Setelah match completed')}
+${L(350,52,350,100)}
+${D(350,134,110,34,'Masih ada match lain?')}
+${PATH('M240,134 L140,134 L140,30 L290,30','Ya — match berikutnya',50,80)}
+${L(350,168,350,224)}
+${P(215,224,270,44,'Stage: Completed','')}
+${L(350,268,350,324)}
+${D(350,358,110,34,'Ada stage berikutnya?')}
+${PATH('M460,358 L560,358 L560,424','Ya',565,400)}
+${P(460,424,200,44,'Tentukan peserta lolos','(top N)')}
+${L(560,468,560,510)}
+${D(560,510,80,28,'Ada tie?')}
+${PATH('M640,510 L660,510 L660,580 L350,580 L350,424','Ya',663,545)}
+${P(200,560,280,44,'Organizer tentukan manual','')}
+${L(350,604,350,640)}
+${OK(220,640,260,44,'Mulai Stage berikutnya','')}
+${L(350,168,350,224)}
+${L(350,292,350,340)}
+${OK(220,340,260,44,'Turnamen Selesai','')}
+<text class="arr-label" x="358" y="345">Tidak</text>
+<text class="arr-label" x="480,510" y="500">Tidak</text>
+</svg>`;
+
+SVGS.fc06 = `<svg class="fc" viewBox="0 0 700 700">${ARROW_DEFS}
+${S(350,40,'Mulai')}
+${L(350,62,350,110)}
+${P(185,110,330,44,'Terima / temukan link turnamen','')}
+${L(350,154,350,210)}
+${P(185,210,330,44,'Buka URL publik turnamen','')}
+${L(350,254,350,310)}
+${D(350,344,110,34,'Status turnamen?')}
+${PATH('M240,344 L130,344 L130,430','Registration',55,400)}
+${PATH('M350,378 L350,430','Ongoing',358,415)}
+${PATH('M460,344 L570,344 L570,430','Completed',545,400)}
+${P(50,430,160,44,'Lihat info turnamen','& peserta')}
+${P(275,430,160,44,'Lihat bracket /','standing real-time')}
+${OK(490,430,160,44,'Lihat arsip','& hasil akhir')}
+${L(130,474,130,530)}
+${L(350,474,350,530)}
+${L(570,474,570,530)}
+${D(130,564,80,34,'Mau ikut?')}
+${P(275,530,160,44,'Lihat jadwal','& hasil match')}
+${P(490,530,160,44,'Sudah selesai','& tersimpan')}
+${PATH('M50,564 L50,640','Tidak')}
+${PATH('M210,564 L350,620','Ya',240,610)}
+${P(265,620,180,44,'Login & daftar','ke turnamen')}
+${P(10,640,160,44,'Share link ke','orang lain')}
+${L(350,474,350,530)}
+${L(350,574,350,620)}
+${L(130,530,130,564)}
+</svg>`;
+
+let current = 'fc01';
+
+function renderNav(){
+  const nav = document.getElementById('nav');
+  nav.innerHTML = CHARTS.map(c=>`<button onclick="show('${c.id}')" id="btn_${c.id}" class="${c.id===current?'active':''}">${c.label}</button>`).join('');
+}
+
+function show(id){
+  current = id;
+  const info = CHARTS.find(c=>c.id===id);
+  const wrap = document.getElementById('chart-wrap');
+  wrap.innerHTML = `<div class="chart-title">${info.label}</div>
+    <div class="chart-meta">Aktor: ${info.actor} &nbsp;|&nbsp; ${info.desc}</div>
+    ${SVGS[id]}`;
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active', b.id==='btn_'+id));
+}
+
+renderNav();
+show('fc01');
+</script>
+</body>
+</html>
