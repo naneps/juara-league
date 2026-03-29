@@ -89,6 +89,89 @@
 
       </div>
 
+      <!-- NEW SECTION: Turnamen Publik -->
+      <section id="turnamen" class="mt-40 w-full animate-fade-in-up" style="animation-delay: 0.5s;">
+        <div class="flex flex-col sm:flex-row items-center justify-between mb-12">
+          <div class="text-left">
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-2 flex items-center gap-3">
+              <span class="relative flex h-3 w-3">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+              </span>
+              Sedang Berlangsung
+            </h2>
+            <p class="text-neutral-400 font-light">Pantau hasil turnamen publik yang sedang panas-panasnya saat ini.</p>
+          </div>
+          <UButton color="neutral" variant="ghost" trailing-icon="i-lucide-arrow-right" class="mt-4 sm:mt-0 hover:text-white">Lihat Semua</UButton>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          
+          <!-- Card 1 -->
+          <NuxtLink to="/demo-bracket" class="group relative bg-neutral-900 border border-white/5 rounded-2xl overflow-hidden hover:border-primary-500/40 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary-900/20 text-left">
+            <div class="h-32 bg-gradient-to-br from-indigo-900 via-neutral-900 to-black relative">
+              <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover opacity-40 mix-blend-overlay" alt="esports" />
+              <div class="absolute inset-0 bg-gradient-to-t from-neutral-900 to-transparent"></div>
+              <UIcon name="i-lucide-gamepad-2" class="absolute top-4 right-4 text-white/50 size-6" />
+            </div>
+            <div class="p-6">
+              <div class="flex justify-between items-start mb-4">
+                <h3 class="text-xl font-bold text-white leading-tight group-hover:text-primary-400 transition-colors">Valorant Community Cup S4</h3>
+              </div>
+              <div class="flex items-center gap-4 text-sm text-neutral-400 mb-6 font-medium">
+                <div class="flex items-center gap-1.5"><UIcon name="i-lucide-users" class="size-4" /> 32/32 Tim</div>
+                <div class="flex items-center gap-1.5"><UIcon name="i-lucide-banknote" class="size-4 text-emerald-400" /> Rp 10.000.000</div>
+              </div>
+              <div class="border-t border-white/5 pt-4 flex items-center justify-between">
+                <span class="text-xs bg-red-500/20 text-red-400 px-2.5 py-1 rounded font-bold uppercase tracking-wider">Live &middot; Semi Final</span>
+                <span class="text-primary-400 text-sm font-medium flex items-center gap-1 group-hover:translate-x-1 transition-transform">Lihat Bracket <UIcon name="i-lucide-chevron-right" /></span>
+              </div>
+            </div>
+          </NuxtLink>
+
+          <!-- Card 2 -->
+          <NuxtLink to="/demo-bracket" class="group relative bg-neutral-900 border border-white/5 rounded-2xl overflow-hidden hover:border-sky-500/40 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-sky-900/20 text-left">
+            <div class="h-32 bg-gradient-to-br from-sky-900 via-neutral-900 to-black relative">
+              <img src="https://images.unsplash.com/photo-1543326727-cf6c39e8f84c?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover opacity-40 mix-blend-overlay" alt="futsal" />
+              <div class="absolute inset-0 bg-gradient-to-t from-neutral-900 to-transparent"></div>
+              <UIcon name="i-lucide-goal" class="absolute top-4 right-4 text-white/50 size-6" />
+            </div>
+            <div class="p-6">
+              <h3 class="text-xl font-bold text-white mb-4 leading-tight group-hover:text-sky-400 transition-colors">Tarkam Futsal League 2026</h3>
+              <div class="flex items-center gap-4 text-sm text-neutral-400 mb-6 font-medium">
+                <div class="flex items-center gap-1.5"><UIcon name="i-lucide-users" class="size-4" /> 16/16 Klub</div>
+                <div class="flex items-center gap-1.5"><UIcon name="i-lucide-banknote" class="size-4 text-emerald-400" /> Rp 5.500.000</div>
+              </div>
+              <div class="border-t border-white/5 pt-4 flex items-center justify-between">
+                <span class="text-xs bg-amber-500/20 text-amber-400 px-2.5 py-1 rounded font-bold uppercase tracking-wider">Group Stage</span>
+                <span class="text-sky-400 text-sm font-medium flex items-center gap-1 group-hover:translate-x-1 transition-transform">Klasemen <UIcon name="i-lucide-chevron-right" /></span>
+              </div>
+            </div>
+          </NuxtLink>
+
+          <!-- Card 3 -->
+          <NuxtLink to="/demo-bracket" class="group relative bg-neutral-900 border border-white/5 rounded-2xl overflow-hidden hover:border-emerald-500/40 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-emerald-900/20 text-left hidden lg:block">
+            <div class="h-32 bg-gradient-to-br from-emerald-900 via-neutral-900 to-black relative">
+              <img src="https://images.unsplash.com/photo-1550989460-0adf9ea622e2?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover opacity-40 mix-blend-overlay" alt="basket" />
+              <div class="absolute inset-0 bg-gradient-to-t from-neutral-900 to-transparent"></div>
+              <UIcon name="i-lucide-dribbble" class="absolute top-4 right-4 text-white/50 size-6" />
+            </div>
+            <div class="p-6">
+              <h3 class="text-xl font-bold text-white mb-4 leading-tight group-hover:text-emerald-400 transition-colors">SSB U-15 National Cup</h3>
+              <div class="flex items-center gap-4 text-sm text-neutral-400 mb-6 font-medium">
+                <div class="flex items-center gap-1.5"><UIcon name="i-lucide-users" class="size-4" /> 64/64 SSB</div>
+                <div class="flex items-center gap-1.5"><UIcon name="i-lucide-banknote" class="size-4 text-emerald-400" /> Piala Presiden</div>
+              </div>
+              <div class="border-t border-white/5 pt-4 flex items-center justify-between">
+                <span class="text-xs bg-red-500/20 text-red-400 px-2.5 py-1 rounded font-bold uppercase tracking-wider">Live &middot; Quarter Final</span>
+                <span class="text-emerald-400 text-sm font-medium flex items-center gap-1 group-hover:translate-x-1 transition-transform">Lihat Bracket <UIcon name="i-lucide-chevron-right" /></span>
+              </div>
+            </div>
+          </NuxtLink>
+
+        </div>
+      </section>
+
       <!-- NEW SECTION: Formats -->
       <section id="format" class="mt-40 mb-20 w-full animate-fade-in-up" style="animation-delay: 0.6s;">
         <div class="text-center mb-16">
