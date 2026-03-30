@@ -66,8 +66,7 @@ const handleLogout = async () => {
         <!-- Navigation -->
         <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-neutral-300">
           <NuxtLink to="/" class="hover:text-primary-400 transition-colors">Beranda</NuxtLink>
-          <NuxtLink to="/#fitur" class="hover:text-primary-400 transition-colors">Fitur</NuxtLink>
-          <NuxtLink to="/#format" class="hover:text-primary-400 transition-colors">Sistem Format</NuxtLink>
+          <NuxtLink to="/tournaments" class="hover:text-primary-400 transition-colors">Semua Turnamen</NuxtLink>
           <NuxtLink to="/demo-bracket" class="hover:text-primary-400 transition-colors">Demo Bracket</NuxtLink>
         </nav>
         
@@ -78,11 +77,17 @@ const handleLogout = async () => {
               <div class="flex items-center gap-4">
                 <div class="hidden sm:flex flex-col items-end mr-2">
                   <span class="text-sm font-bold text-white leading-none">{{ user?.name }}</span>
-                  <span class="text-[10px] text-neutral-500 uppercase tracking-wider font-bold">Peserta</span>
+                  <span class="text-[10px] text-neutral-500 uppercase tracking-wider font-bold">Organizer</span>
                 </div>
-                <UDropdown :items="[[{ label: 'Profile', icon: 'i-lucide-user' }, { label: 'Logout', icon: 'i-lucide-log-out', click: () => isLogoutModalOpen = true }]]">
+                <UDropdown :items="[[
+                  { label: user?.name, slot: 'header', disabled: true },
+                  { label: 'Turnamen Saya', icon: 'i-lucide-layout-dashboard', to: '/tournaments/mine' },
+                  { label: 'Buat Turnamen', icon: 'i-lucide-plus-circle', to: '/tournaments/create' },
+                  { label: 'Setting Profil', icon: 'i-lucide-user' },
+                  { label: 'Keluar', icon: 'i-lucide-log-out', click: () => isLogoutModalOpen = true }
+                ]]">
                   <UAvatar 
-                    :src="user?.avatar" 
+                    :src="user?.avatar || `https://i.pravatar.cc/150?u=${user?.email}`" 
                     :alt="user?.name" 
                     size="sm"
                     class="ring-2 ring-primary-500/50 cursor-pointer"
