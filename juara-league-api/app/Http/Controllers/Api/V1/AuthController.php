@@ -62,24 +62,20 @@ class AuthController extends Controller
     }
 
     /**
-     * @return JsonResponse
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function googleCallback(): JsonResponse
+    public function googleCallback()
     {
         try {
             $socialUser = Socialite::driver('google')->stateless()->user();
             $result = $this->authService->handleGoogleCallback($socialUser);
 
-            return response()->json([
-                'message' => 'Google login successful.',
-                'data' => new UserResource($result['user']),
-                'token' => $result['token'],
-            ]);
+            $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000');
+            
+            return redirect()->to($frontendUrl . '/auth/callback?token=' . urlencode($result['token']));
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Google authentication failed.',
-                'error' => $e->getMessage(),
-            ], 422);
+            $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000');
+            return redirect()->to($frontendUrl . '/login?error=' . urlencode($e->getMessage()));
         }
     }
 

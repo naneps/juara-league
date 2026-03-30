@@ -27,19 +27,12 @@ class SocialAuthTest extends TestCase
         Socialite::shouldReceive('user')->andReturn($abstractUser);
 
         $response = $this->getJson('/api/v1/auth/google/callback');
+        $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000');
 
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'message',
-                'data' => [
-                    'id',
-                    'name',
-                    'email',
-                    'avatar',
-                    'google_id',
-                ],
-                'token',
-            ]);
+        $response->assertStatus(302)
+            ->assertRedirect();
+        
+        $this->assertStringContainsString($frontendUrl . '/auth/callback?token=', $response->headers->get('Location'));
 
         $this->assertDatabaseHas('users', [
             'email' => 'google@example.com',
@@ -64,7 +57,8 @@ class SocialAuthTest extends TestCase
         Socialite::shouldReceive('stateless')->andReturnSelf();
         Socialite::shouldReceive('user')->andReturn($abstractUser);
 
-        $this->getJson('/api/v1/auth/google/callback');
+        $response = $this->getJson('/api/v1/auth/google/callback');
+        $response->assertStatus(302);
 
         $this->assertDatabaseHas('users', [
             'email' => 'google@example.com',

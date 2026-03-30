@@ -1,5 +1,57 @@
+<script setup lang="ts">
+const { user, loggedIn, logout, fetchUser } = useAuth()
+const isLogoutModalOpen = ref(false)
+
+const handleLogout = async () => {
+  isLogoutModalOpen.value = false
+  await logout()
+  navigateTo('/login')
+}
+</script>
+
 <template>
   <div class="min-h-screen flex flex-col bg-transparent text-white">
+    <!-- Logout Confirmation Modal -->
+    <UModal v-model:open="isLogoutModalOpen">
+      <template #content>
+        <div class="p-8 bg-neutral-900 border border-white/5 rounded-3xl backdrop-blur-2xl shadow-2xl relative overflow-hidden">
+          <!-- Decoration -->
+          <div class="absolute -top-12 -right-12 w-24 h-24 bg-primary-500/10 blur-2xl rounded-full"></div>
+          
+          <div class="flex flex-col items-center text-center relative z-10">
+            <div class="bg-red-500/10 p-4 rounded-2xl mb-6 ring-1 ring-red-500/20">
+              <UIcon name="i-lucide-log-out" class="text-red-400 size-8" />
+            </div>
+            
+            <h3 class="text-2xl font-black text-white mb-3">Sesi Berakhir?</h3>
+            <p class="text-neutral-400 font-medium mb-8 max-w-[280px]">
+              Apakah Anda yakin ingin keluar dari Juara League? Sesi Anda akan berakhir.
+            </p>
+            
+            <div class="grid grid-cols-2 gap-4 w-full">
+              <UButton 
+                variant="ghost" 
+                color="neutral" 
+                size="lg" 
+                class="font-bold border border-white/5 hover:bg-white/5 rounded-xl transition-all"
+                @click="isLogoutModalOpen = false"
+              >
+                Batal
+              </UButton>
+              <UButton 
+                color="primary" 
+                size="lg" 
+                class="font-black rounded-xl shadow-lg shadow-primary-500/20 hover:shadow-primary-500/40 transition-all"
+                @click="handleLogout"
+              >
+                Keluar
+              </UButton>
+            </div>
+          </div>
+        </div>
+      </template>
+    </UModal>
+
     <!-- Navbar / App Bar -->
     <header class="fixed top-0 left-0 right-0 z-50 bg-neutral-950/70 backdrop-blur-xl border-b border-white/5 h-20 flex items-center transition-all duration-300">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex justify-between items-center">
@@ -14,16 +66,40 @@
         <!-- Navigation -->
         <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-neutral-300">
           <NuxtLink to="/" class="hover:text-primary-400 transition-colors">Beranda</NuxtLink>
-          <NuxtLink to="#fitur" class="hover:text-primary-400 transition-colors">Fitur</NuxtLink>
-          <NuxtLink to="#format" class="hover:text-primary-400 transition-colors">Sistem Format</NuxtLink>
-          <NuxtLink to="#harga" class="hover:text-primary-400 transition-colors">Harga</NuxtLink>
+          <NuxtLink to="/#fitur" class="hover:text-primary-400 transition-colors">Fitur</NuxtLink>
+          <NuxtLink to="/#format" class="hover:text-primary-400 transition-colors">Sistem Format</NuxtLink>
+          <NuxtLink to="/demo-bracket" class="hover:text-primary-400 transition-colors">Demo Bracket</NuxtLink>
         </nav>
         
         <!-- Auth Buttons -->
-        <div class="flex items-center gap-4">
-          <UButton variant="ghost" color="neutral" class="hidden sm:inline-flex hover:bg-white/5 ring-1 ring-white/10 hover:ring-white/20">Sign In</UButton>
-          <UButton color="primary" class="font-semibold px-6 shadow-lg shadow-primary-500/20 hover:shadow-primary-500/40">Register</UButton>
-        </div>
+        <ClientOnly>
+          <div class="flex items-center gap-4">
+            <template v-if="loggedIn">
+              <div class="flex items-center gap-4">
+                <div class="hidden sm:flex flex-col items-end mr-2">
+                  <span class="text-sm font-bold text-white leading-none">{{ user?.name }}</span>
+                  <span class="text-[10px] text-neutral-500 uppercase tracking-wider font-bold">Peserta</span>
+                </div>
+                <UDropdown :items="[[{ label: 'Profile', icon: 'i-lucide-user' }, { label: 'Logout', icon: 'i-lucide-log-out', click: () => isLogoutModalOpen = true }]]">
+                  <UAvatar 
+                    :src="user?.avatar" 
+                    :alt="user?.name" 
+                    size="sm"
+                    class="ring-2 ring-primary-500/50 cursor-pointer"
+                  />
+                </UDropdown>
+              </div>
+            </template>
+            <template v-else>
+              <NuxtLink to="/login">
+                <UButton variant="ghost" color="neutral" class="hidden sm:inline-flex hover:bg-white/5 ring-1 ring-white/10 hover:ring-white/20">Sign In</UButton>
+              </NuxtLink>
+              <NuxtLink to="/register">
+                <UButton color="primary" class="font-semibold px-6 shadow-lg shadow-primary-500/20 hover:shadow-primary-500/40">Register</UButton>
+              </NuxtLink>
+            </template>
+          </div>
+        </ClientOnly>
       </div>
     </header>
 
