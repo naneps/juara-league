@@ -28,96 +28,101 @@
       </div>
     </div>
 
-    <!-- The Bracket Canvas -->
-    <div class="flex items-center w-full min-w-max px-8 lg:justify-center relative z-10">
-      
-      <!-- Quarter Finals Column -->
-      <div class="flex flex-col gap-12 relative w-[280px]">
-        <BracketNode 
-          :number="1" time="10:00 AM"
-          :match="{
-            t1: { name: 'RRQ Hoshi', score: 2, logo: 'https://i.pravatar.cc/150?u=rrq' },
-            t2: { name: 'AURA Fire', score: 0, logo: 'https://i.pravatar.cc/150?u=aura' },
-            winner: 1
-          }"
-        />
-        <BracketNode 
-          :number="2" time="11:30 AM"
-          :match="{
-            t1: { name: 'Evos Legends', score: 1, logo: 'https://i.pravatar.cc/150?u=evos' },
-            t2: { name: 'ONIC Esports', score: 2, logo: 'https://i.pravatar.cc/150?u=onic' },
-            winner: 2
-          }"
-        />
-        <BracketNode 
-          :number="3" time="13:00 PM"
-          :match="{
-            t1: { name: 'Bigetron Alpha', score: 2, logo: 'https://i.pravatar.cc/150?u=btr' },
-            t2: { name: 'Alter Ego', score: 1, logo: 'https://i.pravatar.cc/150?u=ae' },
-            winner: 1
-          }"
-        />
-        <BracketNode 
-          :number="4" time="14:30 PM"
-          :match="{
-            t1: { name: 'Geek Fam', score: 0, logo: 'https://i.pravatar.cc/150?u=geek' },
-            t2: { name: 'Rebellion Zion', score: 2, logo: 'https://i.pravatar.cc/150?u=rbg' },
-            winner: 2
-          }"
-        />
-      </div>
+    <!-- The Bracket Canvas Container -->
+    <div class="h-[calc(100vh-200px)] w-full overflow-hidden">
+      <InteractiveCanvas>
+        <div class="p-24 flex items-center justify-center min-w-max">
+          
+          <!-- Quarter Finals Column -->
+          <div class="flex flex-col gap-12 relative w-[280px]">
+            <BracketNode 
+              :number="1" time="10:00 AM"
+              :match="{
+                t1: { name: 'RRQ Hoshi', score: 2, logo: 'https://i.pravatar.cc/150?u=rrq' },
+                t2: { name: 'AURA Fire', score: 0, logo: 'https://i.pravatar.cc/150?u=aura' },
+                winner: 1
+              }"
+            />
+            <BracketNode 
+              :number="2" time="11:30 AM"
+              :match="{
+                t1: { name: 'Evos Legends', score: 1, logo: 'https://i.pravatar.cc/150?u=evos' },
+                t2: { name: 'ONIC Esports', score: 2, logo: 'https://i.pravatar.cc/150?u=onic' },
+                winner: 2
+              }"
+            />
+            <BracketNode 
+              :number="3" time="13:00 PM"
+              :match="{
+                t1: { name: 'Bigetron Alpha', score: 2, logo: 'https://i.pravatar.cc/150?u=btr' },
+                t2: { name: 'Alter Ego', score: 1, logo: 'https://i.pravatar.cc/150?u=ae' },
+                winner: 1
+              }"
+            />
+            <BracketNode 
+              :number="4" time="14:30 PM"
+              :match="{
+                t1: { name: 'Geek Fam', score: 0, logo: 'https://i.pravatar.cc/150?u=geek' },
+                t2: { name: 'Rebellion Zion', score: 2, logo: 'https://i.pravatar.cc/150?u=rbg' },
+                winner: 2
+              }"
+            />
+          </div>
 
-      <!-- Connector 1 -->
-      <div class="w-16 h-full flex flex-col justify-around py-[5.5rem]">
-        <div class="h-[12.5rem] w-1/2 border-r-2 border-y-2 border-white/10 rounded-r-xl border-l-0 translate-x-1/2 relative after:content-[''] after:absolute after:top-1/2 after:right-0 after:w-8 after:h-0.5 after:bg-white/10 after:translate-x-full"></div>
-        <div class="h-[12.5rem] w-1/2 border-r-2 border-y-2 border-white/10 rounded-r-xl border-l-0 translate-x-1/2 relative after:content-[''] after:absolute after:top-1/2 after:right-0 after:w-8 after:h-0.5 after:bg-white/10 after:translate-x-full"></div>
-      </div>
+          <!-- Connector 1 -->
+          <div class="flex flex-col justify-around h-full py-[5.25rem]">
+            <BracketConnector :height="168" />
+            <BracketConnector :height="168" />
+          </div>
 
-      <!-- Semi Finals Column -->
-      <div class="flex flex-col gap-[9rem] relative w-[280px]">
-        <BracketNode 
-          :number="5" time="16:00 PM"
-          :match="{
-            t1: { name: 'RRQ Hoshi', score: 1, logo: 'https://i.pravatar.cc/150?u=rrq' },
-            t2: { name: 'ONIC Esports', score: 2, logo: 'https://i.pravatar.cc/150?u=onic' },
-            winner: 2
-          }"
-        />
-        <BracketNode 
-          :number="6" time="18:00 PM"
-          :match="{
-            t1: { name: 'Bigetron Alpha', score: 2, logo: 'https://i.pravatar.cc/150?u=btr' },
-            t2: { name: 'Rebellion Zion', score: 0, logo: 'https://i.pravatar.cc/150?u=rbg' },
-            winner: 1
-          }"
-        />
-      </div>
-      
-      <!-- Connector 2 -->
-      <div class="w-16 h-full flex flex-col justify-around py-[5rem]">
-         <div class="h-[16.5rem] w-1/2 border-r-2 border-y-2 border-white/10 rounded-r-xl border-l-0 translate-x-1/2 relative after:content-[''] after:absolute after:top-1/2 after:right-0 after:w-8 after:h-0.5 after:bg-white/10 after:translate-x-full"></div>
-      </div>
+          <!-- Semi Finals Column -->
+          <div class="flex flex-col gap-[9rem] relative w-[280px]">
+            <BracketNode 
+              :number="5" time="16:00 PM"
+              :match="{
+                t1: { name: 'RRQ Hoshi', score: 1, logo: 'https://i.pravatar.cc/150?u=rrq' },
+                t2: { name: 'ONIC Esports', score: 2, logo: 'https://i.pravatar.cc/150?u=onic' },
+                winner: 2
+              }"
+            />
+            <BracketNode 
+              :number="6" time="18:00 PM"
+              :match="{
+                t1: { name: 'Bigetron Alpha', score: 2, logo: 'https://i.pravatar.cc/150?u=btr' },
+                t2: { name: 'Rebellion Zion', score: 0, logo: 'https://i.pravatar.cc/150?u=rbg' },
+                winner: 1
+              }"
+            />
+          </div>
+          
+          <!-- Connector 2 -->
+          <div class="flex flex-col justify-center h-full">
+             <BracketConnector :height="262" />
+          </div>
 
-      <!-- Grand Final Column -->
-      <div class="flex flex-col justify-center relative w-[280px] h-full">
-        <!-- Glow Behind Winner -->
-        <div class="absolute inset-0 bg-primary-500/20 blur-2xl rounded-full scale-150 animate-pulse pointer-events-none"></div>
-        <div class="text-center mb-4 relative z-10 flex flex-col items-center">
-           <UIcon name="i-lucide-medal" class="size-10 text-primary-400 drop-shadow-lg mb-2" />
-           <span class="uppercase tracking-[0.2em] font-bold text-xs text-primary-400">Grand Final</span>
+          <!-- Grand Final Column -->
+          <div class="flex flex-col justify-center relative w-[280px] h-full">
+            <!-- Glow Behind Winner -->
+            <div class="absolute inset-0 bg-primary-500/20 blur-2xl rounded-full scale-150 animate-pulse pointer-events-none"></div>
+            <div class="text-center mb-4 relative z-10 flex flex-col items-center">
+               <UIcon name="i-lucide-medal" class="size-10 text-primary-400 drop-shadow-lg mb-2" />
+               <span class="uppercase tracking-[0.2em] font-bold text-xs text-primary-400">Grand Final</span>
+            </div>
+            <BracketNode 
+              class="border-primary-500/50 shadow-2xl shadow-primary-900/40 relative z-10 scale-110 mx-auto"
+              :number="7" time="LIVE NOW"
+              :match="{
+                t1: { name: 'ONIC Esports', score: 2, logo: 'https://i.pravatar.cc/150?u=onic' },
+                t2: { name: 'Bigetron Alpha', score: 2, logo: 'https://i.pravatar.cc/150?u=btr' },
+                winner: null
+              }"
+            />
+          </div>
+
         </div>
-        <BracketNode 
-          class="border-primary-500/50 shadow-2xl shadow-primary-900/40 relative z-10 scale-110 mx-auto"
-          :number="7" time="LIVE NOW"
-          :match="{
-            t1: { name: 'ONIC Esports', score: 2, logo: 'https://i.pravatar.cc/150?u=onic' },
-            t2: { name: 'Bigetron Alpha', score: 2, logo: 'https://i.pravatar.cc/150?u=btr' },
-            winner: null
-          }"
-        />
-      </div>
-
+      </InteractiveCanvas>
     </div>
+
   </div>
 </template>
 
