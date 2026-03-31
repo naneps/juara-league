@@ -29,6 +29,8 @@ class AuthService
             'password' => Hash::make($data['password']),
         ]);
 
+        event(new \Illuminate\Auth\Events\Registered($user));
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return [
