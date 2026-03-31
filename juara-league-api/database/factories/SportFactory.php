@@ -12,16 +12,11 @@ class SportFactory extends Factory
 {
     protected $model = Sport::class;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
-            'name' => $this->faker->unique()->word(),
-            'type' => $this->faker->randomElement(['sport', 'esport']),
+            'name'     => $this->faker->unique()->word(),
+            'type'     => $this->faker->randomElement(['sport', 'esport']),
             'icon_url' => $this->faker->imageUrl(),
             'is_active' => true,
         ];

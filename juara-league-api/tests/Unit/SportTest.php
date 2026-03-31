@@ -19,26 +19,21 @@ class SportTest extends TestCase
         $this->repository = new SportRepository();
     }
 
-    public function test_it_can_create_a_sport()
+    public function test_it_can_create_a_sport(): void
     {
-        $data = [
-            'name' => 'Football',
-            'type' => 'sport',
+        $sport = $this->repository->create([
+            'name'     => 'Football',
+            'type'     => 'sport',
             'icon_url' => 'https://example.com/football.svg',
             'is_active' => true,
-        ];
-
-        $sport = $this->repository->create($data);
-
-        $this->assertDatabaseHas('sports', [
-            'id' => $sport->id,
-            'name' => 'Football',
         ]);
+
+        $this->assertDatabaseHas('sports', ['id' => $sport->id, 'name' => 'Football']);
         $this->assertEquals('Football', $sport->name);
         $this->assertEquals('sport', $sport->type);
     }
 
-    public function test_it_can_get_active_sports()
+    public function test_it_can_get_active_sports(): void
     {
         Sport::factory()->create(['name' => 'Active Sport', 'is_active' => true]);
         Sport::factory()->create(['name' => 'Inactive Sport', 'is_active' => false]);
@@ -49,7 +44,7 @@ class SportTest extends TestCase
         $this->assertEquals('Active Sport', $results[0]->name);
     }
 
-    public function test_it_can_search_sports_by_name()
+    public function test_it_can_search_sports_by_name(): void
     {
         Sport::factory()->create(['name' => 'Badminton']);
         Sport::factory()->create(['name' => 'Basketball']);

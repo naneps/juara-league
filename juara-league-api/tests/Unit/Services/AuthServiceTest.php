@@ -5,6 +5,8 @@ namespace Tests\Unit\Services;
 use App\Models\User;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\AuthService;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 use Mockery;
@@ -27,6 +29,8 @@ class AuthServiceTest extends TestCase
      */
     public function test_it_can_register_a_user(): void
     {
+        Event::fake([Registered::class]);
+
         $data = [
             'name' => 'Test User',
             'email' => 'test@example.com',
@@ -42,6 +46,8 @@ class AuthServiceTest extends TestCase
 
         $this->assertEquals($user, $result['user']);
         $this->assertEquals('token', $result['token']);
+
+        Event::assertDispatched(Registered::class);
     }
 
     /**
