@@ -20,6 +20,11 @@ class RepositoryServiceProvider extends ServiceProvider
             \App\Repositories\Contracts\TournamentRepositoryInterface::class,
             \App\Repositories\Eloquent\EloquentTournamentRepository::class
         );
+
+        $this->app->bind(
+            \App\Repositories\Contracts\SportRepositoryInterface::class,
+            \App\Repositories\Eloquent\SportRepository::class
+        );
     }
 
     /**

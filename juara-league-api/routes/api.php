@@ -19,8 +19,11 @@ Route::prefix('v1')->group(function () {
         Route::get('/callback', [AuthController::class, 'googleCallback']);
     });
 
-    Route::get('/tournaments', [\App\Http\Controllers\Api\V1\TournamentController::class, 'index']);
-    Route::get('/tournaments/{slug}', [\App\Http\Controllers\Api\V1\TournamentController::class, 'show']);
+    Route::get('/tournaments', [TournamentController::class, 'index']);
+    Route::get('/tournaments/{slug}', [TournamentController::class, 'show']);
+
+    Route::get('/sports', [\App\Http\Controllers\Api\V1\SportController::class, 'index']);
+    Route::get('/sports/{id}', [\App\Http\Controllers\Api\V1\SportController::class, 'show']);
 
     /*
     |--------------------------------------------------------------------------
@@ -33,9 +36,16 @@ Route::prefix('v1')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
 
         // Tournament Management
-        Route::get('/my-tournaments', [\App\Http\Controllers\Api\V1\TournamentController::class, 'mine']);
-        Route::post('/tournaments', [\App\Http\Controllers\Api\V1\TournamentController::class, 'store']);
-        Route::put('/tournaments/{tournament}', [\App\Http\Controllers\Api\V1\TournamentController::class, 'update']);
-        Route::delete('/tournaments/{tournament}', [\App\Http\Controllers\Api\V1\TournamentController::class, 'destroy']);
+        Route::get('/my-tournaments', [TournamentController::class, 'mine']);
+        Route::post('/tournaments', [TournamentController::class, 'store']);
+        Route::put('/tournaments/{tournament}', [TournamentController::class, 'update']);
+        Route::delete('/tournaments/{tournament}', [TournamentController::class, 'destroy']);
+
+        // Admin - Sport Management
+        Route::prefix('admin')->group(function () {
+            Route::post('/sports', [\App\Http\Controllers\Api\V1\Admin\SportController::class, 'store']);
+            Route::put('/sports/{id}', [\App\Http\Controllers\Api\V1\Admin\SportController::class, 'update']);
+            Route::delete('/sports/{id}', [\App\Http\Controllers\Api\V1\Admin\SportController::class, 'destroy']);
+        });
     });
 });

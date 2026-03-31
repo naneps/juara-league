@@ -1,327 +1,311 @@
 
 ---
 
-# 🏆 JUARA LEAGUE
+# JUARA LEAGUE | Business Requirements Document
 
-### Business Requirements Document
+**JUARA LEAGUE**
+juaraleague.gg
 
----
+## BUSINESS REQUIREMENTS DOCUMENT
 
-## 📄 Informasi Dokumen
+**General-Purpose Tournament Management Platform**
 
-* **Versi:** 1.0.0 (Draft)
-* **Tanggal:** 2026
-* **Author:** Nandang Eka Prasetya
-* **Platform:** Web App (SaaS-ready)
-* **Bahasa:** Indonesia
+| Field       | Value                        |
+| ----------- | ---------------------------- |
+| Versi       | 1.0.0 — Draft                |
+| Tanggal     | 2026                         |
+| Status      | Draft                        |
+| Dibuat oleh | Nandang Eka Prasetya         |
+| Platform    | Web Application (SaaS-ready) |
+| Bahasa      | Bahasa Indonesia             |
 
-> 🔒 Confidential – Internal Use Only
-
----
-
-# 📌 1. Pendahuluan
-
-## ▶️ 1.1 Latar Belakang
-
-* Proses turnamen masih manual (WA, Excel)
-* Tidak efisien & rawan error
-* Minim transparansi
-
-**Masalah platform existing:**
-
-* Fokus esport
-* UX kurang ramah
-* Tidak lokal-friendly
+> Dokumen ini bersifat konfidensial dan hanya untuk penggunaan internal.
 
 ---
 
-## ▶️ 1.2 Tujuan
+# 1. Pendahuluan
 
-* Menjadi acuan:
+## 1.1 Latar Belakang
 
-  * Pengembangan produk
-  * Desain sistem
-  * Perencanaan teknis
+Penyelenggaraan turnamen olahraga dan esport di Indonesia, khususnya pada level komunitas, saat ini masih sangat bergantung pada proses manual — koordinasi via grup WhatsApp, pencatatan hasil di Excel, dan pengumuman bracket secara manual.
 
----
+Hal ini menyebabkan proses yang tidak efisien, rawan kesalahan, dan minim transparansi bagi peserta maupun penonton.
 
-## ▶️ 1.3 Ruang Lingkup
+Platform global seperti **Challonge**, **Toornament**, dan **Start.gg** mayoritas berfokus pada esport dan memiliki UX yang kurang ramah untuk pengguna baru.
 
-✔ Membuat turnamen
-✔ Multi-format
-✔ Public real-time
-✔ SaaS foundation
+Belum ada platform yang benar-benar general-purpose, mudah digunakan, dan relevan untuk pasar Indonesia.
 
 ---
 
-## ▶️ 1.4 Definisi
+## 1.2 Tujuan Dokumen
 
-Gunakan toggle di Notion untuk hemat space:
+Dokumen ini mendeskripsikan kebutuhan bisnis dari platform **Juara League** — platform manajemen turnamen berbasis web yang bersifat:
 
-<details>
-<summary>Klik untuk lihat istilah</summary>
+* sport-agnostic
+* multi-format
+* multi-role
 
-* **Turnamen** → kumpulan stage
-* **Stage** → fase turnamen
-* **Match** → pertandingan
-* **Game** → bagian dari match
-* **BO** → Best Of
-* **Seeding** → penempatan
-* **Entry Fee** → biaya
-* **Prize Pool** → hadiah
+Dokumen ini menjadi acuan utama untuk:
 
-</details>
+* pengembangan produk
+* desain sistem
+* perencanaan teknis
 
 ---
 
-# 🚀 2. Deskripsi Produk
+## 1.3 Ruang Lingkup
 
-## 🎯 2.1 Visi
+Juara League memungkinkan pengguna untuk:
 
-Platform turnamen paling fleksibel & mudah digunakan di Indonesia.
+* Membuat dan mengelola turnamen berbagai cabang olahraga dan esport
+* Mendukung berbagai format turnamen secara fleksibel
+* Memberikan akses publik real-time
 
----
-
-## 💡 2.2 Value Proposition
-
-* 🧩 Sport-agnostic
-* 🔀 Multi-format
-* 🤖 Rekomendasi otomatis
-* 🌍 Public bracket
-* 👥 Multi-role
-* 💰 SaaS-ready
+Dirancang sebagai fondasi produk **SaaS scalable**.
 
 ---
 
-## 👤 2.3 Target User
+## 1.4 Definisi & Istilah
 
-| Segmen    | Contoh            | Kebutuhan          |
-| --------- | ----------------- | ------------------ |
-| Komunitas | Futsal RT         | Simple & gratis    |
-| Kampus    | Turnamen internal | Multi-sport        |
-| Organizer | EO                | Advanced control   |
-| Esport    | Tim ML/Valorant   | Competitive format |
-
----
-
-# ⚙️ 3. Kebutuhan Fungsional
-
-## 👤 3.1 Akun & Role
-
-### ✅ Registrasi
-
-* [ ] Email
-* [ ] Google Login
-* [ ] Multi-role
+| Istilah       | Definisi                                     |
+| ------------- | -------------------------------------------- |
+| Turnamen      | Kompetisi terdiri dari satu atau lebih stage |
+| Stage         | Fase/babak dalam turnamen                    |
+| Match         | Pertandingan antara dua peserta/tim          |
+| Game          | Satu sesi permainan dalam match              |
+| Grup          | Pembagian peserta (Round Robin)              |
+| BO (Best Of)  | Sistem jumlah kemenangan                     |
+| Organizer     | Pembuat turnamen                             |
+| Peserta       | Individu/tim yang ikut                       |
+| Captain       | Perwakilan tim                               |
+| Public Viewer | Pengguna tanpa login                         |
+| Seeding       | Penempatan berdasarkan ranking               |
+| Entry Fee     | Biaya pendaftaran                            |
+| Prize Pool    | Total hadiah                                 |
 
 ---
 
-### 🧑‍💼 Role
+# 2. Deskripsi Produk
 
-| Role         | Akses               |
-| ------------ | ------------------- |
-| Owner        | Full control        |
-| Co-Organizer | Manage tanpa delete |
-| Referee      | Input hasil         |
-| Captain      | Kelola tim          |
-| Member       | View only           |
-| Public       | Tanpa login         |
+## 2.1 Visi Produk
+
+Menjadi platform manajemen turnamen paling fleksibel dan mudah digunakan di Indonesia.
 
 ---
 
-## 🏆 3.2 Manajemen Turnamen
+## 2.2 Proposisi Nilai
 
-### ➕ Create Tournament
+**Keunggulan Juara League:**
 
-* [ ] Nama
-* [ ] Sport
-* [ ] Tipe (Tim/Individu)
-* [ ] Banner
-* [ ] Entry fee
-* [ ] Prize pool
-
----
-
-### 📝 Registrasi
-
-* [ ] Open / Invite
-* [ ] Limit peserta
-* [ ] Deadline
-* [ ] Payment manual
+* Sport-agnostic
+* Multi-format (SE, DE, RR, Swiss)
+* Rekomendasi format otomatis
+* Public bracket
+* Multi-role
+* SaaS-ready
 
 ---
 
-### 🤖 Rekomendasi Format
+## 2.3 Target Pengguna
 
-| Kondisi     | Output            |
-| ----------- | ----------------- |
-| < 8         | Round Robin       |
-| 8–32        | Swiss / Kombinasi |
-| > 32        | Warning           |
-| Swiss kecil | Tidak efisien     |
-
----
-
-## 🧱 3.3 Stage
-
-### Setup Stage
-
-* [ ] Nama
-* [ ] Format
-* [ ] BO
-* [ ] Peserta lolos
-* [ ] Grup (opsional)
+| Segmen           | Contoh               | Kebutuhan         |
+| ---------------- | -------------------- | ----------------- |
+| Komunitas lokal  | Futsal RT, badminton | Mudah, gratis     |
+| Kampus           | Turnamen esport      | Multi-sport       |
+| Organizer        | EO lokal             | Manajemen lengkap |
+| Komunitas esport | ML, Valorant         | Format kompleks   |
 
 ---
 
-### 📋 Format & Penjelasan Teknis ERD
+# 3. Kebutuhan Fungsional
 
-Berdasarkan rancangan basis data (*Entity Relationship Diagram*), tiap format di atas saling terhubung melalui *Entity* **Stage**, **Group**, **Match**, dan **Game**. Berikut adalah detail teknis implementasinya:
+## 3.1 Manajemen Akun & Role
 
-<details open>
-<summary><b>1. Single Elimination (Sistem Gugur)</b></summary>
-Format gugur di mana peserta/tim yang kalah langsung tereliminasi.
+### 3.1.1 Registrasi & Login
 
-* **Skema ERD (`Match`)**: Setiap pertandingan mempunyai relasi `next_match_winner_id` yang akan mendorong pemenang melaju ke *Match* ronde selanjutnya.
-* **Penentuan Pemenang**: Bergantung pada kolom `bo_format` (Best of 1, 3, 5, 7) di entitas `Stage`. Total poin masing-masing perlombaan direkam di `Game` (`score_p1` & `score_p2`), dan entitas tim yang merajai pertandingan direkam pada `winner_id` di `Match`.
-</details>
-
-<details open>
-<summary><b>2. Double Elimination (Sistem Gugur Ganda)</b></summary>
-Peserta mendapat satu kali "nyawa kedua". Jika kalah, mereka turun bermain ke *Lower Bracket*.
-
-* **Skema ERD (`Match`)**: Sistem memanfaatkan kolom `bracket_side` yang menyimpan tipe ENUM (`upper`, `lower`, `grand_final`). 
-* **Alur Kalah/Menang**: Jika berada di *Upper Bracket* dan kalah, peserta dialihkan paksa oleh sistem menggunakan *foreign key* `next_match_loser_id` menuju slot pertandingan kosong di *Lower Bracket*. Sementara sang pemenang tetap melaju lewat `next_match_winner_id`.
-</details>
-
-<details open>
-<summary><b>3. Round Robin (Sistem Liga / Fase Grup)</b></summary>
-Seluruh peserta di dalam satu wadah akan saling berhadapan untuk menghasilkan perhitungan poin (klasemen).
-
-* **Skema ERD (`Stage` -> `Group` -> `Match`)**: Di skema ini, `Stage` akan memecah peserta ke dalam tabel `Group` (misal Grup A, Grup B). Lalu, seluruh `Match` akan dipasangkan dengan mereferensikan `group_id` tempat mereka berada.
-* **Sistem Lolos**: Peserta teratas akan diurutkan berdasarkan matriks perhitungan `Game`. Peserta yang berhak melanjutkan ke *Stage* berikutnya ditentukan oleh batas angka di kolom `participants_advance` pada tabel `Stage`.
-</details>
-
-<details open>
-<summary><b>4. Swiss (Sistem Swiss / Klasemen Dinamis)</b></summary>
-Peserta dengan rasio kemenangan yang sama akan dipertemukan di babak selanjutnya. Tidak ada yang tereliminasi di awal (mirip liga), namun lawan selalu seimbang.
-
-* **Skema ERD (`Round` di `Match`)**: Berbeda dengan *Round Robin*, sistem Swiss tidak memakai `group_id`. Sistem akan mengevaluasi kemenangan yang terakumulasi di riwayat tabel `Match`, lalu otomatis meng-*(generate)* baris `Match` baru dengan nilai `round` berikutnya dengan mempertemukan tim yang memiliki rekor menang/kalah *(W/L)* yang persis sama.
-</details>
+* Email
+* Google OAuth
+* Multi-role per turnamen
 
 ---
 
-## 🎮 3.4 Match
+### 3.1.2 Role dalam Turnamen
 
-* [ ] Status (Upcoming / Ongoing / Done)
-* [ ] Jadwal
-* [ ] Input hasil
-* [ ] Auto bracket update
-* [ ] Auto advance
-
----
-
-## 👥 3.5 Tim
-
-* [ ] Create tim
-* [ ] Invite member
-* [ ] Register
-* [ ] Transfer ownership
-* [ ] Archive
+| Role          | Cakupan  | Keterangan          |
+| ------------- | -------- | ------------------- |
+| Owner         | Turnamen | Full akses          |
+| Co-Organizer  | Turnamen | Manage tanpa delete |
+| Referee       | Turnamen | Input hasil         |
+| Captain       | Tim      | Daftarkan tim       |
+| Member        | Tim      | View only           |
+| Public Viewer | Global   | Tanpa login         |
 
 ---
 
-## 🌍 3.6 Public Page
+## 3.2 Manajemen Turnamen
 
-* [ ] URL shareable
-* [ ] Tanpa login
-* [ ] Real-time update
-* [ ] Arsip
+### 3.2.1 Pembuatan Turnamen
 
----
+Field:
 
-## 🔔 3.7 Notifikasi
-
-* [ ] Pendaftaran
-* [ ] Approval
-* [ ] Jadwal
-* [ ] Hasil
-* [ ] Stage baru
-* [ ] Selesai
+* Nama
+* Sport
+* Tipe peserta
+* Deskripsi
+* Banner
+* Entry fee
+* Prize pool
 
 ---
 
-# ⚡ 4. Non-Fungsional
+### 3.2.2 Konfigurasi Registrasi
 
-## 🚀 Performa
-
-* [ ] Load < 2 detik
-* [ ] Update < 5 detik
-* [ ] 1000 concurrent user
-
----
-
-## 🔐 Keamanan
-
-* [ ] JWT / Session
-* [ ] Role-based access
-* [ ] Enkripsi data
+* Open / Invite-only
+* Limit peserta
+* Deadline
+* Pembayaran manual
 
 ---
 
-## 📈 Skalabilitas
+### 3.2.3 Sistem Rekomendasi Format
 
-* [ ] Payment-ready
-* [ ] Modular notif
-* [ ] Extendable
-
----
-
-## 📱 Kompatibilitas
-
-* [ ] Mobile friendly
-* [ ] Browser modern
-* [ ] SEO-friendly
+| Kondisi   | Rekomendasi  |
+| --------- | ------------ |
+| < 8       | Round Robin  |
+| 8–32      | Semua format |
+| > 32 RR   | Warning      |
+| Swiss < 6 | Warning      |
 
 ---
 
-# 📜 5. Aturan Bisnis
+## 3.3 Manajemen Stage
 
-## 🏆 Turnamen
+### 3.3.1 Struktur
 
-* [ ] Minimal 1 stage
-* [ ] Stage berurutan
-* [ ] Tidak bisa ubah format
-
----
-
-## 👤 Peserta
-
-* [ ] 1 akun = 1 entry
-* [ ] Captain wajib daftar
-* [ ] Referee tidak boleh ikut
+* Nama stage
+* Format
+* BO
+* Jumlah lolos
+* Grup (opsional)
 
 ---
 
-## 🎮 Match
+### 3.3.2 Format
 
-* [ ] Input oleh official
-* [ ] Lock setelah submit
-* [ ] BO menentukan pemenang
-
----
-
-## 💰 Pembayaran
-
-* [ ] Wajib bayar sebelum approve
-* [ ] Manual
-* [ ] Prize pool informatif
+| Format             | Deskripsi                |
+| ------------------ | ------------------------ |
+| Single Elimination | Gugur sekali             |
+| Double Elimination | Gugur 2x                 |
+| Round Robin        | Semua vs semua           |
+| Swiss              | Pairing berdasarkan poin |
 
 ---
 
-# 🚧 6. Asumsi & Batasan
+## 3.4 Manajemen Match
 
-## ✔️ Asumsi
+* Status: Upcoming / Ongoing / Completed
+* Jadwal opsional
+* Input per game
+* Auto update bracket
+
+---
+
+## 3.5 Manajemen Tim
+
+* Captain buat tim
+* Invite member
+* Transfer ownership
+* Tidak bisa delete (archive)
+
+---
+
+## 3.6 Halaman Publik
+
+* URL publik
+* Tanpa login
+* Real-time bracket
+
+---
+
+## 3.7 Notifikasi
+
+| Trigger     | Penerima  | Channel       |
+| ----------- | --------- | ------------- |
+| Pendaftaran | Organizer | Email, In-app |
+| Disetujui   | Peserta   | Email         |
+| Jadwal      | Peserta   | Email, WA     |
+| Hasil       | Peserta   | In-app        |
+
+---
+
+# 4. Kebutuhan Non-Fungsional
+
+## 4.1 Performa
+
+* Load < 2 detik
+* Update < 5 detik
+* 1000 concurrent
+
+---
+
+## 4.2 Keamanan
+
+* JWT/Auth
+* Role-based access
+* Enkripsi
+
+---
+
+## 4.3 Skalabilitas
+
+* Payment-ready
+* Modular notification
+
+---
+
+## 4.4 Kompatibilitas
+
+* Browser modern
+* Mobile responsive
+* SEO-friendly
+
+---
+
+# 5. Aturan Bisnis
+
+## 5.1 Turnamen
+
+* Minimal 1 stage
+* Stage berurutan
+* Tidak bisa ubah format setelah start
+
+---
+
+## 5.2 Peserta & Tim
+
+* 1 akun = 1 entitas
+* Captain wajib
+* Tidak bisa delete saat aktif
+
+---
+
+## 5.3 Match
+
+* Input oleh role tertentu
+* Tidak bisa diubah (kecuali Owner)
+
+---
+
+## 5.4 Pembayaran
+
+* Manual
+* Prize pool informatif
+
+---
+
+# 6. Asumsi & Batasan
+
+## 6.1 Asumsi
 
 * Internet stabil
 * Organizer bertanggung jawab
@@ -329,49 +313,67 @@ Peserta dengan rasio kemenangan yang sama akan dipertemukan di babak selanjutnya
 
 ---
 
-## ⚠️ Limit V1
+## 6.2 Batasan V1
 
-* [ ] No payment gateway
-* [ ] Notif terbatas
-* [ ] No streaming
-* [ ] No white-label
-
----
-
-# 🗺️ 7. Roadmap
-
-## 🟢 V1 – MVP
-
-* Core tournament
-* Public bracket
-* Notifikasi basic
-
-## 🟡 V2 – Growth
-
-* Payment gateway
-* WA / Telegram
-* Statistik
-
-## 🔵 V3 – SaaS
-
-* Subscription
-* API
-* Analytics
-* White-label
+* No payment gateway
+* No WA notif (awal)
+* No streaming
 
 ---
 
-# ✅ Tips Pakai di Notion
+# 7. Model Monetisasi
 
-Biar makin keren:
+## 7.1 Tier
 
-* Pakai **Toggle** untuk section panjang
-* Convert checklist jadi **Database (task tracking)**
-* Tambahin:
+| Fitur    | Free  | Pro       |
+| -------- | ----- | --------- |
+| Turnamen | 5     | Unlimited |
+| Approval | Delay | Instan    |
+| Branding | Ya    | Custom    |
+| Support  | No    | Yes       |
 
-  * 🧠 Product backlog
-  * 🎨 UI/UX link (Figma)
-  * 📊 Metrics
+---
+
+## 7.2 Subscription
+
+* Bulanan / tahunan
+* Auto downgrade
+
+---
+
+## 7.3 Approval System
+
+**Auto-approve jika:**
+
+* Email verified
+* Akun > 7 hari
+* Tidak melanggar aturan
+
+---
+
+## Status
+
+| Status         | Deskripsi      |
+| -------------- | -------------- |
+| auto_approved  | Langsung draft |
+| pending_review | Review manual  |
+| approved       | Disetujui      |
+| rejected       | Ditolak        |
+
+---
+
+# 8. Roadmap Produk
+
+| Fase | Fitur              |
+| ---- | ------------------ |
+| V1   | MVP                |
+| V2   | Payment + Pro      |
+| V3   | Scale + Enterprise |
+
+---
+
+**— End of Document —**
+*Confidential - Internal Use Only*
 
 ---
 
