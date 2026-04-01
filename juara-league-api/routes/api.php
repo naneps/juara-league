@@ -58,5 +58,15 @@ Route::prefix('v1')->group(function () {
             Route::put('/sports/{id}', [\App\Http\Controllers\Api\V1\Admin\SportController::class, 'update']);
             Route::delete('/sports/{id}', [\App\Http\Controllers\Api\V1\Admin\SportController::class, 'destroy']);
         });
+
+        // Team Management
+        Route::get('/my-teams', [\App\Http\Controllers\Api\V1\TeamController::class, 'mine']);
+        Route::apiResource('teams', \App\Http\Controllers\Api\V1\TeamController::class);
+        
+        Route::post('/teams/{team}/invite', [\App\Http\Controllers\Api\V1\TeamMemberController::class, 'invite']);
+        Route::post('/teams/invitations/{token}/accept', [\App\Http\Controllers\Api\V1\TeamMemberController::class, 'accept']);
+        Route::post('/teams/invitations/{token}/decline', [\App\Http\Controllers\Api\V1\TeamMemberController::class, 'decline']);
+        Route::delete('/teams/{team}/members/{user}', [\App\Http\Controllers\Api\V1\TeamMemberController::class, 'remove']);
+        Route::post('/teams/{team}/transfer', [\App\Http\Controllers\Api\V1\TeamMemberController::class, 'transfer']);
     });
 });

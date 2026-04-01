@@ -16,7 +16,7 @@ class SocialAuthTest extends TestCase
      */
     public function test_it_can_authenticate_with_google_successfully(): void
     {
-        $abstractUser = $this->createMock(\Laravel\Socialite\Two\User::class);
+        $abstractUser = $this->createMock(\Laravel\Socialite\Contracts\User::class);
         $abstractUser->method('getId')->willReturn('google-id-123');
         $abstractUser->method('getEmail')->willReturn('google@example.com');
         $abstractUser->method('getName')->willReturn('Google User');
@@ -47,7 +47,7 @@ class SocialAuthTest extends TestCase
     {
         User::factory()->create(['email' => 'google@example.com']);
 
-        $abstractUser = $this->createMock(\Laravel\Socialite\Two\User::class);
+        $abstractUser = $this->createMock(\Laravel\Socialite\Contracts\User::class);
         $abstractUser->method('getId')->willReturn('google-id-123');
         $abstractUser->method('getEmail')->willReturn('google@example.com');
         $abstractUser->method('getName')->willReturn('Google User');

@@ -66,6 +66,7 @@ const handleLogout = async () => {
         <!-- Navigation -->
         <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-neutral-300">
           <NuxtLink to="/" class="hover:text-primary-400 transition-colors">Beranda</NuxtLink>
+          <NuxtLink v-if="loggedIn" to="/dashboard" class="text-primary-400 font-bold hover:text-primary-500 transition-colors">Dashboard</NuxtLink>
           <NuxtLink to="/tournaments" class="hover:text-primary-400 transition-colors">Semua Turnamen</NuxtLink>
           <NuxtLink to="/demo-bracket" class="hover:text-primary-400 transition-colors">Demo Bracket</NuxtLink>
         </nav>
@@ -81,9 +82,10 @@ const handleLogout = async () => {
                 </div>
                 <UDropdown :items="[[
                   { label: user?.name, slot: 'header', disabled: true },
-                  { label: 'Turnamen Saya', icon: 'i-lucide-layout-dashboard', to: '/tournaments/mine' },
+                  { label: 'Dashboard', icon: 'i-lucide-layout-dashboard', to: '/dashboard' },
+                  { label: 'Turnamen Saya', icon: 'i-lucide-trophy', to: '/tournaments/mine' },
                   { label: 'Buat Turnamen', icon: 'i-lucide-plus-circle', to: '/tournaments/create' },
-                  { label: 'Setting Profil', icon: 'i-lucide-user' },
+                  { label: 'Setting Profil', icon: 'i-lucide-user', to: '/dashboard/settings' },
                   { label: 'Keluar', icon: 'i-lucide-log-out', click: () => isLogoutModalOpen = true }
                 ]]">
                   <UAvatar 

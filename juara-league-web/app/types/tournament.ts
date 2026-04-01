@@ -54,3 +54,15 @@ export interface StoreTournamentPayload {
   venue?: string;
   banner_url?: string;
 }
+
+export interface Team {
+  id: number;
+  name: string;
+  slug: string;
+  logo_url?: string;
+  description?: string;
+  captain_id: number;
+  status: 'active' | 'pending' | 'disqualified';
+  created_at: string;
+  updated_at: string;
+}
