@@ -144,4 +144,6 @@ For an in-depth understanding of the business logic, edge cases, and future road
 Key documents:
 - `BRD.md`: Full Business Requirements Document detailing scopes and user segments.
 - `USECASEs.md`: Core system behaviors and actor lifecycles.
+- `docs/REQUIREMENTS.md`: Detailed server hardware and software specifications.
+- `docs/DEPLOYMENT.md`: Step-by-step production setup and orchestration guide.
 - HTML & DOCX files specifying the ERD and Flowcharts.
