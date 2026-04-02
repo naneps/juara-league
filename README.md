@@ -142,8 +142,8 @@ The application interface will now be accessible at [http://localhost:3000](http
 For an in-depth understanding of the business logic, edge cases, and future roadmaps, please explore the `/docs` directory.
 
 Key documents:
-- `BRD.md`: Full Business Requirements Document detailing scopes and user segments.
-- `USECASEs.md`: Core system behaviors and actor lifecycles.
-- `docs/REQUIREMENTS.md`: Detailed server hardware and software specifications.
-- `docs/DEPLOYMENT.md`: Step-by-step production setup and orchestration guide.
-- HTML & DOCX files specifying the ERD and Flowcharts.
+- [docs/business/BRD.md](file:///d:/PROJECT/juara-league/docs/business/BRD.md): Full Business Requirements Document detailing scopes and user segments.
+- [docs/business/USECASEs.md](file:///d:/PROJECT/juara-league/docs/business/USECASEs.md): Core system behaviors and actor lifecycles.
+- [docs/technical/REQUIREMENTS.md](file:///d:/PROJECT/juara-league/docs/technical/REQUIREMENTS.md): Detailed server hardware and software specifications.
+- [docs/technical/DEPLOYMENT.md](file:///d:/PROJECT/juara-league/docs/technical/DEPLOYMENT.md): Step-by-step production setup and orchestration guide.
+- Explore `docs/srs/` and `docs/design/` for SRS modules and architecture diagrams.
