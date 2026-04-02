@@ -3,198 +3,137 @@ definePageMeta({
   layout: 'dashboard',
   middleware: 'auth'
 })
-import type { TableColumn } from '@nuxt/ui'
-import { upperFirst } from 'scule'
-import { getPaginationRowModel } from '@tanstack/table-core'
-import type { Row } from '@tanstack/table-core'
-import type { Team } from '~/types/tournament'
 
-const UAvatar = resolveComponent('UAvatar')
-const UButton = resolveComponent('UButton')
-const UBadge = resolveComponent('UBadge')
-const UDropdownMenu = resolveComponent('UDropdownMenu')
-const UCheckbox = resolveComponent('UCheckbox')
+import type { Team } from '~/types/team.types'
 
+// ─── Store & Utils ────────────────────────────────────────────────────────────
+const teamStore = useTeamStore()
 const toast = useToast()
-const table = useTemplateRef('table')
+const detailSlideover = useTemplateRef('detailSlideover')
 
-const columnFilters = ref([{
-  id: 'name',
-  value: ''
-}])
-const columnVisibility = ref()
-const rowSelection = ref({ 1: true })
+// ─── State ────────────────────────────────────────────────────────────────────
+const searchQuery = ref('')
+const statusFilter = ref('all')
+const currentPage = ref(1)
+const perPage = 12
 
-const config = useRuntimeConfig()
-const { data: response, status, refresh } = await useFetch<any>('/api/v1/teams', {
-  baseURL: config.public.apiUrl,
-  lazy: true
+// Edit modal state
+const editingTeam = ref<Team | null>(null)
+const editModalOpen = ref(false)
+
+// Delete confirm modal state
+const deletingTeam = ref<Team | null>(null)
+const deleteModalOpen = ref(false)
+
+// Selection (Set of team IDs)
+const selectedIds = ref<Set<number>>(new Set())
+
+// ─── Derived Data ─────────────────────────────────────────────────────────────
+const data = computed(() => {
+  let list = teamStore.myTeams
+
+  if (searchQuery.value.trim()) {
+    const q = searchQuery.value.trim().toLowerCase()
+    list = list.filter(t =>
+      t.name.toLowerCase().includes(q) || t.slug.toLowerCase().includes(q)
+    )
+  }
+
+  if (statusFilter.value !== 'all') {
+    list = list.filter(t => t.status === statusFilter.value)
+  }
+
+  return list
 })
 
-const data = computed(() => response.value?.data || [])
-const total = computed(() => response.value?.total || 0)
+const total = computed(() => data.value.length)
+const isAllSelected = computed(() =>
+  data.value.length > 0 && data.value.every(t => selectedIds.value.has(t.id))
+)
+const selectedCount = computed(() => selectedIds.value.size)
 
-function getRowItems(row: Row<Team>) {
-  return [
-    {
-      type: 'label',
-      label: 'Aksi'
-    },
-    {
-      label: 'Salin ID Tim',
-      icon: 'i-lucide-copy',
-      onSelect() {
-        navigator.clipboard.writeText(row.original.id.toString())
-        toast.add({
-          title: 'Berhasil disalin',
-          description: 'ID Tim berhasil disalin ke clipboard'
-        })
-      }
-    },
-    {
-      type: 'separator'
-    },
-    {
-      label: 'Lihat Detail Tim',
-      icon: 'i-lucide-list'
-    },
-    {
-      label: 'Lihat Anggota',
-      icon: 'i-lucide-users'
-    },
-    {
-      type: 'separator'
-    },
-    {
-      label: 'Hapus Tim',
-      icon: 'i-lucide-trash',
-      color: 'error',
-      onSelect() {
-        toast.add({
-          title: 'Tim dihapus',
-          description: 'Tim telah berhasil dihapus.'
-        })
-      }
-    }
-  ]
+const invitations = computed(() => teamStore.myInvitations)
+
+// ─── Fetch ────────────────────────────────────────────────────────────────────
+async function loadPage(page = 1) {
+  currentPage.value = page
+  selectedIds.value = new Set()
+  await Promise.all([
+    teamStore.fetchMyTeams(),
+    teamStore.fetchMyInvitations()
+  ])
 }
 
-const columns: TableColumn<Team>[] = [
-  {
-    id: 'select',
-    header: ({ table }) =>
-      h(UCheckbox, {
-        'modelValue': table.getIsSomePageRowsSelected()
-          ? 'indeterminate'
-          : table.getIsAllPageRowsSelected(),
-        'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
-          table.toggleAllPageRowsSelected(!!value),
-        'ariaLabel': 'Select all'
-      }),
-    cell: ({ row }) =>
-      h(UCheckbox, {
-        'modelValue': row.getIsSelected(),
-        'onUpdate:modelValue': (value: boolean | 'indeterminate') => row.toggleSelected(!!value),
-        'ariaLabel': 'Select row'
-      })
-  },
-  {
-    accessorKey: 'id',
-    header: 'ID'
-  },
-  {
-    accessorKey: 'name',
-    header: 'Nama Tim',
-    cell: ({ row }) => {
-      return h('div', { class: 'flex items-center gap-3' }, [
-        h(UAvatar, {
-          src: row.original.logo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(row.original.name)}&background=random`,
-          size: 'lg'
-        }),
-        h('div', undefined, [
-          h('p', { class: 'font-medium text-highlighted' }, row.original.name),
-          h('p', { class: '' }, `@${row.original.slug}`)
-        ])
-      ])
-    }
-  },
-  {
-    accessorKey: 'captain_id',
-    header: 'Kapten ID',
-    cell: ({ row }) => row.original.captain_id
-  },
-  {
-    accessorKey: 'status',
-    header: 'Status',
-    filterFn: 'equals',
-    cell: ({ row }) => {
-      const colors: Record<string, 'success' | 'warning' | 'error'> = {
-        active: 'success',
-        pending: 'warning',
-        disqualified: 'error'
-      }
-      const color = colors[row.original.status] || 'success'
+await loadPage(1)
 
-      return h(UBadge, { class: 'capitalize', variant: 'subtle', color }, () =>
-        row.original.status || 'active'
-      )
-    }
-  },
-  {
-    id: 'actions',
-    cell: ({ row }) => {
-      return h(
-        'div',
-        { class: 'text-right' },
-        h(
-          UDropdownMenu,
-          {
-            content: {
-              align: 'end'
-            },
-            items: getRowItems(row)
-          },
-          () =>
-            h(UButton, {
-              icon: 'i-lucide-ellipsis-vertical',
-              color: 'neutral',
-              variant: 'ghost',
-              class: 'ml-auto'
-            })
-        )
-      )
-    }
-  }
-]
+// ─── Selection helpers ────────────────────────────────────────────────────────
+function toggleSelect(id: number, value: boolean) {
+  const next = new Set(selectedIds.value)
+  value ? next.add(id) : next.delete(id)
+  selectedIds.value = next
+}
 
-const statusFilter = ref('all')
-
-watch(() => statusFilter.value, (newVal) => {
-  if (!table?.value?.tableApi) return
-
-  const statusColumn = table.value.tableApi.getColumn('status')
-  if (!statusColumn) return
-
-  if (newVal === 'all') {
-    statusColumn.setFilterValue(undefined)
+function toggleSelectAll() {
+  if (isAllSelected.value) {
+    selectedIds.value = new Set()
   } else {
-    statusColumn.setFilterValue(newVal)
+    selectedIds.value = new Set(data.value.map(t => t.id))
   }
-})
+}
 
-const query = computed({
-  get: (): string => {
-    return (table.value?.tableApi?.getColumn('name')?.getFilterValue() as string) || ''
-  },
-  set: (value: string) => {
-    table.value?.tableApi?.getColumn('name')?.setFilterValue(value || undefined)
+// ─── Actions ──────────────────────────────────────────────────────────────────
+function openEdit(team: Team) {
+  editingTeam.value = team
+  editModalOpen.value = true
+}
+
+function openDelete(team: Team) {
+  deletingTeam.value = team
+  deleteModalOpen.value = true
+}
+
+async function handleBulkDelete() {
+  const ids = [...selectedIds.value]
+  try {
+    await Promise.all(ids.map(id => teamStore.deleteTeam(id)))
+    toast.add({
+      title: `${ids.length} tim dihapus`,
+      color: 'success'
+    })
+    selectedIds.value = new Set()
+  } catch (e: any) {
+    toast.add({
+      title: 'Gagal menghapus',
+      description: e.data?.message || 'Pastikan Anda adalah kapten tim',
+      color: 'error'
+    })
   }
-})
+}
 
-const pagination = ref({
-  pageIndex: 0,
-  pageSize: 10
-})
+async function handleDeleteOne() {
+  if (!deletingTeam.value) return
+  try {
+    await teamStore.deleteTeam(deletingTeam.value.id)
+    toast.add({ title: `Tim "${deletingTeam.value.name}" dihapus`, color: 'success' })
+    deleteModalOpen.value = false
+    deletingTeam.value = null
+  } catch (e: any) {
+    toast.add({
+      title: 'Gagal menghapus',
+      description: e.data?.message || 'Pastikan Anda adalah kapten tim',
+      color: 'error'
+    })
+  }
+}
+
+function onEditSuccess() {
+  editModalOpen.value = false
+  editingTeam.value = null
+}
+
+async function onAddSuccess() {
+  await loadPage(1)
+}
 </script>
 
 <template>
@@ -204,42 +143,49 @@ const pagination = ref({
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
-
         <template #right>
-          <TeamsAddModal @success="refresh" />
+          <TeamsAddModal @success="onAddSuccess" />
         </template>
       </UDashboardNavbar>
     </template>
 
     <template #body>
-      <div class="flex flex-wrap items-center justify-between gap-1.5">
+
+      <!-- ── Filter & Actions Bar ── -->
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-1">
+        <!-- Search -->
         <UInput
-          v-model="query"
-          class="max-w-sm"
+          v-model="searchQuery"
+          class="max-w-xs"
           icon="i-lucide-search"
-          placeholder="Cari nama tim..."
+          placeholder="Cari nama atau slug tim..."
         />
 
-        <div class="flex flex-wrap items-center gap-1.5">
-          <TeamsDeleteModal
-            :rows="table?.tableApi?.getFilteredSelectedRowModel().rows"
-            @success="refresh"
-          >
-            <UButton
-              v-if="table?.tableApi?.getFilteredSelectedRowModel().rows.length"
-              label="Hapus"
-              color="error"
-              variant="subtle"
-              icon="i-lucide-trash"
-            >
-              <template #trailing>
-                <UKbd>
-                  {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length }}
-                </UKbd>
-              </template>
-            </UButton>
-          </TeamsDeleteModal>
+        <div class="flex flex-wrap items-center gap-2">
+          <!-- Select all toggle (hanya tampil kalau ada data) -->
+          <UButton
+            v-if="data.length"
+            :label="isAllSelected ? 'Batalkan Semua' : 'Pilih Semua'"
+            :icon="isAllSelected ? 'i-lucide-square-minus' : 'i-lucide-check-square'"
+            color="neutral"
+            variant="ghost"
+            size="sm"
+            @click="toggleSelectAll"
+          />
 
+          <!-- Bulk delete (tampil saat ada yang dipilih) -->
+          <UButton
+            v-if="selectedCount"
+            :label="`Hapus (${selectedCount})`"
+            icon="i-lucide-trash"
+            color="error"
+            variant="subtle"
+            size="sm"
+            :loading="teamStore.isLoading"
+            @click="handleBulkDelete"
+          />
+
+          <!-- Filter status -->
           <USelect
             v-model="statusFilter"
             :items="[
@@ -248,77 +194,141 @@ const pagination = ref({
               { label: 'Tertunda', value: 'pending' },
               { label: 'Diskualifikasi', value: 'disqualified' }
             ]"
-            :ui="{ trailingIcon: 'group-data-[state=open]:rotate-180 transition-transform duration-200' }"
-            placeholder="Pilih status"
-            class="min-w-28"
+            placeholder="Filter status"
+            class="min-w-36"
+            size="sm"
           />
-          <UDropdownMenu
-            :items="
-              table?.tableApi
-                ?.getAllColumns()
-                .filter((column: any) => column.getCanHide())
-                .map((column: any) => ({
-                  label: upperFirst(column.id),
-                  type: 'checkbox' as const,
-                  checked: column.getIsVisible(),
-                  onUpdateChecked(checked: boolean) {
-                    table?.tableApi?.getColumn(column.id)?.toggleVisibility(!!checked)
-                  },
-                  onSelect(e?: Event) {
-                    e?.preventDefault()
-                  }
-                }))
-            "
-            :content="{ align: 'end' }"
-          >
-            <UButton
-              label="Tampilan"
-              color="neutral"
-              variant="outline"
-              trailing-icon="i-lucide-settings-2"
-            />
-          </UDropdownMenu>
         </div>
       </div>
 
-      <UTable
-        ref="table"
-        v-model:column-filters="columnFilters"
-        v-model:column-visibility="columnVisibility"
-        v-model:row-selection="rowSelection"
-        v-model:pagination="pagination"
-        :pagination-options="{
-          getPaginationRowModel: getPaginationRowModel()
-        }"
-        class="shrink-0"
-        :data="data"
-        :columns="columns"
-        :loading="status === 'pending'"
-        :ui="{
-          base: 'table-fixed border-separate border-spacing-0',
-          thead: '[&>tr]:bg-elevated/50 [&>tr]:after:content-none',
-          tbody: '[&>tr]:last:[&>td]:border-b-0',
-          th: 'py-2 first:rounded-l-lg last:rounded-r-lg border-y border-default first:border-l last:border-r',
-          td: 'border-b border-default',
-          separator: 'h-0'
-        }"
-      />
+      <!-- ── Invitations Section ── -->
+      <TeamsInvitationsList />
 
-      <div class="flex items-center justify-between gap-3 border-t border-default pt-4 mt-auto">
-        <div class="text-sm text-muted">
-          {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} dari
-          {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} tim dipilih.
-        </div>
+      <!-- ── Stats summary ── -->
+      <div class="flex items-center gap-2 text-sm text-muted mb-4">
+        <span>
+          Menampilkan <strong class="text-default">{{ data.length }}</strong> tim
+        </span>
+        <span v-if="selectedCount" class="text-primary font-medium">
+          · {{ selectedCount }} dipilih
+        </span>
+      </div>
 
-        <div class="flex items-center gap-1.5">
-          <UPagination
-            :default-page="(table?.tableApi?.getState().pagination.pageIndex || 0) + 1"
-            :items-per-page="table?.tableApi?.getState().pagination.pageSize"
-            :total="total"
-            @update:page="(p: number) => table?.tableApi?.setPageIndex(p - 1)"
-          />
+      <!-- ── Loading skeleton ── -->
+      <div
+        v-if="teamStore.isLoading"
+        class="grid gap-4"
+        style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr))"
+      >
+        <div
+          v-for="n in perPage"
+          :key="n"
+          class="rounded-2xl border border-default bg-elevated overflow-hidden"
+        >
+          <div class="h-28 bg-muted/40 animate-pulse" />
+          <div class="p-4 space-y-3">
+            <USkeleton class="h-4 w-3/4 mx-auto" />
+            <USkeleton class="h-3 w-1/2 mx-auto" />
+            <USkeleton class="h-6 w-20 mx-auto rounded-full" />
+            <div class="grid grid-cols-2 gap-2 mt-2">
+              <USkeleton class="h-12 rounded-xl" />
+              <USkeleton class="h-12 rounded-xl" />
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <USkeleton class="h-7 rounded-lg" />
+              <USkeleton class="h-7 rounded-lg" />
+            </div>
+          </div>
         </div>
+      </div>
+
+      <!-- ── Empty state ── -->
+      <div
+        v-else-if="!data.length"
+        class="flex flex-col items-center justify-center py-20 gap-4 text-center"
+      >
+        <div class="size-16 rounded-2xl bg-muted/50 flex items-center justify-center">
+          <UIcon name="i-lucide-users" class="size-8 text-muted" />
+        </div>
+        <div>
+          <p class="font-semibold text-highlighted">Belum ada tim</p>
+          <p class="text-sm text-muted mt-1">
+            {{ searchQuery || statusFilter !== 'all' ? 'Tidak ada tim yang cocok dengan filter.' : 'Mulai dengan membuat tim pertama Anda.' }}
+          </p>
+        </div>
+        <TeamsAddModal v-if="!searchQuery && statusFilter === 'all'" @success="onAddSuccess">
+          <UButton label="Buat Tim Baru" icon="i-lucide-plus" />
+        </TeamsAddModal>
+      </div>
+
+      <!-- ── Cards Grid ── -->
+      <div
+        v-else
+        class="grid gap-4"
+        style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr))"
+      >
+        <TeamsCard
+          v-for="team in data"
+          :key="team.id"
+          :team="team"
+          :selected="selectedIds.has(team.id)"
+          @update:selected="toggleSelect(team.id, $event)"
+          @detail="detailSlideover?.openFor($event)"
+          @edit="openEdit($event)"
+          @delete="openDelete($event)"
+        />
+      </div>
+
+      <!-- ── Pagination ── -->
+      <div
+        v-if="total > perPage"
+        class="flex items-center justify-center pt-2 mt-auto border-t border-default"
+      >
+        <UPagination
+          :page="currentPage"
+          :items-per-page="perPage"
+          :total="total"
+          @update:page="loadPage"
+        />
       </div>
     </template>
   </UDashboardPanel>
+
+  <!-- ── Edit Modal (dikontrol dari luar lewat v-model) ── -->
+  <TeamsEditModal
+    v-model:open="editModalOpen"
+    :team="editingTeam"
+    @success="onEditSuccess"
+  />
+
+  <!-- ── Single Delete Confirm Modal ── -->
+  <UModal
+    v-model:open="deleteModalOpen"
+    :title="`Hapus Tim`"
+    :description="deletingTeam ? `Apakah Anda yakin ingin menghapus tim &quot;${deletingTeam.name}&quot;?` : ''"
+  >
+    <template #body>
+      <p class="text-sm text-muted mb-4">
+        Tindakan ini tidak dapat dibatalkan. Hanya kapten yang dapat menghapus tim.
+      </p>
+      <div class="flex justify-end gap-2">
+        <UButton
+          label="Batal"
+          color="neutral"
+          variant="subtle"
+          @click="deleteModalOpen = false"
+        />
+        <UButton
+          label="Hapus"
+          color="error"
+          variant="solid"
+          :loading="teamStore.isLoading"
+          @click="handleDeleteOne"
+        />
+      </div>
+    </template>
+  </UModal>
+
+  <!-- ── Detail Slideover ── -->
+  <TeamsDetailSlideover ref="detailSlideover" @updated="loadPage(currentPage)" />
 </template>

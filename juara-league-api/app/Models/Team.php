@@ -20,6 +20,7 @@ class Team extends Model
         'logo_url',
         'description',
         'captain_id',
+        'status',
     ];
 
     protected static function boot()

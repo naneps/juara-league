@@ -1,27 +1,23 @@
 <script setup lang="ts">
 import type { Row } from '@tanstack/table-core'
-import type { Team } from '~/types/tournament'
+import type { Team } from '~/types/team.types'
 
 const props = defineProps<{
   rows?: Row<Team>[]
 }>()
 
 const emit = defineEmits(['success'])
-const count = computed(() => props.rows?.length || 0)
-const open = ref(false)
+const teamStore = useTeamStore()
 const toast = useToast()
-const loading = ref(false)
+const open = ref(false)
 
-async function onSubmit() {
-  if (!props.rows) return
+const count = computed(() => props.rows?.length || 0)
 
-  loading.value = true
+async function onConfirm() {
+  if (!props.rows?.length) return
+
   try {
-    const promises = props.rows.map(row =>
-      useApi(`/api/v1/teams/${row.original.id}`, { method: 'DELETE' })
-    )
-
-    await Promise.all(promises)
+    await Promise.all(props.rows.map(row => teamStore.deleteTeam(row.original.id)))
 
     toast.add({
       title: 'Berhasil',
@@ -33,12 +29,10 @@ async function onSubmit() {
     open.value = false
   } catch (error: any) {
     toast.add({
-      title: 'Gagal',
-      description: error.data?.message || 'Gagal menghapus beberapa tim. Pastikan Anda adalah kapten tim.',
+      title: 'Gagal menghapus',
+      description: error.data?.message || 'Pastikan Anda adalah kapten dari tim tersebut',
       color: 'error'
     })
-  } finally {
-    loading.value = false
   }
 }
 </script>
@@ -46,25 +40,24 @@ async function onSubmit() {
 <template>
   <UModal
     v-model:open="open"
-    :title="`Hapus ${count} tim`"
-    :description="`Apakah Anda yakin? Tindakan ini tidak dapat dibatalkan.`"
+    :title="`Hapus ${count} Tim`"
+    description="Tindakan ini tidak dapat dibatalkan."
   >
     <slot />
 
     <template #body>
+      <p class="text-sm text-muted mb-4">
+        Anda akan menghapus <strong>{{ count }} tim</strong>. Hanya tim yang Anda pimpin
+        sebagai kapten yang dapat dihapus.
+      </p>
       <div class="flex justify-end gap-2">
-        <UButton
-          label="Batal"
-          color="neutral"
-          variant="subtle"
-          @click="open = false"
-        />
+        <UButton label="Batal" color="neutral" variant="subtle" @click="open = false" />
         <UButton
           label="Hapus"
           color="error"
           variant="solid"
-          loading-auto
-          @click="onSubmit"
+          :loading="teamStore.isLoading"
+          @click="onConfirm"
         />
       </div>
     </template>

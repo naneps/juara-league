@@ -1,11 +1,29 @@
 <script setup lang="ts">
 import * as z from 'zod'
 import type { FormSubmitEvent } from '@nuxt/ui'
+import type { Team } from '~/types/team.types'
 
-const emit = defineEmits(['success'])
+const props = defineProps<{
+  team: Team | null
+  open?: boolean
+}>()
+const emit = defineEmits<{
+  success: []
+  'update:open': [value: boolean]
+}>()
+
 const teamStore = useTeamStore()
 const toast = useToast()
-const open = ref(false)
+
+// Bisa dipakai via v-model:open (dari parent) atau internal (via slot trigger)
+const internalOpen = ref(false)
+const open = computed({
+  get: () => props.open ?? internalOpen.value,
+  set: (v) => {
+    internalOpen.value = v
+    emit('update:open', v)
+  }
+})
 
 const schema = z.object({
   name: z.string().min(3, 'Nama minimal 3 karakter').max(100),
@@ -16,14 +34,23 @@ const schema = z.object({
 type Schema = z.output<typeof schema>
 
 const state = reactive<Partial<Schema>>({
-  name: '',
-  description: '',
-  logo_url: ''
+  name: props.team?.name ?? '',
+  description: props.team?.description ?? '',
+  logo_url: props.team?.logo_url ?? ''
+})
+
+// Sync state kalau prop team berubah (ganti tim yang diedit)
+watch(() => props.team, (team) => {
+  if (!team) return
+  state.name = team.name
+  state.description = team.description ?? ''
+  state.logo_url = team.logo_url ?? ''
 })
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
+  if (!props.team) return
   try {
-    await teamStore.createTeam({
+    await teamStore.updateTeam(props.team.id, {
       name: event.data.name,
       description: event.data.description,
       logo_url: event.data.logo_url || undefined
@@ -31,16 +58,15 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
     toast.add({
       title: 'Berhasil',
-      description: `Tim "${event.data.name}" berhasil dibuat`,
+      description: 'Informasi tim berhasil diperbarui',
       color: 'success'
     })
 
     emit('success')
     open.value = false
-    Object.assign(state, { name: '', description: '', logo_url: '' })
   } catch (error: any) {
     toast.add({
-      title: 'Gagal membuat tim',
+      title: 'Gagal memperbarui',
       description: error.data?.message || 'Terjadi kesalahan',
       color: 'error'
     })
@@ -51,23 +77,19 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 <template>
   <UModal
     v-model:open="open"
-    title="Tim Baru"
-    description="Tambah tim baru ke dalam kompetisi"
+    title="Edit Tim"
+    description="Perbarui informasi tim Anda"
   >
-    <UButton label="Tim Baru" icon="i-lucide-plus" />
+    <slot />
 
     <template #body>
       <UForm :schema="schema" :state="state" class="space-y-4" @submit="onSubmit">
         <UFormField label="Nama Tim" name="name">
-          <UInput v-model="state.name" class="w-full" placeholder="Misal: Garuda Esports" />
+          <UInput v-model="state.name" class="w-full" />
         </UFormField>
 
         <UFormField label="Deskripsi (Opsional)" name="description">
-          <UTextarea
-            v-model="state.description"
-            class="w-full"
-            placeholder="Jelaskan sedikit tentang tim Anda"
-          />
+          <UTextarea v-model="state.description" class="w-full" />
         </UFormField>
 
         <UFormField label="URL Logo (Opsional)" name="logo_url">
@@ -77,9 +99,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         <div class="flex justify-end gap-2">
           <UButton label="Batal" color="neutral" variant="subtle" @click="open = false" />
           <UButton
-            label="Buat Tim"
+            label="Simpan"
             color="primary"
-            variant="solid"
             type="submit"
             :loading="teamStore.isLoading"
           />

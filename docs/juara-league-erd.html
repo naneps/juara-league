@@ -28,7 +28,7 @@ canvas-wrap{display:block;overflow:auto;background:#f8f9fa}
 <header>
   <div>
     <h1>JUARA LEAGUE — Entity Relationship Diagram</h1>
-    <span>v1.0 · Nandang Eka Prasetya · 12 Entities</span>
+    <span>v1.1 · Nandang Eka Prasetya · 14 Entities</span>
   </div>
   <div style="display:flex;gap:8px">
     <button onclick="zoom(1.2)" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:13px">+</button>
@@ -43,6 +43,7 @@ canvas-wrap{display:block;overflow:auto;background:#f8f9fa}
   <button onclick="highlight('team')" id="btn-team">Tim</button>
   <button onclick="highlight('tournament')" id="btn-tournament">Turnamen</button>
   <button onclick="highlight('match')" id="btn-match">Match & Game</button>
+  <button onclick="highlight('billing')" id="btn-billing">Billing & Approval</button>
   <div class="sep"></div>
   <span style="font-size:11px;color:#9ca3af">Drag untuk geser · Scroll untuk zoom</span>
 </div>
@@ -59,7 +60,7 @@ canvas-wrap{display:block;overflow:auto;background:#f8f9fa}
 
 <div class="info-bar">
   <span id="info-scale">Zoom: 100%</span>
-  <span>12 entities · 18 relasi</span>
+  <span>14 entities · 20 relasi</span>
   <span>Juara League ERD v1.0</span>
 </div>
 
@@ -87,6 +88,7 @@ const GROUPS = {
   team: ['Team', 'TeamMember'],
   tournament: ['Tournament', 'TournamentMember', 'Stage', 'Group'],
   match: ['Match', 'Game'],
+  billing: ['Subscription', 'TournamentApproval'],
 };
 
 const TABLES = [
@@ -99,6 +101,9 @@ const TABLES = [
       { name: 'password_hash', type: 'VARCHAR(255)', key: '' },
       { name: 'avatar_url', type: 'TEXT', key: '' },
       { name: 'auth_provider', type: 'ENUM(email,google)', key: '' },
+      { name: 'plan', type: 'ENUM(free,pro)', key: '' },
+      { name: 'plan_expires_at', type: 'TIMESTAMP', key: '' },
+      { name: 'is_admin', type: 'BOOLEAN', key: '' },
       { name: 'is_verified', type: 'BOOLEAN', key: '' },
       { name: 'created_at', type: 'TIMESTAMP', key: '' },
       { name: 'updated_at', type: 'TIMESTAMP', key: '' },
@@ -148,6 +153,7 @@ const TABLES = [
       { name: 'prize_pool', type: 'DECIMAL(12,2)', key: '' },
       { name: 'prize_description', type: 'TEXT', key: '' },
       { name: 'status', type: 'ENUM(draft,registration,ongoing,completed)', key: '' },
+      { name: 'approval_status', type: 'ENUM(auto_approved,pending_review,approved,rejected)', key: '' },
       { name: 'banner_url', type: 'TEXT', key: '' },
       { name: 'description', type: 'TEXT', key: '' },
       { name: 'public_slug', type: 'VARCHAR(100)', key: 'UK' },
@@ -241,7 +247,32 @@ const TABLES = [
     ]
   },
   {
-    id: 'Payment', group: 'support', x: 60, y: 1000,
+    id: 'Subscription', group: 'billing', x: 60, y: 1260,
+    fields: [
+      { name: 'id', type: 'UUID', key: 'PK' },
+      { name: 'user_id', type: 'UUID', key: 'FK→User' },
+      { name: 'plan', type: 'ENUM(free,pro)', key: '' },
+      { name: 'billing_period', type: 'ENUM(monthly,yearly)', key: '' },
+      { name: 'status', type: 'ENUM(active,cancelled,expired)', key: '' },
+      { name: 'started_at', type: 'TIMESTAMP', key: '' },
+      { name: 'expires_at', type: 'TIMESTAMP', key: '' },
+      { name: 'cancelled_at', type: 'TIMESTAMP', key: '' },
+      { name: 'created_at', type: 'TIMESTAMP', key: '' },
+    ]
+  },
+  {
+    id: 'TournamentApproval', group: 'billing', x: 420, y: 1080,
+    fields: [
+      { name: 'id', type: 'UUID', key: 'PK' },
+      { name: 'tournament_id', type: 'UUID', key: 'FK→Tournament' },
+      { name: 'status', type: 'ENUM(auto_approved,pending_review,approved,rejected)', key: '' },
+      { name: 'auto_check_log', type: 'JSON', key: '' },
+      { name: 'reviewed_by', type: 'UUID', key: 'FK→User (nullable)' },
+      { name: 'reviewed_at', type: 'TIMESTAMP', key: '' },
+      { name: 'note', type: 'TEXT', key: '' },
+      { name: 'created_at', type: 'TIMESTAMP', key: '' },
+    ]
+  },
     fields: [
       { name: 'id', type: 'UUID', key: 'PK' },
       { name: 'tournament_member_id', type: 'UUID', key: 'FK→TournamentMember' },
@@ -275,6 +306,9 @@ const RELATIONS = [
   { from: 'Game', to: 'Match', fromField: 'match_id', type: 'many-one', label: '' },
   { from: 'Notification', to: 'User', fromField: 'user_id', type: 'many-one', label: '' },
   { from: 'Payment', to: 'TournamentMember', fromField: 'tournament_member_id', type: 'many-one', label: '' },
+  { from: 'Subscription', to: 'User', fromField: 'user_id', type: 'many-one', label: '' },
+  { from: 'TournamentApproval', to: 'Tournament', fromField: 'tournament_id', type: 'many-one', label: '' },
+  { from: 'TournamentApproval', to: 'User', fromField: 'reviewed_by', type: 'many-one-opt', label: 'reviewer' },
 ];
 
 function getTable(id){ return TABLES.find(t=>t.id===id); }

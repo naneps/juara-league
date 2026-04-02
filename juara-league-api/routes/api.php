@@ -61,6 +61,7 @@ Route::prefix('v1')->group(function () {
 
         // Team Management
         Route::get('/my-teams', [\App\Http\Controllers\Api\V1\TeamController::class, 'mine']);
+        Route::get('/my-invitations', [\App\Http\Controllers\Api\V1\TeamMemberController::class, 'myInvitations']);
         Route::apiResource('teams', \App\Http\Controllers\Api\V1\TeamController::class);
         
         Route::post('/teams/{team}/invite', [\App\Http\Controllers\Api\V1\TeamMemberController::class, 'invite']);

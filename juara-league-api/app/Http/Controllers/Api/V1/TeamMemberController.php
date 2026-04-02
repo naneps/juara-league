@@ -14,6 +14,17 @@ use Illuminate\Http\Request;
 class TeamMemberController extends Controller
 {
     public function __construct(protected TeamService $teamService) {}
+    
+    public function myInvitations(Request $request): JsonResponse
+    {
+        $invitations = \App\Models\TeamInvitation::with(['team.captain'])
+            ->where('email', $request->user()->email)
+            ->where('status', 'pending')
+            ->where('expires_at', '>', now())
+            ->get();
+            
+        return response()->json($invitations);
+    }
 
     public function invite(InviteMemberRequest $request, Team $team): JsonResponse
     {
