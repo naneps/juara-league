@@ -1,21 +1,57 @@
 <script setup lang="ts">
 import { useTournamentStore } from '~/stores/tournamentStore'
 import type { Tournament } from '~/types/tournament'
-
+import { useAuth } from '~/composables/useAuth'
 const route = useRoute()
 const tournamentStore = useTournamentStore()
+const { user } = useAuth()
 const { isLoading, error } = storeToRefs(tournamentStore)
 
 const tournament = ref<Tournament | null>(null)
 
 // Initial fetch
-const { data, pending } = await useAsyncData(`tournament-${route.params.slug}`, () => 
+const { data, refresh } = await useAsyncData(`tournament-${route.params.slug}`, () => 
   tournamentStore.getBySlug(route.params.slug as string)
 )
 
 if (data.value) {
-  tournament.value = data.value
+  tournament.value = data.value as Tournament
 }
+
+const isOwner = computed(() => {
+  return user.value && tournament.value?.user?.id === user.value.id
+})
+
+const isPublishing = ref(false)
+const publish = async () => {
+  if (!tournament.value) return
+  isPublishing.value = true
+  try {
+    await tournamentStore.publishTournament(tournament.value.slug)
+    await refresh()
+    tournament.value = data.value as Tournament
+    useToast().add({ title: 'Berhasil!', description: 'Turnamen telah dipublikasikan ke publik.', color: 'success' })
+  } catch (e: any) {
+    useToast().add({ title: 'Gagal', description: e.data?.message || 'Gagal mempublikasikan turnamen', color: 'error' })
+  } finally {
+    isPublishing.value = false
+  }
+}
+
+const tabs = computed(() => {
+  const items = [
+    { label: 'Informasi', icon: 'i-lucide-info', slot: 'info' },
+    { label: 'Braket (Demo)', icon: 'i-lucide-git-branch', slot: 'bracket' },
+    { label: 'Partisipan', icon: 'i-lucide-users', slot: 'participants' }
+  ]
+
+  if (isOwner.value) {
+    items.splice(1, 0, { label: 'Manajemen Tahapan', icon: 'i-lucide-settings-2', slot: 'management' })
+    items.splice(2, 0, { label: 'Manajemen Staf', icon: 'i-lucide-shield-check', slot: 'staff' })
+  }
+
+  return items
+})
 
 // Format date helper
 const formatDate = (dateString?: string) => {
@@ -67,11 +103,15 @@ const dummyBracket = [
           <!-- Info Text -->
           <div class="flex-grow pb-8">
             <div class="flex items-center gap-3 mb-6">
-              <UBadge color="primary" variant="solid" class="rounded-lg font-black uppercase text-[10px] tracking-widest px-4 py-1.5">
-                {{ tournament?.mode }}
+              <UBadge v-if="tournament?.sport" color="primary" variant="solid" class="rounded-lg font-black uppercase text-[10px] tracking-widest px-4 py-1.5 flex items-center gap-2">
+                <UIcon name="i-lucide-award" class="size-3" />
+                {{ tournament.sport.name }}
               </UBadge>
               <UBadge color="neutral" variant="outline" class="rounded-lg font-bold border-white/20 text-neutral-300 text-[10px] uppercase tracking-widest px-4 py-1.5">
                 {{ tournament?.category }}
+              </UBadge>
+              <UBadge color="neutral" variant="outline" class="rounded-lg font-black border-white/20 text-neutral-500 text-[10px] uppercase tracking-widest px-4 py-1.5">
+                {{ tournament?.mode }}
               </UBadge>
             </div>
             
@@ -113,6 +153,19 @@ const dummyBracket = [
                    <span class="text-lg font-black text-white">{{ formatDate(tournament?.start_at) }}</span>
                  </div>
                </div>
+
+               <!-- Admin Actions -->
+               <div v-if="isOwner && tournament?.status === 'draft'" class="ml-auto">
+                 <UButton 
+                  color="success" 
+                  size="xl" 
+                  class="rounded-2xl font-black uppercase tracking-widest px-8 shadow-[0_0_20px_rgba(34,197,94,0.3)] animate-pulse"
+                  :loading="isPublishing"
+                  @click="publish"
+                 >
+                   Publish Turnamen
+                 </UButton>
+               </div>
             </div>
           </div>
         </div>
@@ -121,15 +174,8 @@ const dummyBracket = [
 
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 mt-20">
-      <UTabs :items="[
-        { label: 'Informasi', icon: 'i-lucide-info', slot: 'info' },
-        { label: 'Braket (Demo)', icon: 'i-lucide-git-branch', slot: 'bracket' },
-        { label: 'Partisipan', icon: 'i-lucide-users', slot: 'participants' }
-      ]" :ui="{ 
-        list: { 
-          base: 'bg-neutral-900/50 p-2 rounded-2xl ring-1 ring-white/5 inline-flex mb-12',
-          marker: 'bg-primary-500 shadow-lg text-neutral-950 font-black rounded-xl'
-        }
+      <UTabs :items="tabs" :ui="{ 
+        list: 'bg-neutral-900/50 p-2 rounded-2xl ring-1 ring-white/5 inline-flex mb-12'
       }">
         <template #info>
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 pt-4">
@@ -191,6 +237,24 @@ const dummyBracket = [
           </div>
         </template>
 
+        <template v-if="isOwner" #management>
+          <div class="pt-8">
+            <TournamentsTournamentStageManager 
+              :tournament-slug="tournament!.slug" 
+              :initial-stages="tournament!.stages" 
+            />
+          </div>
+        </template>
+        
+        <template v-if="isOwner" #staff>
+          <div class="pt-8">
+            <TournamentsTournamentStaffManager 
+              :tournament-slug="tournament!.slug" 
+              :initial-staff="tournament!.staff" 
+            />
+          </div>
+        </template>
+
         <template #bracket>
           <div class="py-12 flex flex-col items-center">
             <h2 class="text-2xl font-black text-white uppercase tracking-tight mb-4">Bracket Visualizer</h2>
@@ -206,13 +270,23 @@ const dummyBracket = [
         </template>
 
         <template #participants>
-          <div class="py-20 flex flex-col items-center justify-center text-center">
-            <div class="bg-neutral-900/50 p-10 rounded-full mb-8 ring-1 ring-white/5">
-              <UIcon name="i-lucide-users" class="size-20 text-neutral-700" />
-            </div>
-            <h3 class="text-2xl font-black text-white mb-2 uppercase tracking-tight">Belum Ada Pendaftar</h3>
-            <p class="text-neutral-600 font-medium max-w-sm">Jadilah tim pertama yang bergabung dalam turnamen bergengsi ini!</p>
-          </div>
+           <div class="pt-8">
+             <template v-if="isOwner">
+               <TournamentsTournamentParticipantManager 
+                 :tournament-slug="tournament!.slug" 
+                 :initial-participants="tournament!.participants" 
+               />
+             </template>
+             <template v-else>
+               <div class="py-20 flex flex-col items-center justify-center text-center">
+                 <div class="bg-neutral-900/50 p-10 rounded-full mb-8 ring-1 ring-white/5">
+                   <UIcon name="i-lucide-users" class="size-20 text-neutral-700" />
+                 </div>
+                 <h3 class="text-2xl font-black text-white mb-2 uppercase tracking-tight">Belum Ada Pendaftar</h3>
+                 <p class="text-neutral-600 font-medium max-w-sm">Jadilah tim pertama yang bergabung dalam turnamen bergengsi ini!</p>
+               </div>
+             </template>
+           </div>
         </template>
       </UTabs>
     </div>

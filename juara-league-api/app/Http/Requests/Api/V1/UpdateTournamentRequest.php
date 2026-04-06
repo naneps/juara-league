@@ -24,11 +24,12 @@ class UpdateTournamentRequest extends FormRequest
     {
         return [
             'title' => ['sometimes', 'string', 'max:255'],
+            'sport_id' => ['sometimes', 'uuid', 'exists:sports,id'],
             'description' => ['nullable', 'string'],
             'category' => ['sometimes', 'string'],
             'mode' => ['sometimes', Rule::in(['online', 'offline'])],
-            'bracket_type' => ['sometimes', Rule::in(['single', 'double', 'round_robin', 'swiss'])],
-            'status' => ['sometimes', Rule::in(['draft', 'open', 'ongoing', 'finished'])],
+            'bracket_type' => ['sometimes', Rule::in(['single', 'double', 'round_robin', 'swiss', 'group_stage'])],
+            'status' => ['sometimes', Rule::in(['draft', 'registration', 'ongoing', 'completed', 'canceled'])],
             'venue' => ['nullable', 'string', 'max:255'],
             'banner_url' => ['nullable', 'url'],
             'prize_pool' => ['nullable', 'integer', 'min:0'],

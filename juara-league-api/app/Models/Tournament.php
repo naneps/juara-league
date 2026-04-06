@@ -13,6 +13,7 @@ class Tournament extends Model
 
     protected $fillable = [
         'user_id',
+        'sport_id',
         'title',
         'slug',
         'description',
@@ -45,5 +46,37 @@ class Tournament extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the sport that the tournament belongs to.
+     */
+    public function sport(): BelongsTo
+    {
+        return $this->belongsTo(Sport::class);
+    }
+
+    /**
+     * Get the stages for the tournament.
+     */
+    public function stages()
+    {
+        return $this->hasMany(Stage::class)->orderBy('order');
+    }
+
+    /**
+     * Get the participants for the tournament.
+     */
+    public function participants()
+    {
+        return $this->hasMany(Participant::class);
+    }
+
+    /**
+     * Get the staff members for the tournament.
+     */
+    public function staff()
+    {
+        return $this->hasMany(TournamentStaff::class);
     }
 }

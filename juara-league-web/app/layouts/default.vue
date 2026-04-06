@@ -83,8 +83,8 @@ const handleLogout = async () => {
                 <UDropdown :items="[[
                   { label: user?.name, slot: 'header', disabled: true },
                   { label: 'Dashboard', icon: 'i-lucide-layout-dashboard', to: '/dashboard' },
-                  { label: 'Turnamen Saya', icon: 'i-lucide-trophy', to: '/tournaments/mine' },
-                  { label: 'Buat Turnamen', icon: 'i-lucide-plus-circle', to: '/tournaments/create' },
+                  { label: 'Turnamen Saya', icon: 'i-lucide-trophy', to: '/dashboard/tournaments' },
+                  { label: 'Buat Turnamen', icon: 'i-lucide-plus-circle', to: '/dashboard/tournaments/create' },
                   { label: 'Setting Profil', icon: 'i-lucide-user', to: '/dashboard/settings' },
                   { label: 'Keluar', icon: 'i-lucide-log-out', click: () => isLogoutModalOpen = true }
                 ]]">

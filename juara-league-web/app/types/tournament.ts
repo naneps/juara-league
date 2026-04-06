@@ -1,6 +1,6 @@
 export type TournamentStatus = 'open' | 'ongoing' | 'finished' | 'draft';
 export type TournamentMode = 'online' | 'offline';
-export type BracketType = 'single_elimination' | 'double_elimination' | 'round_robin' | 'swiss';
+export type BracketType = 'single' | 'double' | 'round_robin' | 'swiss' | 'group_stage';
 
 export interface User {
   id: number;
@@ -9,9 +9,38 @@ export interface User {
   avatar?: string;
 }
 
+import type { Sport } from './sport';
+
+export interface Stage {
+  id: number;
+  tournament_id: number;
+  name: string;
+  type: string;
+  order: number;
+  settings?: any;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Participant {
+  id: number;
+  tournament_id: number;
+  user_id?: number;
+  team_id?: number;
+  user?: User;
+  team?: Team;
+  status: 'pending' | 'approved' | 'rejected' | 'paid';
+  payment_proof_url?: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Tournament {
   id: number;
   user?: User;
+  sport?: Sport;
+  sport_id: string;
   title: string;
   slug: string;
   description: string;
@@ -28,18 +57,23 @@ export interface Tournament {
   registration_start_at?: string;
   registration_end_at?: string;
   start_at?: string;
+  stages?: Stage[];
+  participants?: Participant[];
+  staff?: any[];
+  participants_count?: number;
   created_at: string;
   updated_at: string;
 }
 
 export interface TournamentFilter {
   search: string;
-  category: string;
+  sport_id: string;
   status: string;
   mode: string;
 }
 
 export interface StoreTournamentPayload {
+  sport_id: string;
   title: string;
   description: string;
   category: string;

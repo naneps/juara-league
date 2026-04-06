@@ -32,6 +32,10 @@ class TournamentResource extends JsonResource
             'registration_start_at' => $this->registration_start_at,
             'registration_end_at' => $this->registration_end_at,
             'start_at' => $this->start_at,
+            'sport' => new SportResource($this->whenLoaded('sport')),
+            'staff' => TournamentStaffResource::collection($this->whenLoaded('staff')),
+            'stages' => $this->whenLoaded('stages'),
+            'participants_count' => $this->participants()->count(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

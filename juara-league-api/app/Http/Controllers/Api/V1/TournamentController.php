@@ -94,4 +94,21 @@ class TournamentController extends Controller
         
         return TournamentResource::collection($tournaments);
     }
+
+    /**
+     * Publish tournament: Move from draft to registration.
+     */
+    public function publish(Request $request, Tournament $tournament): JsonResponse
+    {
+        if ($request->user()->id !== $tournament->user_id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        try {
+            $this->tournamentService->publish($tournament);
+            return response()->json(['message' => 'Tournament published successfully.']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
 }

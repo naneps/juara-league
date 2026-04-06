@@ -52,6 +52,48 @@ class TournamentService
         return $this->tournamentRepository->delete($tournament);
     }
 
+    /**
+     * Publish tournament: Move from draft to registration.
+     */
+    public function publish(Tournament $tournament): Tournament
+    {
+        if ($tournament->status !== 'draft') {
+            throw new \Exception('Tournament is already published or in progress.');
+        }
+
+        // Validate: Must have at least one stage
+        if ($tournament->stages()->count() === 0) {
+            throw new \Exception('Tournament must have at least one stage before being published.');
+        }
+
+        return $this->tournamentRepository->update($tournament, ['status' => 'registration']);
+    }
+
+    /**
+     * Add a staff member to the tournament.
+     */
+    public function addStaff(Tournament $tournament, int $userId, string $role): void
+    {
+        // Simple role validation
+        if (!in_array($role, ['co_organizer', 'referee'])) {
+            throw new \Exception('Invalid staff role.');
+        }
+
+        // Create or update staff role
+        $tournament->staff()->updateOrCreate(
+            ['user_id' => $userId, 'tournament_id' => $tournament->id],
+            ['role' => $role]
+        );
+    }
+
+    /**
+     * Remove a staff member from the tournament.
+     */
+    public function removeStaff(Tournament $tournament, int $userId): bool
+    {
+        return $tournament->staff()->where('user_id', $userId)->delete();
+    }
+
     protected function generateUniqueSlug(string $title): string
     {
         $slug = Str::slug($title);

@@ -16,7 +16,7 @@ const items = [[{
 }, {
   label: 'Buat Turnamen',
   icon: 'i-lucide-plus',
-  to: '/dashboard/tournaments'
+  to: '/dashboard/tournaments/create'
 }]] satisfies DropdownMenuItem[][]
 
 const range = shallowRef<Range>({

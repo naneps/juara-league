@@ -11,7 +11,7 @@ export const useTournamentStore = defineStore('tournament', () => {
     isLoading.value = true
     error.value = null
     try {
-      const response = await useApi<{ data: Tournament[] }>('/api/v1/tournaments')
+      const response = await useApi<{ data: Tournament[] }>('/api/v1/tournaments?include=sport')
       tournaments.value = response.data
     } catch (e: any) {
       error.value = e.message || 'Gagal mengambil data turnamen'
@@ -25,7 +25,7 @@ export const useTournamentStore = defineStore('tournament', () => {
     isLoading.value = true
     error.value = null
     try {
-      const response = await useApi<{ data: Tournament[] }>('/api/v1/my-tournaments')
+      const response = await useApi<{ data: Tournament[] }>('/api/v1/my-tournaments?include=sport')
       myTournaments.value = response.data
     } catch (e: any) {
       error.value = e.message || 'Gagal mengambil data turnamen Anda'
@@ -58,13 +58,117 @@ export const useTournamentStore = defineStore('tournament', () => {
   const getBySlug = async (slug: string) => {
     isLoading.value = true
     try {
-      const response = await useApi<{ data: Tournament }>(`/api/v1/tournaments/${slug}`)
+      const response = await useApi<{ data: Tournament }>(`/api/v1/tournaments/${slug}?include=stages,participants,staff,sport`)
       return response.data
     } catch (e: any) {
       error.value = e.message || 'Turnamen tidak ditemukan'
       throw e
     } finally {
       isLoading.value = false
+    }
+  }
+
+  const publishTournament = async (slug: string) => {
+    isLoading.value = true
+    error.value = null
+    try {
+      await useApi(`/api/v1/tournaments/${slug}/publish`, { method: 'POST' })
+    } catch (e: any) {
+      error.value = e.data?.message || 'Gagal mempublikasikan turnamen'
+      throw e
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const fetchStages = async (slug: string) => {
+    try {
+      const response = await useApi<{ data: any[] }>(`/api/v1/tournaments/${slug}/stages`)
+      return response.data
+    } catch (e: any) {
+      throw e
+    }
+  }
+
+  const createStage = async (slug: string, payload: any) => {
+    try {
+      const response = await useApi<{ data: any }>(`/api/v1/tournaments/${slug}/stages`, {
+        method: 'POST',
+        body: payload
+      })
+      return response.data
+    } catch (e: any) {
+      throw e
+    }
+  }
+
+  const deleteStage = async (id: number) => {
+    try {
+      await useApi(`/api/v1/stages/${id}`, { method: 'DELETE' })
+    } catch (e: any) {
+      throw e
+    }
+  }
+
+  const fetchParticipants = async (slug: string) => {
+    try {
+      const response = await useApi<{ data: any[] }>(`/api/v1/tournaments/${slug}/participants`)
+      return response.data
+    } catch (e: any) {
+      throw e
+    }
+  }
+
+  const updateParticipantStatus = async (id: number, status: string) => {
+    try {
+      const response = await useApi<{ data: any }>(`/api/v1/participants/${id}/status`, {
+        method: 'PATCH',
+        body: { status }
+      })
+      return response.data
+    } catch (e: any) {
+      throw e
+    }
+  }
+
+  const fetchSports = async () => {
+    try {
+      const response = await useApi<{ data: any[] }>('/api/v1/sports')
+      return response.data
+    } catch (e: any) {
+      throw e
+    }
+  }
+
+  const fetchStaff = async (slug: string) => {
+    try {
+      const response = await useApi<{ data: any[] }>(`/api/v1/tournaments/${slug}/staff`)
+      return response.data
+    } catch (e: any) {
+      throw e
+    }
+  }
+
+  const addStaff = async (slug: string, payload: { email: string, role: string }) => {
+    try {
+      const response = await useApi<{ message: string }>(`/api/v1/tournaments/${slug}/staff`, {
+        method: 'POST',
+        body: payload
+      })
+      return response
+    } catch (e: any) {
+      throw e
+    }
+  }
+
+  const removeStaff = async (slug: string, userId: number) => {
+    try {
+      const response = await useApi<{ message: string }>(`/api/v1/tournaments/${slug}/staff/${userId}`, {
+        method: 'DELETE'
+      })
+      return response
+    } catch (e: any) {
+      throw e
     }
   }
 
@@ -76,6 +180,16 @@ export const useTournamentStore = defineStore('tournament', () => {
     fetchTournaments,
     fetchMyTournaments,
     createTournament,
-    getBySlug
+    getBySlug,
+    publishTournament,
+    fetchStages,
+    createStage,
+    deleteStage,
+    fetchParticipants,
+    updateParticipantStatus,
+    fetchSports,
+    fetchStaff,
+    addStaff,
+    removeStaff
   }
 })

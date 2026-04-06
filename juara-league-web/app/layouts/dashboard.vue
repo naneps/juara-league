@@ -43,6 +43,19 @@ const links = [[{
     open.value = false
   }
 }, {
+  label: 'Master Data',
+  icon: 'i-lucide-database',
+  defaultOpen: false,
+  type: 'trigger',
+  children: [{
+    label: 'Cabang Olahraga',
+    icon: 'i-lucide-award',
+    to: '/dashboard/admin/sports',
+    onSelect: () => {
+      open.value = false
+    }
+  }]
+}, {
   label: 'Pengaturan',
   to: '/dashboard/settings',
   icon: 'i-lucide-settings',

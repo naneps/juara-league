@@ -3,6 +3,9 @@
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\TournamentController;
+use App\Http\Controllers\Api\V1\TournamentStaffController;
+use App\Http\Controllers\Api\V1\StageController;
+use App\Http\Controllers\Api\V1\ParticipantController;
 use App\Http\Controllers\Api\V1\VerificationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -26,6 +29,8 @@ Route::prefix('v1')->group(function () {
 
     Route::get('/tournaments', [TournamentController::class, 'index']);
     Route::get('/tournaments/{slug}', [TournamentController::class, 'show']);
+    Route::get('/tournaments/{tournament:slug}/stages', [StageController::class, 'index']);
+    Route::get('/tournaments/{tournament:slug}/participants', [ParticipantController::class, 'index']);
 
     Route::get('/sports', [\App\Http\Controllers\Api\V1\SportController::class, 'index']);
     Route::get('/sports/{id}', [\App\Http\Controllers\Api\V1\SportController::class, 'show']);
@@ -51,6 +56,22 @@ Route::prefix('v1')->group(function () {
         Route::post('/tournaments', [TournamentController::class, 'store']);
         Route::put('/tournaments/{tournament}', [TournamentController::class, 'update']);
         Route::delete('/tournaments/{tournament}', [TournamentController::class, 'destroy']);
+        Route::post('/tournaments/{tournament:slug}/publish', [TournamentController::class, 'publish']);
+
+        // Tournament Staff Management
+        Route::get('/tournaments/{tournament:slug}/staff', [TournamentStaffController::class, 'index']);
+        Route::post('/tournaments/{tournament:slug}/staff', [TournamentStaffController::class, 'store']);
+        Route::delete('/tournaments/{tournament:slug}/staff/{user}', [TournamentStaffController::class, 'destroy']);
+
+        // Stage Management
+        Route::post('/tournaments/{tournament:slug}/stages', [StageController::class, 'store']);
+        Route::put('/stages/{stage}', [StageController::class, 'update']);
+        Route::delete('/stages/{stage}', [StageController::class, 'destroy']);
+
+        // Participant Management
+        Route::post('/tournaments/{tournament:slug}/participants', [ParticipantController::class, 'store']);
+        Route::patch('/participants/{participant}/status', [ParticipantController::class, 'updateStatus']);
+        Route::delete('/participants/{participant}', [ParticipantController::class, 'destroy']);
 
         // Admin - Sport Management
         Route::prefix('admin')->group(function () {

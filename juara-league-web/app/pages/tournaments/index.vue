@@ -4,19 +4,29 @@ import { useTournamentStore } from '~/stores/tournamentStore'
 import type { TournamentFilter } from '~/types/tournament'
 
 const tournamentStore = useTournamentStore()
+const sportStore = useSportStore()
 const { tournaments, isLoading, error } = storeToRefs(tournamentStore)
+const { sports } = storeToRefs(sportStore)
 
 // Initial fetch
-const { pending } = await useAsyncData('tournaments', () => tournamentStore.fetchTournaments())
+const { pending } = await useAsyncData('tournaments-data', async () => {
+  await Promise.all([
+    tournamentStore.fetchTournaments(),
+    sportStore.fetchSports()
+  ])
+})
 
 const filters = reactive<TournamentFilter>({
   search: '',
-  category: 'Semua Kategori',
+  sport_id: 'all',
   status: 'Semua Status',
   mode: 'Semua Mode'
 })
 
-const categories = ['Semua Kategori', 'Sepak Bola', 'Badminton', 'Basket', 'E-sports', 'Lainnya']
+const categories = computed(() => [
+  { id: 'all', name: 'Semua Cabang' },
+  ...sports.value.map(s => ({ id: s.id, name: s.name }))
+])
 const statuses = ['Semua Status', 'open', 'ongoing', 'finished']
 const modes = ['Semua Mode', 'online', 'offline']
 
@@ -24,7 +34,7 @@ const modes = ['Semua Mode', 'online', 'offline']
 const filteredTournaments = computed(() => {
   return tournaments.value.filter(t => {
     const sMatch = t.title.toLowerCase().includes(filters.search.toLowerCase())
-    const cMatch = filters.category === 'Semua Kategori' || t.category === filters.category
+    const cMatch = filters.sport_id === 'all' || t.sport_id === filters.sport_id
     const stMatch = filters.status === 'Semua Status' || t.status === filters.status
     const mMatch = filters.mode === 'Semua Mode' || t.mode === filters.mode
     return sMatch && cMatch && stMatch && mMatch
@@ -82,8 +92,10 @@ const refreshTournaments = () => {
           <div class="w-full lg:w-auto flex flex-col sm:flex-row items-center gap-2 p-2 lg:p-0">
             <!-- Category -->
             <USelectMenu 
-              v-model="filters.category" 
+              v-model="filters.sport_id" 
               :options="categories"
+              value-attribute="id"
+              option-attribute="name"
               size="lg"
               variant="none"
               class="w-full sm:w-44"
@@ -94,7 +106,7 @@ const refreshTournaments = () => {
               }"
             >
               <template #leading>
-                <UIcon name="i-lucide-layout-grid" class="size-4 text-primary-400" />
+                <UIcon name="i-lucide-award" class="size-4 text-primary-400" />
               </template>
             </USelectMenu>
 
@@ -176,7 +188,7 @@ const refreshTournaments = () => {
           color="primary" 
           variant="soft" 
           class="mt-8 font-bold rounded-xl"
-          @click="Object.assign(filters, { search: '', category: 'Semua Kategori', status: 'Semua Status', mode: 'Semua Mode' }); refreshTournaments()"
+          @click="Object.assign(filters, { search: '', sport_id: 'all', status: 'Semua Status', mode: 'Semua Mode' }); refreshTournaments()"
         >
           {{ error ? 'Coba Lagi' : 'Reset Filter' }}
         </UButton>

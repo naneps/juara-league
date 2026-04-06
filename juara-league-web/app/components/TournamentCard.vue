@@ -16,7 +16,7 @@ const statusConfig: Record<string, { label: string, color: BadgeColor, icon: str
   draft: { label: 'Draft', color: 'neutral', icon: 'i-lucide-file-text' }
 }
 
-const status = computed(() => statusConfig[props.tournament.status] || statusConfig.draft)
+const status = computed(() => (statusConfig[props.tournament.status] || statusConfig.draft)!)
 
 // Safe formatting for start_at
 const formattedDate = computed(() => {
@@ -76,8 +76,10 @@ const formattedDate = computed(() => {
     <div class="p-8 flex flex-col flex-grow relative">
       <div class="flex items-center gap-3 mb-4">
         <div class="px-2 py-1 bg-primary-500/10 rounded-md ring-1 ring-primary-500/20">
-          <span class="text-[10px] font-black text-primary-400 uppercase tracking-widest">{{ tournament.category }}</span>
+          <span class="text-[10px] font-black text-primary-400 uppercase tracking-widest">{{ tournament.sport?.name || tournament.category }}</span>
         </div>
+        <span v-if="tournament.sport && tournament.category" class="text-neutral-700">/</span>
+        <span v-if="tournament.sport && tournament.category" class="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">{{ tournament.category }}</span>
         <span class="text-neutral-700">/</span>
         <span class="text-[11px] font-bold text-neutral-500 uppercase tracking-wider">{{ formattedDate }}</span>
       </div>
