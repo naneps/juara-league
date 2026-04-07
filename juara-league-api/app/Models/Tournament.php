@@ -21,6 +21,8 @@ class Tournament extends Model
         'status',
         'mode',
         'bracket_type',
+        'participant_type',
+        'team_size',
         'venue',
         'banner_url',
         'prize_pool',

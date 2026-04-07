@@ -1,6 +1,7 @@
 export type TournamentStatus = 'open' | 'ongoing' | 'finished' | 'draft';
 export type TournamentMode = 'online' | 'offline';
 export type BracketType = 'single' | 'double' | 'round_robin' | 'swiss' | 'group_stage';
+export type ParticipantType = 'individual' | 'team';
 
 export interface User {
   id: number;
@@ -47,6 +48,8 @@ export interface Tournament {
   category: string;
   status: TournamentStatus;
   mode: TournamentMode;
+  participant_type: ParticipantType;
+  team_size?: number;
   bracket_type: BracketType;
   venue?: string;
   banner_url?: string;
@@ -78,6 +81,8 @@ export interface StoreTournamentPayload {
   description: string;
   category: string;
   mode: TournamentMode;
+  participant_type: ParticipantType;
+  team_size?: number;
   bracket_type: BracketType;
   max_participants: number;
   prize_pool: number;

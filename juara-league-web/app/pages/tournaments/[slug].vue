@@ -2,6 +2,7 @@
 import { useTournamentStore } from '~/stores/tournamentStore'
 import type { Tournament } from '~/types/tournament'
 import { useAuth } from '~/composables/useAuth'
+
 const route = useRoute()
 const tournamentStore = useTournamentStore()
 const { user } = useAuth()
@@ -23,6 +24,15 @@ const isOwner = computed(() => {
 })
 
 const isPublishing = ref(false)
+const isJoinModalOpen = ref(false)
+
+const handleJoinClick = () => {
+  if (!user.value) {
+    return navigateTo('/login')
+  }
+  isJoinModalOpen.value = true
+}
+
 const publish = async () => {
   if (!tournament.value) return
   isPublishing.value = true
@@ -209,14 +219,47 @@ const dummyBracket = [
                      <span class="text-primary-400 font-black text-lg">{{ tournament?.entry_fee == 0 ? 'Gratis' : tournament?.entry_fee }}</span>
                    </div>
                    <div class="flex justify-between items-center text-sm">
+                     <span class="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">Tipe Partisipan</span>
+                     <span class="text-white font-black uppercase text-xs">{{ tournament?.participant_type }}</span>
+                   </div>
+                   <div class="flex justify-between items-center text-sm">
                      <span class="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">Tipe Braket</span>
                      <span class="text-white font-black uppercase text-xs">{{ tournament?.bracket_type?.replace('_', ' ') }}</span>
                    </div>
                  </div>
 
-                 <UButton color="primary" block size="xl" class="rounded-2xl font-black uppercase tracking-widest py-4 shadow-xl">
-                   Join Turnamen
-                 </UButton>
+                 <div v-if="tournament">
+                    <UButton 
+                      v-if="tournament.status === 'open'"
+                      color="primary" 
+                      block 
+                      size="xl" 
+                      class="rounded-2xl font-black uppercase tracking-widest py-4 shadow-xl"
+                      @click="() => { handleJoinClick() }"
+                    >
+                      Join Turnamen
+                    </UButton>
+                    <UButton 
+                      v-else-if="tournament.status === 'ongoing'"
+                      color="neutral" 
+                      disabled
+                      block 
+                      size="xl" 
+                      class="rounded-2xl font-black uppercase tracking-widest py-4 bg-neutral-800 border-white/5 opacity-50"
+                    >
+                      Sedang Berjalan
+                    </UButton>
+                    <UButton 
+                      v-else
+                      color="neutral" 
+                      disabled
+                      block 
+                      size="xl" 
+                      class="rounded-2xl font-black uppercase tracking-widest py-4 bg-neutral-800 border-white/5 opacity-50"
+                    >
+                      Pendaftaran Tutup
+                    </UButton>
+                 </div>
                </div>
 
                <div class="bg-neutral-900/40 border border-white/5 p-8 rounded-[2rem]">
@@ -233,6 +276,13 @@ const dummyBracket = [
                    </div>
                  </div>
                </div>
+
+               <TournamentsJoinTournamentModal 
+                v-if="tournament"
+                v-model="isJoinModalOpen"
+                :tournament="tournament"
+                @success="refresh"
+              />
             </div>
           </div>
         </template>

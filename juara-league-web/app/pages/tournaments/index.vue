@@ -8,6 +8,10 @@ const sportStore = useSportStore()
 const { tournaments, isLoading, error } = storeToRefs(tournamentStore)
 const { sports } = storeToRefs(sportStore)
 
+definePageMeta({
+  colorMode: 'dark'
+})
+
 // Initial fetch
 const { pending } = await useAsyncData('tournaments-data', async () => {
   await Promise.all([
@@ -16,26 +20,32 @@ const { pending } = await useAsyncData('tournaments-data', async () => {
   ])
 })
 
-const filters = reactive<TournamentFilter>({
+const filters = reactive({
   search: '',
-  sport_id: 'all',
-  status: 'Semua Status',
+  sport: { label: 'Semua Cabang', value: 'all' },
+  status: { label: 'Semua Status', value: 'all' },
   mode: 'Semua Mode'
 })
 
 const categories = computed(() => [
-  { id: 'all', name: 'Semua Cabang' },
-  ...sports.value.map(s => ({ id: s.id, name: s.name }))
+  { value: 'all', label: 'Semua Cabang' },
+  ...sports.value.map(s => ({ value: s.id, label: s.name }))
 ])
-const statuses = ['Semua Status', 'open', 'ongoing', 'finished']
+const statuses = [
+  { label: 'Semua Status', value: 'all' },
+  { label: 'Registration Open', value: 'open' },
+  { label: 'Ongoing', value: 'ongoing' },
+  { label: 'Finished', value: 'finished' }
+]
 const modes = ['Semua Mode', 'online', 'offline']
 
 // Computed filter logic (client-side for now, can be moved to API later)
 const filteredTournaments = computed(() => {
   return tournaments.value.filter(t => {
+    if (t.status === 'draft') return false
     const sMatch = t.title.toLowerCase().includes(filters.search.toLowerCase())
-    const cMatch = filters.sport_id === 'all' || t.sport_id === filters.sport_id
-    const stMatch = filters.status === 'Semua Status' || t.status === filters.status
+    const cMatch = filters.sport.value === 'all' || t.sport_id === filters.sport.value
+    const stMatch = filters.status.value === 'all' || t.status === filters.status.value
     const mMatch = filters.mode === 'Semua Mode' || t.mode === filters.mode
     return sMatch && cMatch && stMatch && mMatch
   })
@@ -92,17 +102,13 @@ const refreshTournaments = () => {
           <div class="w-full lg:w-auto flex flex-col sm:flex-row items-center gap-2 p-2 lg:p-0">
             <!-- Category -->
             <USelectMenu 
-              v-model="filters.sport_id" 
-              :options="categories"
-              value-attribute="id"
-              option-attribute="name"
+              v-model="filters.sport" 
+              :items="categories"
               size="lg"
               variant="none"
               class="w-full sm:w-44"
               :ui="{ 
-                base: 'bg-white/5 hover:bg-white/10 border-none focus:ring-primary-500/50 rounded-2xl sm:rounded-full transition-all text-neutral-300 font-bold px-4',
-                content: 'bg-neutral-900 border border-white/10 rounded-2xl shadow-2xl p-2',
-                item: 'rounded-xl hover:bg-primary-500/10 hover:text-primary-400 font-medium'
+                base: 'bg-white/5 hover:bg-white/10 border-none focus:ring-primary-500/50 rounded-2xl sm:rounded-full transition-all text-neutral-300 font-bold px-4'
               }"
             >
               <template #leading>
@@ -113,14 +119,12 @@ const refreshTournaments = () => {
             <!-- Status -->
             <USelectMenu 
               v-model="filters.status" 
-              :options="statuses"
+              :items="statuses"
               size="lg"
               variant="none"
               class="w-full sm:w-44"
               :ui="{ 
-                base: 'bg-white/5 hover:bg-white/10 border-none focus:ring-primary-500/50 rounded-2xl sm:rounded-full transition-all text-neutral-300 font-bold px-4',
-                content: 'bg-neutral-900 border border-white/10 rounded-2xl shadow-2xl p-2',
-                item: 'rounded-xl hover:bg-primary-500/10 hover:text-primary-400 font-medium'
+                base: 'bg-white/5 hover:bg-white/10 border-none focus:ring-primary-500/50 rounded-2xl sm:rounded-full transition-all text-neutral-300 font-bold px-4'
               }"
             >
               <template #leading>
@@ -131,14 +135,12 @@ const refreshTournaments = () => {
             <!-- Mode -->
             <USelectMenu 
               v-model="filters.mode" 
-              :options="modes"
+              :items="modes"
               size="lg"
               variant="none"
               class="w-full sm:w-44"
               :ui="{ 
-                base: 'bg-white/5 hover:bg-white/10 border-none focus:ring-primary-500/50 rounded-2xl sm:rounded-full transition-all text-neutral-300 font-bold px-4',
-                content: 'bg-neutral-900 border border-white/10 rounded-2xl shadow-2xl p-2',
-                item: 'rounded-xl hover:bg-primary-500/10 hover:text-primary-400 font-medium'
+                base: 'bg-white/5 hover:bg-white/10 border-none focus:ring-primary-500/50 rounded-2xl sm:rounded-full transition-all text-neutral-300 font-bold px-4'
               }"
             >
               <template #leading>
@@ -188,7 +190,7 @@ const refreshTournaments = () => {
           color="primary" 
           variant="soft" 
           class="mt-8 font-bold rounded-xl"
-          @click="Object.assign(filters, { search: '', sport_id: 'all', status: 'Semua Status', mode: 'Semua Mode' }); refreshTournaments()"
+          @click="Object.assign(filters, { search: '', sport: categories[0], status: 'Semua Status', mode: 'Semua Mode' }); refreshTournaments()"
         >
           {{ error ? 'Coba Lagi' : 'Reset Filter' }}
         </UButton>

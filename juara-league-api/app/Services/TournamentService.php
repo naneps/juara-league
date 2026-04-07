@@ -66,7 +66,7 @@ class TournamentService
             throw new \Exception('Tournament must have at least one stage before being published.');
         }
 
-        return $this->tournamentRepository->update($tournament, ['status' => 'registration']);
+        return $this->tournamentRepository->update($tournament, ['status' => 'open']);
     }
 
     /**

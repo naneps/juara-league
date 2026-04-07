@@ -25,6 +25,11 @@ const stageTypes = [
   { label: 'Swiss', value: 'swiss' }
 ]
 
+const selectedStageType = computed({
+  get: () => stageTypes.find(t => t.value === newStage.value.type) || stageTypes[0],
+  set: (val: any) => { if (val) newStage.value.type = val.value }
+})
+
 const fetchStages = async () => {
   try {
     const data = await tournamentStore.fetchStages(props.tournamentSlug)
@@ -89,7 +94,7 @@ const removeStage = async (id: number) => {
           </UFormGroup>
 
           <UFormGroup label="Format" name="type">
-            <USelectMenu v-model="newStage.type" :options="stageTypes" value-attribute="value" option-attribute="label" size="lg" />
+            <USelectMenu v-model="selectedStageType" :items="stageTypes" size="lg" />
           </UFormGroup>
         </div>
 

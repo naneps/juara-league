@@ -18,10 +18,29 @@ class ParticipantService
     public function register(Tournament $tournament, array $data): Participant
     {
         // Check if tournament is open for registration
-        if ($tournament->status !== 'registration') {
+        if ($tournament->status !== 'open') {
             throw ValidationException::withMessages([
                 'tournament' => ['Tournament is not open for registration.']
             ]);
+        }
+
+        // Validate Participant Type
+        if ($tournament->participant_type === 'individual') {
+            if (!isset($data['user_id'])) {
+                throw ValidationException::withMessages([
+                    'user_id' => ['User ID is required for individual tournaments.']
+                ]);
+            }
+            // Clear team_id if provided by accident
+            unset($data['team_id']);
+        } else if ($tournament->participant_type === 'team') {
+            if (!isset($data['team_id'])) {
+                throw ValidationException::withMessages([
+                    'team_id' => ['Team ID is required for team-based tournaments.']
+                ]);
+            }
+            // Clear user_id if provided (will use creator/authenticated user context later)
+            unset($data['user_id']);
         }
 
         // Check capacity
@@ -32,8 +51,8 @@ class ParticipantService
             ]);
         }
 
-        // Check if already registered
-        $query = $tournament->participants();
+        // Check if already registered (Active participation)
+        $query = $tournament->participants()->where('status', '!=', 'rejected');
         if (isset($data['user_id'])) {
             $query->where('user_id', $data['user_id']);
         }

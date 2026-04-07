@@ -2,7 +2,7 @@
 import { storeToRefs } from 'pinia'
 import { useSportStore } from '~/stores/sport.store'
 import { useTournamentStore } from '~/stores/tournamentStore'
-import type { StoreTournamentPayload, TournamentMode, BracketType } from '~/types/tournament'
+import type { StoreTournamentPayload, TournamentMode, BracketType, ParticipantType } from '~/types/tournament'
 
 definePageMeta({
   layout: 'dashboard',
@@ -21,6 +21,8 @@ const state = reactive<StoreTournamentPayload>({
   description: '',
   category: 'Pro',
   mode: 'online',
+  participant_type: 'individual',
+  team_size: undefined,
   bracket_type: 'single',
   max_participants: 16,
   prize_pool: 0,
@@ -44,14 +46,24 @@ onMounted(async () => {
 const selectedSport = computed(() => sports.value?.find(s => s.id === state.sport_id))
 
 const sportOptions = computed(() => sports.value?.map(s => ({
-  id: s.id,
-  name: s.name,
+  value: s.id,
+  label: s.name,
   icon_url: s.icon_url
 })) || [])
+
+const selectedSportOption = computed({
+  get: () => sportOptions.value.find(s => s.value === state.sport_id) || undefined,
+  set: (val: any) => { if (val) state.sport_id = val.value }
+})
 
 const modes: { label: string, value: TournamentMode, icon: string }[] = [
   { label: 'Online / Remote', value: 'online', icon: 'i-lucide-globe' },
   { label: 'Offline / On-site', value: 'offline', icon: 'i-lucide-map-pin' }
+]
+
+const participantTypes: { label: string, value: ParticipantType, icon: string }[] = [
+  { label: 'Individu', value: 'individual', icon: 'i-lucide-user' },
+  { label: 'Tim / Grup', value: 'team', icon: 'i-lucide-users' }
 ]
 
 const bracketTypes: { label: string, value: BracketType }[] = [
@@ -61,6 +73,11 @@ const bracketTypes: { label: string, value: BracketType }[] = [
   { label: 'Swiss System', value: 'swiss' },
   { label: 'Group Stage', value: 'group_stage' }
 ]
+
+const selectedBracketType = computed({
+  get: () => bracketTypes.find(b => b.value === state.bracket_type) || bracketTypes[0],
+  set: (val: any) => { if (val) state.bracket_type = val.value }
+})
 
 const formValid = computed(() => {
   return state.title && state.sport_id && state.start_at
@@ -123,20 +140,20 @@ const onSubmit = async () => {
     </template>
 
     <template #body>
-      <div class="min-h-full bg-neutral-950">
+      <div class="min-h-full bg-neutral-50 dark:bg-neutral-950 transition-colors duration-300">
 
         <!-- Page Header -->
-        <div class="border-b border-white/5 bg-neutral-950/80 backdrop-blur-xl px-8 py-10">
+        <div class="border-b border-neutral-200 dark:border-white/5 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl px-8 py-10 sticky top-0 z-10">
           <div class="max-w-6xl mx-auto">
             <div class="flex items-end justify-between">
               <div>
                 <p class="text-xs font-bold text-primary-500 uppercase tracking-[0.3em] mb-3">Turnamen Baru</p>
-                <h1 class="text-4xl font-black text-white tracking-tight leading-none">
+                <h1 class="text-4xl font-black text-neutral-900 dark:text-white tracking-tight leading-none">
                   Konfigurasi<br>
-                  <span class="text-neutral-500">Turnamen</span>
+                  <span class="text-neutral-400 dark:text-neutral-500">Turnamen</span>
                 </h1>
               </div>
-              <div class="hidden sm:flex items-center gap-2 text-xs text-neutral-600 font-medium">
+              <div class="hidden sm:flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-600 font-medium">
                 <UIcon name="i-lucide-shield-check" class="size-3.5" />
                 Data tersimpan otomatis sebagai draft
               </div>
@@ -152,13 +169,13 @@ const onSubmit = async () => {
             <UForm :state="state" class="space-y-2" @submit="onSubmit">
 
               <!-- SECTION 1: Identitas -->
-              <div class="rounded-2xl border border-white/5 bg-white/[0.02] overflow-hidden">
-                <div class="flex items-center gap-3 px-6 py-4 border-b border-white/5 bg-white/[0.02]">
-                  <div class="flex items-center justify-center size-7 rounded-lg bg-primary-500/10 text-primary-400">
+              <div class="rounded-2xl border border-neutral-200 dark:border-white/5 bg-white dark:bg-white/[0.02] overflow-hidden shadow-sm dark:shadow-none">
+                <div class="flex items-center gap-3 px-6 py-4 border-b border-neutral-200 dark:border-white/5 bg-neutral-50 dark:bg-white/[0.02]">
+                  <div class="flex items-center justify-center size-7 rounded-lg bg-primary-500/10 text-primary-500 dark:text-primary-400">
                     <UIcon name="i-lucide-flag" class="size-3.5" />
                   </div>
-                  <span class="text-sm font-bold text-white uppercase tracking-wider">Identitas Turnamen</span>
-                  <div class="ml-auto h-px flex-1 bg-white/5 max-w-[80px]" />
+                  <span class="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wider">Identitas Turnamen</span>
+                  <div class="ml-auto h-px flex-1 bg-neutral-200 dark:bg-white/5 max-w-[80px]" />
                 </div>
 
                 <div class="p-6 space-y-5">
@@ -175,10 +192,8 @@ const onSubmit = async () => {
                   <div class="grid grid-cols-2 gap-4">
                     <UFormField label="Cabang Olahraga" name="sport_id" required>
                       <USelectMenu
-                        v-model="state.sport_id"
+                        v-model="selectedSportOption"
                         :items="sportOptions"
-                        value-key="id"
-                        label-key="name"
                         size="xl"
                         placeholder="Pilih Cabor"
                         :loading="sportStore.isLoading"
@@ -216,6 +231,48 @@ const onSubmit = async () => {
                     </div>
                   </UFormField>
 
+                  <div class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 items-start">
+                    <UFormField label="Tipe Kepesertaan" name="participant_type" required class="flex-1">
+                      <div class="grid grid-cols-2 gap-3 mt-1">
+                        <button
+                          v-for="p in participantTypes"
+                          :key="p.value"
+                          type="button"
+                          @click="state.participant_type = p.value"
+                          :class="[
+                            'flex items-center gap-3 px-4 py-3.5 rounded-xl border text-sm font-semibold transition-all duration-200',
+                            state.participant_type === p.value
+                              ? 'border-primary-500 bg-primary-500/10 text-primary-400'
+                              : 'border-white/8 bg-white/[0.02] text-neutral-500 hover:border-white/15 hover:text-neutral-300'
+                          ]"
+                        >
+                          <UIcon :name="p.icon" class="size-4 shrink-0" />
+                          {{ p.label }}
+                        </button>
+                      </div>
+                    </UFormField>
+
+                    <Transition
+                      enter-active-class="transition-all duration-300 ease-out flex-shrink-0"
+                      enter-from-class="opacity-0 -translate-x-4 max-w-0"
+                      enter-to-class="opacity-100 translate-x-0 w-[180px]"
+                      leave-active-class="transition-all duration-200 ease-in flex-shrink-0"
+                      leave-from-class="opacity-100 translate-x-0 w-[180px]"
+                      leave-to-class="opacity-0 -translate-x-4 max-w-0"
+                    >
+                      <UFormField v-if="state.participant_type === 'team'" label="Pemain Per Tim" name="team_size" required class="w-[180px]">
+                        <UInput
+                          v-model.number="state.team_size"
+                          type="number"
+                          placeholder="5"
+                          size="xl"
+                          icon="i-lucide-users"
+                          class="w-full mt-1"
+                        />
+                      </UFormField>
+                    </Transition>
+                  </div>
+
                   <UFormField label="Deskripsi" name="description" required>
                     <UTextarea
                       v-model="state.description"
@@ -239,13 +296,13 @@ const onSubmit = async () => {
               </div>
 
               <!-- SECTION 2: Jadwal -->
-              <div class="rounded-2xl border border-white/5 bg-white/[0.02] overflow-hidden">
-                <div class="flex items-center gap-3 px-6 py-4 border-b border-white/5 bg-white/[0.02]">
-                  <div class="flex items-center justify-center size-7 rounded-lg bg-blue-500/10 text-blue-400">
+              <div class="rounded-2xl border border-neutral-200 dark:border-white/5 bg-white dark:bg-white/[0.02] overflow-hidden shadow-sm dark:shadow-none">
+                <div class="flex items-center gap-3 px-6 py-4 border-b border-neutral-200 dark:border-white/5 bg-neutral-50 dark:bg-white/[0.02]">
+                  <div class="flex items-center justify-center size-7 rounded-lg bg-blue-500/10 text-blue-500 dark:text-blue-400">
                     <UIcon name="i-lucide-calendar-days" class="size-3.5" />
                   </div>
-                  <span class="text-sm font-bold text-white uppercase tracking-wider">Jadwal Pelaksanaan</span>
-                  <div class="ml-auto h-px flex-1 bg-white/5 max-w-[80px]" />
+                  <span class="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wider">Jadwal Pelaksanaan</span>
+                  <div class="ml-auto h-px flex-1 bg-neutral-200 dark:bg-white/5 max-w-[80px]" />
                 </div>
 
                 <div class="p-6 space-y-5">
@@ -270,23 +327,21 @@ const onSubmit = async () => {
               </div>
 
               <!-- SECTION 3: Aturan & Logistik -->
-              <div class="rounded-2xl border border-white/5 bg-white/[0.02] overflow-hidden">
-                <div class="flex items-center gap-3 px-6 py-4 border-b border-white/5 bg-white/[0.02]">
-                  <div class="flex items-center justify-center size-7 rounded-lg bg-amber-500/10 text-amber-400">
+              <div class="rounded-2xl border border-neutral-200 dark:border-white/5 bg-white dark:bg-white/[0.02] overflow-hidden shadow-sm dark:shadow-none">
+                <div class="flex items-center gap-3 px-6 py-4 border-b border-neutral-200 dark:border-white/5 bg-neutral-50 dark:bg-white/[0.02]">
+                  <div class="flex items-center justify-center size-7 rounded-lg bg-amber-500/10 text-amber-500 dark:text-amber-400">
                     <UIcon name="i-lucide-settings-2" class="size-3.5" />
                   </div>
-                  <span class="text-sm font-bold text-white uppercase tracking-wider">Aturan & Logistik</span>
-                  <div class="ml-auto h-px flex-1 bg-white/5 max-w-[80px]" />
+                  <span class="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wider">Aturan & Logistik</span>
+                  <div class="ml-auto h-px flex-1 bg-neutral-200 dark:bg-white/5 max-w-[80px]" />
                 </div>
 
                 <div class="p-6 space-y-5">
                   <div class="grid grid-cols-2 gap-4">
                     <UFormField label="Format Bracket" name="bracket_type" required>
                       <USelectMenu
-                        v-model="state.bracket_type"
+                        v-model="selectedBracketType"
                         :items="bracketTypes"
-                        value-key="value"
-                        label-key="label"
                         size="xl"
                         class="w-full"
                       />
@@ -388,6 +443,8 @@ const onSubmit = async () => {
                       category: state.category,
                       status: 'draft',
                       mode: state.mode,
+                      participant_type: state.participant_type,
+                      team_size: state.team_size,
                       bracket_type: state.bracket_type,
                       venue: state.venue,
                       banner_url: state.banner_url || 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1000',
@@ -406,7 +463,7 @@ const onSubmit = async () => {
                 </div>
 
                 <!-- Checklist -->
-                <div class="rounded-2xl border border-white/5 bg-white/[0.02] p-5">
+                <div class="rounded-2xl border border-neutral-200 dark:border-white/5 bg-white dark:bg-white/[0.02] p-5 shadow-sm dark:shadow-none">
                   <div class="flex items-center justify-between mb-4">
                     <p class="text-xs font-bold text-neutral-400 uppercase tracking-wider">Kelengkapan Form</p>
                     <span class="text-xs font-black text-primary-400">
@@ -448,7 +505,7 @@ const onSubmit = async () => {
                 </div>
 
                 <!-- Tips -->
-                <div class="rounded-2xl border border-white/5 bg-white/[0.02] p-5">
+                <div class="rounded-2xl border border-neutral-200 dark:border-white/5 bg-white dark:bg-white/[0.02] p-5 shadow-sm dark:shadow-none">
                   <div class="flex items-center gap-2 mb-3">
                     <UIcon name="i-lucide-lightbulb" class="size-3.5 text-amber-400" />
                     <p class="text-xs font-bold text-neutral-400 uppercase tracking-wider">Tips</p>

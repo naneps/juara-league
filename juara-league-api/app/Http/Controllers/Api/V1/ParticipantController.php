@@ -25,11 +25,16 @@ class ParticipantController extends Controller
     public function store(Request $request, Tournament $tournament): JsonResponse
     {
         $validated = $request->validate([
-            'user_id' => 'required_without:team_id|exists:users,id',
+            'user_id' => 'sometimes|exists:users,id',
             'team_id' => 'required_without:user_id|exists:teams,id',
             'payment_proof_url' => 'nullable|string',
             'notes' => 'nullable|string',
         ]);
+
+        // Default to current user if no user_id or team_id provided (for Individual)
+        if (!isset($validated['user_id']) && !isset($validated['team_id'])) {
+            $validated['user_id'] = $request->user()->id;
+        }
 
         try {
             $participant = $this->participantService->register($tournament, $validated);

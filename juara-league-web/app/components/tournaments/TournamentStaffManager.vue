@@ -20,6 +20,11 @@ const roles = [
   { label: 'Referee', value: 'referee' }
 ]
 
+const selectedRole = computed({
+  get: () => roles.find(r => r.value === newStaff.value.role) || roles[0],
+  set: (val: any) => { if (val) newStaff.value.role = val.value }
+})
+
 const fetchStaff = async () => {
   try {
     const data = await tournamentStore.fetchStaff(props.tournamentSlug)
@@ -79,10 +84,8 @@ const getRoleLabel = (role: string) => {
           :disabled="isSubmitting"
         />
         <USelectMenu 
-          v-model="newStaff.role" 
-          :options="roles" 
-          value-attribute="value"
-          option-attribute="label"
+          v-model="selectedRole" 
+          :items="roles" 
           class="w-40"
           variant="none"
         />

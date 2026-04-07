@@ -73,6 +73,10 @@ export const useTournamentStore = defineStore('tournament', () => {
     error.value = null
     try {
       await useApi(`/api/v1/tournaments/${slug}/publish`, { method: 'POST' })
+      // Update local state
+      const updateStatus = (t: Tournament) => { if (t.slug === slug) t.status = 'open' }
+      tournaments.value.forEach(updateStatus)
+      myTournaments.value.forEach(updateStatus)
     } catch (e: any) {
       error.value = e.data?.message || 'Gagal mempublikasikan turnamen'
       throw e

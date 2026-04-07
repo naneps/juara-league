@@ -18,12 +18,12 @@ const refreshMyTournaments = () => {
 }
 
 const searchQuery = ref('')
-const statusFilter = ref('all')
+const statusFilter = ref({ label: 'Semua Status', value: 'all' })
 
 const filteredTournaments = computed(() => {
   return myTournaments.value.filter(t => {
     const sMatch = t.title.toLowerCase().includes(searchQuery.value.toLowerCase())
-    const stMatch = statusFilter.value === 'all' || t.status === statusFilter.value
+    const stMatch = statusFilter.value.value === 'all' || t.status === statusFilter.value.value
     return sMatch && stMatch
   })
 })
@@ -68,9 +68,7 @@ const statuses = [
           />
           <USelectMenu 
             v-model="statusFilter" 
-            :options="statuses" 
-            value-attribute="value"
-            option-attribute="label"
+            :items="statuses" 
             class="w-40"
           />
         </template>
@@ -97,7 +95,7 @@ const statuses = [
            <!-- Management Overlay -->
            <div class="absolute top-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-all scale-95 group-hover:scale-100 flex gap-2">
              <UButton 
-              to="#"
+              :to="`/dashboard/tournaments/${tournament.slug}`"
               icon="i-lucide-settings-2" 
               color="neutral" 
               variant="solid" 
