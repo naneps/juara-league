@@ -28,9 +28,22 @@ const isJoinModalOpen = ref(false)
 
 const handleJoinClick = () => {
   if (!user.value) {
-    return navigateTo('/login')
+    void navigateTo('/login')
+    return
   }
   isJoinModalOpen.value = true
+}
+
+// Computed state for current user's participation
+const userParticipation = computed(() => {
+  return tournament.value?.user_participation ?? null
+})
+
+const handleJoinSuccess = async () => {
+  await refresh()
+  if (data.value) {
+    tournament.value = data.value as any
+  }
 }
 
 const publish = async () => {
@@ -136,7 +149,7 @@ const dummyBracket = [
                  </div>
                  <div class="flex flex-col">
                    <span class="text-[10px] font-black text-neutral-500 uppercase tracking-widest leading-none mb-1">Total Prize</span>
-                   <span class="text-lg font-black text-white">{{ tournament?.prize_pool }}</span>
+                   <span class="text-lg font-black text-white">{{ formatCurrency(tournament?.prize_pool) }}</span>
                  </div>
                </div>
 
@@ -216,7 +229,7 @@ const dummyBracket = [
                  <div class="space-y-4 mb-8">
                    <div class="flex justify-between items-center text-sm">
                      <span class="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">Biaya Masuk</span>
-                     <span class="text-primary-400 font-black text-lg">{{ tournament?.entry_fee == 0 ? 'Gratis' : tournament?.entry_fee }}</span>
+                     <span class="text-primary-400 font-black text-lg">{{ tournament?.entry_fee == 0 ? 'Gratis' : formatCurrency(tournament?.entry_fee) }}</span>
                    </div>
                    <div class="flex justify-between items-center text-sm">
                      <span class="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">Tipe Partisipan</span>
@@ -229,36 +242,71 @@ const dummyBracket = [
                  </div>
 
                  <div v-if="tournament">
-                    <UButton 
-                      v-if="tournament.status === 'open'"
-                      color="primary" 
-                      block 
-                      size="xl" 
-                      class="rounded-2xl font-black uppercase tracking-widest py-4 shadow-xl"
-                      @click="() => { handleJoinClick() }"
-                    >
-                      Join Turnamen
-                    </UButton>
-                    <UButton 
-                      v-else-if="tournament.status === 'ongoing'"
-                      color="neutral" 
-                      disabled
-                      block 
-                      size="xl" 
-                      class="rounded-2xl font-black uppercase tracking-widest py-4 bg-neutral-800 border-white/5 opacity-50"
-                    >
-                      Sedang Berjalan
-                    </UButton>
-                    <UButton 
-                      v-else
-                      color="neutral" 
-                      disabled
-                      block 
-                      size="xl" 
-                      class="rounded-2xl font-black uppercase tracking-widest py-4 bg-neutral-800 border-white/5 opacity-50"
-                    >
-                      Pendaftaran Tutup
-                    </UButton>
+                    <!-- Not yet joined & tournament is open -->
+                    <template v-if="!userParticipation && tournament.status === 'open'">
+                      <UButton 
+                        color="primary" 
+                        block 
+                        size="xl" 
+                        class="rounded-2xl font-black uppercase tracking-widest py-4 shadow-xl"
+                        @click="handleJoinClick"
+                      >
+                        <UIcon name="i-lucide-user-plus" class="size-5 mr-2" />
+                        Join Turnamen
+                      </UButton>
+                    </template>
+
+                    <!-- Waiting for approval -->
+                    <template v-else-if="userParticipation?.status === 'pending'">
+                      <div class="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 text-center">
+                        <UIcon name="i-lucide-clock" class="size-6 text-amber-400 mx-auto mb-2" />
+                        <p class="text-amber-400 font-black text-sm uppercase tracking-widest">Menunggu Persetujuan</p>
+                        <p class="text-neutral-500 text-xs mt-1">Pendaftaran Anda sedang ditinjau oleh penyelenggara.</p>
+                      </div>
+                    </template>
+
+                    <!-- Accepted -->
+                    <template v-else-if="userParticipation?.status === 'approved' || userParticipation?.status === 'paid'">
+                      <div class="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 text-center">
+                        <UIcon name="i-lucide-check-circle-2" class="size-6 text-emerald-400 mx-auto mb-2" />
+                        <p class="text-emerald-400 font-black text-sm uppercase tracking-widest">Sudah Bergabung</p>
+                        <p class="text-neutral-500 text-xs mt-1">Pendaftaran Anda telah diterima. Selamat!</p>
+                      </div>
+                    </template>
+
+                    <!-- Rejected -->
+                    <template v-else-if="userParticipation?.status === 'rejected'">
+                      <div class="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 text-center mb-3">
+                        <UIcon name="i-lucide-x-circle" class="size-6 text-red-400 mx-auto mb-2" />
+                        <p class="text-red-400 font-black text-sm uppercase tracking-widest">Pendaftaran Ditolak</p>
+                        <p class="text-neutral-500 text-xs mt-1">Hubungi penyelenggara untuk info lebih lanjut.</p>
+                      </div>
+                    </template>
+
+                    <!-- Tournament not open -->
+                    <template v-else-if="tournament.status === 'ongoing'">
+                      <UButton 
+                        color="neutral" 
+                        disabled
+                        block 
+                        size="xl" 
+                        class="rounded-2xl font-black uppercase tracking-widest py-4 bg-neutral-800 border-white/5 opacity-50"
+                      >
+                        Sedang Berjalan
+                      </UButton>
+                    </template>
+
+                    <template v-else-if="tournament.status !== 'open'">
+                      <UButton 
+                        color="neutral" 
+                        disabled
+                        block 
+                        size="xl" 
+                        class="rounded-2xl font-black uppercase tracking-widest py-4 bg-neutral-800 border-white/5 opacity-50"
+                      >
+                        Pendaftaran Tutup
+                      </UButton>
+                    </template>
                  </div>
                </div>
 
@@ -281,7 +329,7 @@ const dummyBracket = [
                 v-if="tournament"
                 v-model="isJoinModalOpen"
                 :tournament="tournament"
-                @success="refresh"
+                @success="handleJoinSuccess"
               />
             </div>
           </div>

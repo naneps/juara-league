@@ -37,6 +37,12 @@ export interface Participant {
   updated_at: string;
 }
 
+export interface UserParticipation {
+  id: number;
+  status: 'pending' | 'approved' | 'rejected' | 'paid';
+  team_id?: number;
+}
+
 export interface Tournament {
   id: number;
   user?: User;
@@ -64,6 +70,7 @@ export interface Tournament {
   participants?: Participant[];
   staff?: any[];
   participants_count?: number;
+  user_participation?: UserParticipation | null;
   created_at: string;
   updated_at: string;
 }

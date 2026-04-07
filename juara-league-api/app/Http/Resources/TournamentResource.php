@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Auth;
 
 class TournamentResource extends JsonResource
 {
@@ -16,6 +17,7 @@ class TournamentResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'sport_id' => $this->sport_id,
             'user' => new UserResource($this->whenLoaded('user')),
             'title' => $this->title,
             'slug' => $this->slug,
@@ -32,14 +34,40 @@ class TournamentResource extends JsonResource
             'entry_fee' => $this->entry_fee,
             'max_participants' => $this->max_participants,
             'current_participants' => $this->participants()->where('status', '!=', 'rejected')->count(),
+            'participants_count' => $this->participants()->where('status', '!=', 'rejected')->count(),
             'registration_start_at' => $this->registration_start_at,
             'registration_end_at' => $this->registration_end_at,
             'start_at' => $this->start_at,
             'sport' => new SportResource($this->whenLoaded('sport')),
             'staff' => TournamentStaffResource::collection($this->whenLoaded('staff')),
             'stages' => $this->whenLoaded('stages'),
+            'user_participation' => $this->getUserParticipation(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
     }
+
+    /**
+     * Get the current user's participation status for this tournament.
+     */
+    private function getUserParticipation(): ?array
+    {
+        // Require explicit sanctum guard check for public routes
+        $user = auth('sanctum')->user();
+        if (!$user) return null;
+
+        // Now user_id is always stored (even for team tournaments)
+        $participation = $this->participants()
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$participation) return null;
+
+        return [
+            'id' => $participation->id,
+            'status' => $participation->status,
+            'team_id' => $participation->team_id,
+        ];
+    }
 }
+    

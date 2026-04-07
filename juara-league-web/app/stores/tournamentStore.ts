@@ -176,6 +176,44 @@ export const useTournamentStore = defineStore('tournament', () => {
     }
   }
 
+  const getById = async (id: number | string) => {
+    isLoading.value = true
+    try {
+      const response = await useApi<{ data: Tournament }>(`/api/v1/tournaments/${id}?include=sport`)
+      return response.data
+    } catch (e: any) {
+      error.value = e.message || 'Turnamen tidak ditemukan'
+      throw e
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const updateTournament = async (id: number | string, payload: StoreTournamentPayload) => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const response = await useApi<{ data: Tournament }>(`/api/v1/tournaments/${id}`, {
+        method: 'PUT',
+        body: payload
+      })
+      
+      // Update local state
+      const updateIdx = tournaments.value.findIndex(t => t.id === Number(id))
+      if (updateIdx !== -1) tournaments.value[updateIdx] = response.data
+      
+      const myUpdateIdx = myTournaments.value.findIndex(t => t.id === Number(id))
+      if (myUpdateIdx !== -1) myTournaments.value[myUpdateIdx] = response.data
+      
+      return response.data
+    } catch (e: any) {
+      error.value = e.data?.message || 'Gagal memperbarui turnamen'
+      throw e
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     tournaments,
     myTournaments,
@@ -184,7 +222,9 @@ export const useTournamentStore = defineStore('tournament', () => {
     fetchTournaments,
     fetchMyTournaments,
     createTournament,
+    updateTournament,
     getBySlug,
+    getById,
     publishTournament,
     fetchStages,
     createStage,

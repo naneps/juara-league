@@ -96,7 +96,7 @@ const formattedDate = computed(() => {
             <div class="p-1 bg-yellow-500/10 rounded-md">
               <UIcon name="i-lucide-trophy" class="text-yellow-500 size-4" />
             </div>
-            <span class="text-base font-black text-neutral-900 dark:text-white tracking-tight">{{ tournament.prize_pool }}</span>
+            <span class="text-base font-black text-neutral-900 dark:text-white tracking-tight">{{ formatCurrency(tournament.prize_pool) }}</span>
           </div>
         </div>
         <div class="flex flex-col gap-1.5">
@@ -135,7 +135,7 @@ const formattedDate = computed(() => {
 
         <div class="text-right shrink-0">
           <span class="block text-[9px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-0.5">Entry Fee</span>
-          <span class="text-sm font-black text-primary-600 dark:text-primary-400">{{ tournament.entry_fee == 0 ? 'Gratis' : tournament.entry_fee }}</span>
+          <span class="text-sm font-black text-primary-600 dark:text-primary-400">{{ tournament.entry_fee == 0 ? 'Gratis' : formatCurrency(tournament.entry_fee) }}</span>
         </div>
       </div>
     </div>

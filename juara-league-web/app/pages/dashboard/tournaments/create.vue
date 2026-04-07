@@ -14,6 +14,9 @@ const sportStore = useSportStore()
 const { isLoading } = storeToRefs(tournamentStore)
 const { sports } = storeToRefs(sportStore)
 const toast = useToast()
+const route = useRoute()
+const editId = computed(() => route.query.edit as string | undefined)
+const isEdit = computed(() => !!editId.value)
 
 const state = reactive<StoreTournamentPayload>({
   sport_id: '',
@@ -34,13 +37,44 @@ const state = reactive<StoreTournamentPayload>({
   banner_url: ''
 })
 
+const formatDateForInput = (date?: string | Date) => {
+  if (!date) return ''
+  const d = new Date(date)
+  if (isNaN(d.getTime())) return ''
+  const pad = (n: number) => n.toString().padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
 onMounted(async () => {
   try {
     await sportStore.fetchSports()
-    if (!state.sport_id && sports.value && sports.value.length > 0) {
+    
+    if (isEdit.value && editId.value) {
+      const tournament = await tournamentStore.getBySlug(editId.value)
+      if (tournament) {
+        state.sport_id = tournament.sport_id || tournament.sport?.id || ''
+        state.title = tournament.title
+        state.description = tournament.description
+        state.category = tournament.category
+        state.mode = tournament.mode
+        state.participant_type = tournament.participant_type
+        state.team_size = tournament.team_size
+        state.bracket_type = tournament.bracket_type
+        state.max_participants = tournament.max_participants
+        state.prize_pool = Number(tournament.prize_pool)
+        state.entry_fee = Number(tournament.entry_fee)
+        state.registration_start_at = formatDateForInput(tournament.registration_start_at)
+        state.registration_end_at = formatDateForInput(tournament.registration_end_at)
+        state.start_at = formatDateForInput(tournament.start_at)
+        state.venue = tournament.venue || ''
+        state.banner_url = tournament.banner_url || ''
+      }
+    } else if (!state.sport_id && sports.value && sports.value.length > 0) {
       state.sport_id = sports.value[0]?.id || ''
     }
-  } catch (e) {}
+  } catch (e) {
+    console.error('Error initializing form:', e)
+  }
 })
 
 const selectedSport = computed(() => sports.value?.find(s => s.id === state.sport_id))
@@ -96,16 +130,25 @@ const onSubmit = async () => {
     return
   }
   try {
-    await tournamentStore.createTournament(state)
-    toast.add({
-      title: 'Berhasil!',
-      description: 'Turnamen Anda telah berhasil dibuat.',
-      color: 'success'
-    })
+    if (isEdit.value && editId.value) {
+      await tournamentStore.updateTournament(editId.value, state)
+      toast.add({
+        title: 'Berhasil!',
+        description: 'Perubahan turnamen telah disimpan.',
+        color: 'success'
+      })
+    } else {
+      await tournamentStore.createTournament(state)
+      toast.add({
+        title: 'Berhasil!',
+        description: 'Turnamen Anda telah berhasil dibuat.',
+        color: 'success'
+      })
+    }
     navigateTo(`/dashboard/tournaments`)
   } catch (e: any) {
     toast.add({
-      title: 'Gagal Membuat Turnamen',
+      title: isEdit.value ? 'Gagal Memperbarui Turnamen' : 'Gagal Membuat Turnamen',
       description: e.data?.message || 'Terjadi kesalahan sistem.',
       color: 'error'
     })
@@ -129,12 +172,12 @@ const onSubmit = async () => {
             <div class="h-5 w-px bg-white/10" />
             <div class="flex items-center gap-2">
               <div class="size-2 rounded-full bg-primary-500 animate-pulse" />
-              <span class="text-xs font-semibold text-neutral-400 uppercase tracking-widest">Draft Mode</span>
+              <span class="text-xs font-semibold text-neutral-400 uppercase tracking-widest">{{ isEdit ? 'Edit Mode' : 'Draft Mode' }}</span>
             </div>
           </div>
         </template>
         <template #title>
-          <span class="font-black text-white tracking-tight">Buat Turnamen</span>
+          <span class="font-black text-white tracking-tight">{{ isEdit ? 'Edit Turnamen' : 'Buat Turnamen' }}</span>
         </template>
       </UDashboardNavbar>
     </template>
@@ -147,7 +190,7 @@ const onSubmit = async () => {
           <div class="max-w-6xl mx-auto">
             <div class="flex items-end justify-between">
               <div>
-                <p class="text-xs font-bold text-primary-500 uppercase tracking-[0.3em] mb-3">Turnamen Baru</p>
+                <p class="text-xs font-bold text-primary-500 uppercase tracking-[0.3em] mb-3">{{ isEdit ? 'Ubah Informasi' : 'Turnamen Baru' }}</p>
                 <h1 class="text-4xl font-black text-neutral-900 dark:text-white tracking-tight leading-none">
                   Konfigurasi<br>
                   <span class="text-neutral-400 dark:text-neutral-500">Turnamen</span>
@@ -155,7 +198,7 @@ const onSubmit = async () => {
               </div>
               <div class="hidden sm:flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-600 font-medium">
                 <UIcon name="i-lucide-shield-check" class="size-3.5" />
-                Data tersimpan otomatis sebagai draft
+                {{ isEdit ? 'Semua perubahan tersimpan permanen' : 'Data tersimpan otomatis sebagai draft' }}
               </div>
             </div>
           </div>
@@ -416,10 +459,10 @@ const onSubmit = async () => {
                   <template #leading>
                     <UIcon name="i-lucide-send" class="size-4" />
                   </template>
-                  Publikasi sebagai Draft
+                  {{ isEdit ? 'Simpan Perubahan' : 'Publikasi sebagai Draft' }}
                 </UButton>
                 <p class="text-center text-xs text-neutral-600 mt-3 font-medium">
-                  Turnamen akan tersimpan sebagai draft — kamu bisa edit sebelum dipublikasi
+                  {{ isEdit ? 'Perubahan akan langsung diterapkan pada turnamen ini.' : 'Turnamen akan tersimpan sebagai draft — kamu bisa edit sebelum dipublikasi' }}
                 </p>
               </div>
 

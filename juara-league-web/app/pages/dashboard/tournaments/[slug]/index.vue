@@ -38,6 +38,12 @@ const getStatus = (status: string) => {
 }
 const getStatusColor = (status: string) => getStatus(status).color
 const getStatusLabel = (status: string) => getStatus(status).label
+
+const tabs = [
+  { label: 'Deskripsi & Aturan', icon: 'i-lucide-file-text', slot: 'desc' },
+  { label: 'Manajemen Pendaftar', icon: 'i-lucide-users', slot: 'participants' },
+  { label: 'Tahapan & Braket', icon: 'i-lucide-git-branch', slot: 'stages' },
+]
 </script>
 
 <template>
@@ -76,7 +82,7 @@ const getStatusLabel = (status: string) => getStatus(status).label
           icon="i-lucide-edit" 
           label="Edit Info" 
           class="rounded-xl font-bold uppercase tracking-widest text-[10px]"
-          :to="`/dashboard/tournaments/create?edit=${tournament.id}`"
+          :to="`/dashboard/tournaments/create?edit=${tournament.slug}`"
         />
       </div>
     </div>
@@ -86,8 +92,8 @@ const getStatusLabel = (status: string) => getStatus(status).label
       <div 
         v-for="stat in [
           { label: 'Pendaftar', value: tournament.participants_count || 0, sub: `Max: ${tournament.max_participants}`, icon: 'i-lucide-users', color: 'bg-primary-500' },
-          { label: 'Total Hadiah', value: tournament.prize_pool || 'Rp 0', sub: 'Pool Prize', icon: 'i-lucide-trophy', color: 'bg-amber-500' },
-          { label: 'Biaya Daftar', value: tournament.entry_fee || 'Gratis', sub: 'Per Tim/Orang', icon: 'i-lucide-ticket', color: 'bg-blue-500' },
+          { label: 'Total Hadiah', value: formatCurrency(tournament.prize_pool), sub: 'Pool Prize', icon: 'i-lucide-trophy', color: 'bg-amber-500' },
+          { label: 'Biaya Daftar', value: tournament.entry_fee == 0 ? 'Gratis' : formatCurrency(tournament.entry_fee), sub: 'Per Tim/Orang', icon: 'i-lucide-ticket', color: 'bg-blue-500' },
           { label: 'Mulai', value: new Date(tournament.start_at || '').toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }), sub: 'Tanggal Main', icon: 'i-lucide-calendar', color: 'bg-emerald-500' },
         ]" 
         :key="stat.label"
@@ -106,18 +112,42 @@ const getStatusLabel = (status: string) => getStatus(status).label
       </div>
     </div>
 
-    <!-- Description -->
-    <div class="bg-white dark:bg-neutral-900/40 p-8 rounded-[3rem] border border-neutral-200 dark:border-white/5 shadow-sm dark:shadow-none">
-      <h3 class="text-xl font-black text-neutral-900 dark:text-white uppercase tracking-tight mb-6 flex items-center gap-3">
-        <UIcon name="i-lucide-file-text" class="size-6 text-primary-500" />
-        Deskripsi & Aturan
-      </h3>
-      <div v-if="tournament.description" class="prose prose-sm dark:prose-invert max-w-none text-neutral-600 dark:text-neutral-400 font-medium">
-        {{ tournament.description }}
-      </div>
-      <div v-else class="text-neutral-500 font-bold uppercase tracking-widest text-[10px] py-12 text-center">
-        Belum ada deskripsi yang ditambahkan.
-      </div>
-    </div>
+    <!-- Tabs Content -->
+    <UTabs :items="tabs" :ui="{ list: 'bg-white dark:bg-neutral-900 ring-1 ring-neutral-200 dark:ring-white/5 rounded-2xl p-1 mb-6' }">
+      
+      <template #desc>
+        <div class="bg-white dark:bg-neutral-900/40 p-8 rounded-[3rem] border border-neutral-200 dark:border-white/5 shadow-sm dark:shadow-none mt-6">
+          <h3 class="text-xl font-black text-neutral-900 dark:text-white uppercase tracking-tight mb-6 flex items-center gap-3">
+            <UIcon name="i-lucide-file-text" class="size-6 text-primary-500" />
+            Deskripsi & Aturan
+          </h3>
+          <div v-if="tournament.description" class="prose prose-sm dark:prose-invert max-w-none text-neutral-600 dark:text-neutral-400 font-medium whitespace-pre-wrap">
+            {{ tournament.description }}
+          </div>
+          <div v-else class="text-neutral-500 font-bold uppercase tracking-widest text-[10px] py-12 text-center">
+            Belum ada deskripsi yang ditambahkan.
+          </div>
+        </div>
+      </template>
+
+      <template #participants>
+        <div class="mt-6">
+          <TournamentsTournamentParticipantManager 
+            :tournament-slug="tournament.slug" 
+            :initial-participants="tournament.participants || []" 
+          />
+        </div>
+      </template>
+
+      <template #stages>
+        <div class="mt-6">
+          <TournamentsTournamentStageManager 
+            :tournament-slug="tournament.slug" 
+            :initial-stages="tournament.stages || []" 
+          />
+        </div>
+      </template>
+
+    </UTabs>
   </div>
 </template>

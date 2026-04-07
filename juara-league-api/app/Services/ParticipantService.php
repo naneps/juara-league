@@ -31,7 +31,7 @@ class ParticipantService
                     'user_id' => ['User ID is required for individual tournaments.']
                 ]);
             }
-            // Clear team_id if provided by accident
+            // Do not allow team_id for individual
             unset($data['team_id']);
         } else if ($tournament->participant_type === 'team') {
             if (!isset($data['team_id'])) {
@@ -39,8 +39,7 @@ class ParticipantService
                     'team_id' => ['Team ID is required for team-based tournaments.']
                 ]);
             }
-            // Clear user_id if provided (will use creator/authenticated user context later)
-            unset($data['user_id']);
+            // user_id is kept - it records who submitted the registration
         }
 
         // Check capacity
@@ -52,15 +51,23 @@ class ParticipantService
         }
 
         // Check if already registered (Active participation)
-        $query = $tournament->participants()->where('status', '!=', 'rejected');
-        if (isset($data['user_id'])) {
-            $query->where('user_id', $data['user_id']);
-        }
-        if (isset($data['team_id'])) {
-            $query->where('team_id', $data['team_id']);
+        // For individual: check by user_id
+        // For team: check by team_id
+        if ($tournament->participant_type === 'individual' && isset($data['user_id'])) {
+            $alreadyRegistered = $tournament->participants()
+                ->where('status', '!=', 'rejected')
+                ->where('user_id', $data['user_id'])
+                ->exists();
+        } else if ($tournament->participant_type === 'team' && isset($data['team_id'])) {
+            $alreadyRegistered = $tournament->participants()
+                ->where('status', '!=', 'rejected')
+                ->where('team_id', $data['team_id'])
+                ->exists();
+        } else {
+            $alreadyRegistered = false;
         }
 
-        if ($query->exists()) {
+        if ($alreadyRegistered) {
             throw ValidationException::withMessages([
                 'registration' => ['Already registered for this tournament.']
             ]);

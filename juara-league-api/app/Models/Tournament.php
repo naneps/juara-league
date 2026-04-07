@@ -10,6 +10,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Tournament extends Model
 {
     use HasFactory, SoftDeletes;
+    
+    /**
+     * Get the route key for the model.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
 
     protected $fillable = [
         'user_id',
