@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { Tournament } from '~/types/tournament'
+import type { Tournament } from '~/types/tournament';
+import { getTournamentStatus } from '~/utils/tournamentStatus';
 
 interface Props {
   tournament: Tournament
@@ -7,16 +8,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-type BadgeColor = 'primary' | 'neutral' | 'success' | 'info' | 'warning' | 'error' | 'secondary'
-
-const statusConfig: Record<string, { label: string, color: BadgeColor, icon: string }> = {
-  open: { label: 'Registration Open', color: 'primary', icon: 'i-lucide-users' },
-  ongoing: { label: 'Ongoing', color: 'warning', icon: 'i-lucide-play-circle' },
-  finished: { label: 'Finished', color: 'neutral', icon: 'i-lucide-check-circle' },
-  draft: { label: 'Draft', color: 'neutral', icon: 'i-lucide-file-text' }
-}
-
-const status = computed(() => (statusConfig[props.tournament.status] || statusConfig.draft)!)
+const status = computed(() => getTournamentStatus(props.tournament.status))
 
 // Safe formatting for start_at
 const formattedDate = computed(() => {

@@ -21,10 +21,16 @@ class UpdateProfileRequest extends FormRequest
      */
     public function rules(): array
     {
+        $userId = $this->user()?->id;
+
         return [
             'name' => ['required', 'string', 'min:2', 'max:100'],
-            'avatar_url' => ['nullable', 'url', 'max:2048'], // For external R2 URLs
-            'avatar_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'], // For local upload
+            'username' => ['nullable', 'string', 'min:2', 'max:30', 'unique:users,username,' . $userId],
+            'email' => ['required', 'email', 'unique:users,email,' . $userId],
+            'bio' => ['nullable', 'string', 'max:500'],
+            'phone' => ['nullable', 'string', 'max:20'],
+            'avatar_url' => ['nullable', 'url', 'max:2048'],
+            'avatar_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ];
     }
 }

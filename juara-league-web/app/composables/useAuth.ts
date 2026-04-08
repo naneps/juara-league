@@ -102,6 +102,30 @@ export const useAuth = () => {
     }
   }
 
+  const updateProfile = async (payload: any) => {
+    try {
+      const { data } = await useApi<ApiResponse<User>>('/api/v1/users/me', {
+        method: 'PUT',
+        body: payload
+      })
+      user.value = data
+      return data
+    } catch (error) {
+      throw error
+    }
+  }
+
+  const updatePassword = async (payload: any) => {
+    try {
+      await useApi('/api/v1/users/password', {
+        method: 'PUT',
+        body: payload
+      })
+    } catch (error) {
+      throw error
+    }
+  }
+
   return {
     user,
     token,
@@ -109,6 +133,8 @@ export const useAuth = () => {
     login,
     register,
     logout,
-    fetchUser
+    fetchUser,
+    updateProfile,
+    updatePassword
   }
 }

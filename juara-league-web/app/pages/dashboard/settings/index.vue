@@ -6,44 +6,71 @@ definePageMeta({
 import * as z from 'zod'
 import type { FormSubmitEvent } from '@nuxt/ui'
 
+const { user, updateProfile } = useAuth()
+const { uploadFile, isUploading } = useUpload()
+
 const fileRef = ref<HTMLInputElement>()
 
 const profileSchema = z.object({
-  name: z.string().min(2, 'Too short'),
-  email: z.string().email('Invalid email'),
-  username: z.string().min(2, 'Too short'),
+  name: z.string().min(2, 'Terlalu pendek'),
+  email: z.string().email('Email tidak valid'),
+  username: z.string().min(2, 'Terlalu pendek'),
   avatar: z.string().optional(),
-  bio: z.string().optional()
+  bio: z.string().optional(),
+  phone: z.string().optional()
 })
 
 type ProfileSchema = z.output<typeof profileSchema>
 
 const profile = reactive<Partial<ProfileSchema>>({
-  name: 'Benjamin Canac',
-  email: 'ben@nuxtlabs.com',
-  username: 'benjamincanac',
-  avatar: undefined,
-  bio: undefined
+  name: user.value?.name || '',
+  email: user.value?.email || '',
+  username: user.value?.username || '',
+  avatar: user.value?.avatar || undefined,
+  bio: user.value?.bio || undefined,
+  phone: user.value?.phone || undefined
 })
+
+const isLoading = ref(false)
 const toast = useToast()
+
 async function onSubmit(event: FormSubmitEvent<ProfileSchema>) {
-  toast.add({
-    title: 'Success',
-    description: 'Your settings have been updated.',
-    icon: 'i-lucide-check',
-    color: 'success'
-  })
-  console.log(event.data)
+  isLoading.value = true
+  try {
+    await updateProfile(event.data)
+    toast.add({
+      title: 'Berhasil',
+      description: 'Profil Anda telah diperbarui.',
+      icon: 'i-lucide-check',
+      color: 'success'
+    })
+  } catch (error: any) {
+    toast.add({
+      title: 'Gagal',
+      description: error.data?.message || 'Gagal memperbarui profil.',
+      icon: 'i-lucide-x',
+      color: 'error'
+    })
+  } finally {
+    isLoading.value = false
+  }
 }
 
-function onFileChange(e: Event) {
+async function onFileChange(e: Event) {
   const input = e.target as HTMLInputElement
 
-  if (!input.files?.length) {
+  if (!input.files || input.files.length === 0) {
     return
   }
 
-  profile.avatar = URL.createObjectURL(input.files[0]!)
+  const file = input.files[0]
+  if (!file) return
+
+  const result = await uploadFile(file, 'avatars')
+  
+  if (result) {
+    profile.avatar = result.url
+  }
 }
 
 function onFileClick() {
@@ -67,10 +94,11 @@ function onFileClick() {
     >
       <UButton
         form="settings"
-        label="Save changes"
+        label="Simpan Perubahan"
         color="neutral"
         type="submit"
-        class="w-fit lg:ms-auto"
+        class="w-fit lg:ms-auto font-bold"
+        :loading="isLoading"
       />
     </UPageCard>
 
@@ -155,6 +183,20 @@ function onFileClick() {
           :rows="5"
           autoresize
           class="w-full"
+        />
+      </UFormField>
+      <USeparator />
+      <UFormField
+        name="phone"
+        label="Nomor Telepon"
+        description="Nomor WhatsApp/Telepon untuk koordinasi turnamen."
+        class="flex max-sm:flex-col justify-between items-start gap-4"
+      >
+        <UInput
+          v-model="profile.phone"
+          type="tel"
+          autocomplete="off"
+          placeholder="Contoh: 08123456789"
         />
       </UFormField>
     </UPageCard>

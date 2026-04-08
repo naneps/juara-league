@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\TournamentStaffController;
 use App\Http\Controllers\Api\V1\StageController;
 use App\Http\Controllers\Api\V1\ParticipantController;
 use App\Http\Controllers\Api\V1\VerificationController;
+use App\Http\Controllers\Api\V1\FileController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -51,11 +52,14 @@ Route::prefix('v1')->group(function () {
         Route::put('/users/me', [ProfileController::class, 'updateProfile']);
         Route::put('/users/password', [ProfileController::class, 'updatePassword']);
 
+        // File Upload
+        Route::post('/upload', [FileController::class, 'upload']);
+
         // Tournament Management
         Route::get('/my-tournaments', [TournamentController::class, 'mine']);
         Route::post('/tournaments', [TournamentController::class, 'store']);
-        Route::put('/tournaments/{tournament}', [TournamentController::class, 'update']);
-        Route::delete('/tournaments/{tournament}', [TournamentController::class, 'destroy']);
+        Route::put('/tournaments/{tournament:id}', [TournamentController::class, 'update']);
+        Route::delete('/tournaments/{tournament:id}', [TournamentController::class, 'destroy']);
         Route::post('/tournaments/{tournament:slug}/publish', [TournamentController::class, 'publish']);
 
         // Tournament Staff Management
@@ -69,6 +73,7 @@ Route::prefix('v1')->group(function () {
         Route::delete('/stages/{stage}', [StageController::class, 'destroy']);
 
         // Participant Management
+        Route::get('/my-participations', [ParticipantController::class, 'mine']);
         Route::post('/tournaments/{tournament:slug}/participants', [ParticipantController::class, 'store']);
         Route::patch('/participants/{participant}/status', [ParticipantController::class, 'updateStatus']);
         Route::delete('/participants/{participant}', [ParticipantController::class, 'destroy']);

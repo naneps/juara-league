@@ -2,22 +2,22 @@
 import type { NavigationMenuItem } from '@nuxt/ui'
 
 const links = [[{
-  label: 'General',
+  label: 'Profil',
   icon: 'i-lucide-user',
-  to: '/settings',
+  to: '/dashboard/settings',
   exact: true
 }, {
-  label: 'Members',
+  label: 'Anggota',
   icon: 'i-lucide-users',
-  to: '/settings/members'
+  to: '/dashboard/settings/members'
 }, {
-  label: 'Notifications',
+  label: 'Notifikasi',
   icon: 'i-lucide-bell',
-  to: '/settings/notifications'
+  to: '/dashboard/settings/notifications'
 }, {
-  label: 'Security',
+  label: 'Keamanan',
   icon: 'i-lucide-shield',
-  to: '/settings/security'
+  to: '/dashboard/settings/security'
 }], [{
   label: 'Documentation',
   icon: 'i-lucide-book-open',

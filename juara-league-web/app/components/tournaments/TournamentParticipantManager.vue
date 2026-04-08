@@ -32,92 +32,121 @@ const updateStatus = async (id: number, status: string) => {
   }
 }
 
-const getStatusColor = (status: string) => {
+const statusBadge = (status: string): { color: 'success' | 'error' | 'warning' | 'primary' | 'neutral'; label: string } => {
   switch (status) {
-    case 'approved': return 'success'
-    case 'rejected': return 'error'
-    case 'pending': return 'warning'
-    case 'paid': return 'primary'
-    default: return 'neutral'
+    case 'approved': return { color: 'success', label: 'Disetujui' }
+    case 'rejected': return { color: 'error',   label: 'Ditolak' }
+    case 'paid':     return { color: 'primary',  label: 'Lunas' }
+    default:         return { color: 'warning',  label: 'Menunggu' }
   }
 }
+
+const pendingCount = computed(() => participants.value.filter(p => p.status === 'pending').length)
+
+onMounted(() => {
+  fetchParticipants()
+})
 </script>
 
 <template>
-  <div class="space-y-8">
-    <div class="flex items-center justify-between">
-      <h2 class="text-2xl font-black text-white uppercase tracking-tight">Manajemen Peserta</h2>
-      <div class="flex items-center gap-2">
-        <UBadge color="neutral" variant="outline" class="rounded-lg text-[10px] font-black uppercase tracking-widest px-3 py-1">
-          Total: {{ participants.length }}
+  <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden">
+
+    <!-- Header row -->
+    <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800">
+      <div class="flex items-center gap-3">
+        <h2 class="text-sm font-semibold text-neutral-900 dark:text-white">Peserta</h2>
+        <UBadge v-if="participants.length > 0" color="neutral" variant="subtle" size="xs">
+          {{ participants.length }}
+        </UBadge>
+        <UBadge v-if="pendingCount > 0" color="warning" variant="subtle" size="xs">
+          {{ pendingCount }} menunggu
         </UBadge>
       </div>
+      <UButton size="xs" color="neutral" variant="ghost" icon="i-lucide-refresh-cw" @click="fetchParticipants">
+        Refresh
+      </UButton>
     </div>
 
-    <!-- Participants Table -->
-    <div v-if="participants.length > 0" class="overflow-hidden bg-neutral-900/40 rounded-[2rem] border border-white/5 p-4">
-      <table class="w-full text-left">
+    <!-- Table -->
+    <div v-if="participants.length > 0" class="overflow-x-auto">
+      <table class="w-full text-sm">
         <thead>
-          <tr class="border-b border-white/5">
-            <th class="px-6 py-4 text-[10px] font-black text-neutral-500 uppercase tracking-widest">Partisipan</th>
-            <th class="px-6 py-4 text-[10px] font-black text-neutral-500 uppercase tracking-widest">Status</th>
-            <th class="px-6 py-4 text-[10px] font-black text-neutral-500 uppercase tracking-widest">Pendaftaran</th>
-            <th class="px-6 py-4 text-right text-[10px] font-black text-neutral-500 uppercase tracking-widest">Aksi</th>
+          <tr class="border-b border-neutral-100 dark:border-neutral-800">
+            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400">Peserta</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400">Tipe</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400">Status</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400">Daftar</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-neutral-500 dark:text-neutral-400">Aksi</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-white/5">
-          <tr v-for="participant in participants" :key="participant.id" class="group hover:bg-white/[0.02] transition-colors">
-            <td class="px-6 py-6">
-              <div class="flex items-center gap-4">
-                <UAvatar 
-                  :src="participant.user?.avatar || participant.team?.logo_url || `https://i.pravatar.cc/150?u=${participant.id}`" 
-                  size="md" 
-                  class="rounded-xl ring-2 ring-white/5"
+        <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+          <tr
+            v-for="participant in participants"
+            :key="participant.id"
+            class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors"
+          >
+            <!-- Name -->
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <UAvatar
+                  :src="participant.user?.avatar || participant.team?.logo_url || `https://i.pravatar.cc/80?u=${participant.id}`"
+                  size="sm"
+                  class="rounded-lg"
                 />
-                <div>
-                  <p class="text-white font-black leading-none mb-1">{{ participant.user?.name || participant.team?.name }}</p>
-                  <span class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider">{{ participant.team ? 'Team' : 'Solo Player' }}</span>
-                </div>
+                <span class="font-medium text-neutral-900 dark:text-white">
+                  {{ participant.user?.name || participant.team?.name || '—' }}
+                </span>
               </div>
             </td>
-            <td class="px-6 py-6">
-              <UBadge :color="getStatusColor(participant.status)" variant="soft" class="rounded-lg text-[10px] font-black uppercase tracking-widest px-3 py-1">
-                {{ participant.status }}
+
+            <!-- Type -->
+            <td class="px-6 py-4">
+              <span class="text-xs text-neutral-500 dark:text-neutral-400">
+                {{ participant.team ? 'Tim' : 'Individu' }}
+              </span>
+            </td>
+
+            <!-- Status -->
+            <td class="px-6 py-4">
+              <UBadge :color="statusBadge(participant.status).color" variant="subtle" size="sm">
+                {{ statusBadge(participant.status).label }}
               </UBadge>
             </td>
-            <td class="px-6 py-6">
-              <span class="text-neutral-400 font-medium text-xs">{{ new Date(participant.created_at).toLocaleDateString() }}</span>
+
+            <!-- Date -->
+            <td class="px-6 py-4">
+              <span class="text-xs text-neutral-400 dark:text-neutral-500">
+                {{ new Date(participant.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) }}
+              </span>
             </td>
-            <td class="px-6 py-6 text-right">
-              <div class="flex items-center justify-end gap-2 px-6">
-                <!-- Approve Button -->
-                <UButton 
-                  v-if="participant.status === 'pending'"
-                  color="success" 
-                  icon="i-lucide-check" 
-                  size="xs" 
-                  class="rounded-lg" 
-                  variant="soft"
-                  @click="updateStatus(participant.id, 'approved')"
-                />
-                <!-- Reject Button -->
-                <UButton 
-                  v-if="participant.status === 'pending'"
-                  color="error" 
-                  icon="i-lucide-x" 
-                  size="xs" 
-                  class="rounded-lg" 
-                  variant="soft"
-                  @click="updateStatus(participant.id, 'rejected')"
-                />
-                <!-- View Proof Button if applicable (dummy for now) -->
-                <UButton 
+
+            <!-- Actions -->
+            <td class="px-6 py-4">
+              <div class="flex items-center justify-end gap-1.5">
+                <template v-if="participant.status === 'pending'">
+                  <UButton
+                    color="success"
+                    variant="subtle"
+                    icon="i-lucide-check"
+                    size="xs"
+                    :loading="isSubmitting"
+                    @click="updateStatus(participant.id, 'approved')"
+                  />
+                  <UButton
+                    color="error"
+                    variant="subtle"
+                    icon="i-lucide-x"
+                    size="xs"
+                    :loading="isSubmitting"
+                    @click="updateStatus(participant.id, 'rejected')"
+                  />
+                </template>
+                <UButton
                   v-if="participant.payment_proof_url"
-                  color="primary" 
-                  icon="i-lucide-image" 
-                  size="xs" 
-                  class="rounded-lg" 
+                  color="neutral"
                   variant="ghost"
+                  icon="i-lucide-image"
+                  size="xs"
                 />
               </div>
             </td>
@@ -126,13 +155,12 @@ const getStatusColor = (status: string) => {
       </table>
     </div>
 
-    <!-- Empty State -->
-    <div v-else class="text-center py-20 bg-neutral-900/20 rounded-[3rem] border border-dashed border-white/10">
-      <div class="bg-neutral-900/50 p-10 rounded-full mb-8 ring-1 ring-white/5 inline-block mx-auto">
-        <UIcon name="i-lucide-users" class="size-16 text-neutral-800" />
-      </div>
-      <h3 class="text-xl font-black text-white mb-2 uppercase tracking-tight">Belum Ada Pendaftar</h3>
-      <p class="text-neutral-600 font-bold uppercase tracking-widest text-[10px]">Turnamen ini sedang menunggu tim pertama!</p>
+    <!-- Empty state -->
+    <div v-else class="py-16 text-center">
+      <UIcon name="i-lucide-users" class="size-10 text-neutral-300 dark:text-neutral-700 mx-auto mb-3" />
+      <p class="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">Belum ada peserta</p>
+      <p class="text-xs text-neutral-400 dark:text-neutral-500">Pendaftar akan muncul di sini setelah turnamen dipublish.</p>
     </div>
+
   </div>
 </template>

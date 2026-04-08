@@ -3,6 +3,8 @@
 namespace App\Http\Requests\User;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Validation\Rules\Password as PasswordRule;
 
 class UpdatePasswordRequest extends FormRequest
 {
@@ -25,7 +27,7 @@ class UpdatePasswordRequest extends FormRequest
     {
         return [
             'current_password' => ['required', 'string', 'current_password'],
-            'new_password' => ['required', 'string', 'min:8', 'confirmed', 'regex:/[A-Za-z]/', 'regex:/[0-9]/', 'different:current_password'],
+            'new_password' => ['required', 'string', Password::defaults(), 'different:current_password'],
         ];
     }
     
@@ -37,7 +39,6 @@ class UpdatePasswordRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'new_password.regex' => 'The new password must contain at least one letter and one number.',
             'new_password.different' => 'The new password must be different from the current password.',
         ];
     }

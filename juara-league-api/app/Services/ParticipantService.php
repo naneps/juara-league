@@ -85,6 +85,14 @@ class ParticipantService
         return $participant;
     }
 
+    public function getUserParticipations(int $userId): Collection
+    {
+        return Participant::where('user_id', $userId)
+            ->with(['tournament.sport', 'tournament.user', 'team'])
+            ->latest()
+            ->get();
+    }
+
     public function deleteParticipant(Participant $participant): bool
     {
         return $participant->delete();

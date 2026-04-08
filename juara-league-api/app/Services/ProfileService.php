@@ -11,7 +11,8 @@ use Illuminate\Support\Facades\Storage;
 class ProfileService
 {
     public function __construct(
-        protected UserRepositoryInterface $userRepository
+        protected UserRepositoryInterface $userRepository,
+        protected FileService $fileService
     ) {}
 
     /**
@@ -21,12 +22,24 @@ class ProfileService
      */
     public function updateProfile(User $user, array $data): User
     {
-        $updateData = ['name' => $data['name']];
+        $updateData = [
+            'name' => $data['name'] ?? $user->name,
+            'username' => $data['username'] ?? $user->username,
+            'email' => $data['email'] ?? $user->email,
+            'bio' => $data['bio'] ?? $user->bio,
+            'phone' => $data['phone'] ?? $user->phone,
+        ];
 
-        // Handle avatar upload to local storage (mocking R2 for now)
+        // Handle avatar upload
         if (isset($data['avatar_file']) && $data['avatar_file'] instanceof UploadedFile) {
-            $path = $data['avatar_file']->store('avatars', 'public');
-            $updateData['avatar'] = url(Storage::url($path));
+            // Optional: Delete old avatar if it exists locally
+            if ($user->avatar && str_contains($user->avatar, config('app.url'))) {
+                $oldPath = $this->fileService->getPathFromUrl($user->avatar);
+                $this->fileService->delete($oldPath);
+            }
+
+            $uploadResult = $this->fileService->upload($data['avatar_file'], 'avatars');
+            $updateData['avatar'] = $uploadResult['url'];
         } elseif (isset($data['avatar_url'])) {
             $updateData['avatar'] = $data['avatar_url'];
         }

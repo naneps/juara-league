@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { useTournamentStore } from '~/stores/tournamentStore'
-import type { Tournament } from '~/types/tournament'
 import { useAuth } from '~/composables/useAuth'
+import { useTournamentStore } from '~/stores/tournamentStore'
+import { getTournamentStatus } from '~/utils/tournamentStatus'
+import type { Tournament } from '~/types/tournament'
 
 const route = useRoute()
 const tournamentStore = useTournamentStore()
@@ -9,6 +10,7 @@ const { user } = useAuth()
 const { isLoading, error } = storeToRefs(tournamentStore)
 
 const tournament = ref<Tournament | null>(null)
+const tournamentStatus = computed(() => getTournamentStatus(tournament.value?.status))
 
 // Initial fetch
 const { data, refresh } = await useAsyncData(`tournament-${route.params.slug}`, () => 
@@ -126,15 +128,16 @@ const dummyBracket = [
           <!-- Info Text -->
           <div class="flex-grow pb-8">
             <div class="flex items-center gap-3 mb-6">
-              <UBadge v-if="tournament?.sport" color="primary" variant="solid" class="rounded-lg font-black uppercase text-[10px] tracking-widest px-4 py-1.5 flex items-center gap-2">
+              <UBadge v-if="tournamentStatus" :color="tournamentStatus.color" variant="solid" class="rounded-lg font-black uppercase text-[10px] tracking-widest px-4 py-1.5 flex items-center gap-2">
+                <UIcon :name="tournamentStatus.icon" class="size-3" />
+                {{ tournamentStatus.label }}
+              </UBadge>
+              <UBadge v-if="tournament?.sport" color="neutral" variant="outline" class="rounded-lg font-bold border-white/20 text-neutral-300 text-[10px] uppercase tracking-widest px-4 py-1.5 flex items-center gap-2">
                 <UIcon name="i-lucide-award" class="size-3" />
                 {{ tournament.sport.name }}
               </UBadge>
-              <UBadge color="neutral" variant="outline" class="rounded-lg font-bold border-white/20 text-neutral-300 text-[10px] uppercase tracking-widest px-4 py-1.5">
+              <UBadge color="neutral" variant="outline" class="rounded-lg font-bold border-white/20 text-neutral-500 text-[10px] uppercase tracking-widest px-4 py-1.5">
                 {{ tournament?.category }}
-              </UBadge>
-              <UBadge color="neutral" variant="outline" class="rounded-lg font-black border-white/20 text-neutral-500 text-[10px] uppercase tracking-widest px-4 py-1.5">
-                {{ tournament?.mode }}
               </UBadge>
             </div>
             

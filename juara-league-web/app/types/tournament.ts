@@ -1,4 +1,4 @@
-export type TournamentStatus = 'open' | 'ongoing' | 'finished' | 'draft';
+export type TournamentStatus = 'open' | 'ongoing' | 'finished' | 'draft' | 'canceled';
 export type TournamentMode = 'online' | 'offline';
 export type BracketType = 'single' | 'double' | 'round_robin' | 'swiss' | 'group_stage';
 export type ParticipantType = 'individual' | 'team';
@@ -30,6 +30,7 @@ export interface Participant {
   team_id?: number;
   user?: User;
   team?: Team;
+  tournament?: Tournament;
   status: 'pending' | 'approved' | 'rejected' | 'paid';
   payment_proof_url?: string;
   notes?: string;

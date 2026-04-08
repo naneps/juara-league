@@ -21,9 +21,9 @@ const links = [[{
     open.value = false
   }
 }, {
-  label: 'Pertandingan',
-  icon: 'i-lucide-swords',
-  to: '/dashboard/matches',
+  label: 'Riwayat Ikut Serta',
+  icon: 'i-lucide-history',
+  to: '/dashboard/participations',
   onSelect: () => {
     open.value = false
   }

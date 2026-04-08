@@ -3,17 +3,28 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ParticipantResource;
 use App\Models\Participant;
 use App\Models\Tournament;
 use App\Services\ParticipantService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class ParticipantController extends Controller
 {
     public function __construct(
         protected ParticipantService $participantService
     ) {}
+
+    /**
+     * Get participations of the current user.
+     */
+    public function mine(Request $request): AnonymousResourceCollection
+    {
+        $participations = $this->participantService->getUserParticipations($request->user()->id);
+        return ParticipantResource::collection($participations);
+    }
 
     public function index(Tournament $tournament): JsonResponse
     {

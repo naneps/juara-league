@@ -1,9 +1,10 @@
 import { defineStore } from 'pinia'
-import type { Tournament, StoreTournamentPayload } from '~/types/tournament'
+import type { Tournament, StoreTournamentPayload, Participant } from '~/types/tournament'
 
 export const useTournamentStore = defineStore('tournament', () => {
   const tournaments = ref<Tournament[]>([])
   const myTournaments = ref<Tournament[]>([])
+  const myParticipations = ref<Participant[]>([])
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
@@ -214,13 +215,29 @@ export const useTournamentStore = defineStore('tournament', () => {
     }
   }
 
+  const fetchMyParticipations = async () => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const response = await useApi<{ data: Participant[] }>('/api/v1/my-participations')
+      myParticipations.value = response.data
+    } catch (e: any) {
+      error.value = e.message || 'Gagal mengambil data pendaftaran'
+      throw e
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     tournaments,
     myTournaments,
+    myParticipations,
     isLoading,
     error,
     fetchTournaments,
     fetchMyTournaments,
+    fetchMyParticipations,
     createTournament,
     updateTournament,
     getBySlug,
