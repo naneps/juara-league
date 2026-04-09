@@ -245,7 +245,7 @@ class SportSeeder extends Seeder
             }
 
             DB::table('sports')->insert([
-                'id'         => (string) Str::uuid(),
+                'id'         => (string) Str::ulid(),
                 'name'       => $sport['name'],
                 'type'       => $sport['type'],
                 'icon_url'   => $sport['icon_url'],

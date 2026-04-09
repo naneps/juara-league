@@ -2,7 +2,7 @@
 import { storeToRefs } from 'pinia'
 import { useSportStore } from '~/stores/sport.store'
 import { useTournamentStore } from '~/stores/tournamentStore'
-import type { StoreTournamentPayload, TournamentMode, BracketType, ParticipantType } from '~/types/tournament'
+import type { BracketType, ParticipantType, StoreTournamentPayload, TournamentMode } from '~/types/tournament'
 
 definePageMeta({
   layout: 'dashboard',
@@ -23,18 +23,29 @@ const state = reactive<StoreTournamentPayload>({
   title: '',
   description: '',
   category: 'Pro',
-  mode: 'online',
+  mode: 'open',
   participant_type: 'individual',
   team_size: undefined,
   bracket_type: 'single',
   max_participants: 16,
   prize_pool: 0,
+  prize_description: '',
   entry_fee: 0,
   registration_start_at: '',
   registration_end_at: '',
   start_at: '',
-  venue: '',
+  venue: 'Online',
   banner_url: ''
+})
+
+const venueType = ref<'online' | 'offline'>('online')
+
+watch(venueType, (newType) => {
+  if (newType === 'online') {
+    state.venue = 'Online'
+  } else if (state.venue === 'Online') {
+    state.venue = ''
+  }
 })
 
 const formatDateForInput = (date?: string | Date) => {
@@ -62,12 +73,15 @@ onMounted(async () => {
         state.bracket_type = tournament.bracket_type
         state.max_participants = tournament.max_participants
         state.prize_pool = Number(tournament.prize_pool)
+        state.prize_description = tournament.prize_description || ''
         state.entry_fee = Number(tournament.entry_fee)
         state.registration_start_at = formatDateForInput(tournament.registration_start_at)
         state.registration_end_at = formatDateForInput(tournament.registration_end_at)
         state.start_at = formatDateForInput(tournament.start_at)
         state.venue = tournament.venue || ''
         state.banner_url = tournament.banner_url || ''
+        
+        venueType.value = state.venue?.toLowerCase() === 'online' ? 'online' : 'offline'
       }
     } else if (!state.sport_id && sports.value && sports.value.length > 0) {
       state.sport_id = sports.value[0]?.id || ''
@@ -90,7 +104,12 @@ const selectedSportOption = computed({
   set: (val: any) => { if (val) state.sport_id = val.value }
 })
 
-const modes: { label: string, value: TournamentMode, icon: string }[] = [
+const enrollmentModes: { label: string, value: TournamentMode, icon: string, desc: string }[] = [
+  { label: 'Terbuka', value: 'open', icon: 'i-lucide-lock-open', desc: 'Siapa saja bisa mendaftar.' },
+  { label: 'Invitasi', value: 'invite', icon: 'i-lucide-lock', desc: 'Hanya peserta dengan undangan.' }
+]
+
+const venueTypes: { label: string, value: 'online' | 'offline', icon: string }[] = [
   { label: 'Online / Remote', value: 'online', icon: 'i-lucide-globe' },
   { label: 'Offline / On-site', value: 'offline', icon: 'i-lucide-map-pin' }
 ]
@@ -254,25 +273,50 @@ const onSubmit = async () => {
                     </UFormField>
                   </div>
 
-                  <UFormField label="Mode Turnamen" name="mode" required>
-                    <div class="grid grid-cols-2 gap-3 mt-1">
-                      <button
-                        v-for="m in modes"
-                        :key="m.value"
-                        type="button"
-                        @click="state.mode = m.value"
-                        :class="[
-                          'flex items-center gap-3 px-4 py-3.5 rounded-xl border text-sm font-semibold transition-all duration-200',
-                          state.mode === m.value
-                            ? 'border-primary-500 bg-primary-500/10 text-primary-400'
-                            : 'border-white/8 bg-white/[0.02] text-neutral-500 hover:border-white/15 hover:text-neutral-300'
-                        ]"
-                      >
-                        <UIcon :name="m.icon" class="size-4 shrink-0" />
-                        {{ m.label }}
-                      </button>
-                    </div>
-                  </UFormField>
+                  <div class="grid grid-cols-2 gap-6">
+                    <UFormField label="Mode Pendaftaran" name="mode" required>
+                      <div class="grid grid-cols-2 gap-3 mt-1">
+                        <button
+                          v-for="m in enrollmentModes"
+                          :key="m.value"
+                          type="button"
+                          @click="state.mode = m.value"
+                          :class="[
+                            'flex flex-col items-start gap-1 px-4 py-3 rounded-xl border text-sm font-semibold transition-all duration-200',
+                            state.mode === m.value
+                              ? 'border-primary-500 bg-primary-500/10 text-primary-400'
+                              : 'border-white/8 bg-white/[0.02] text-neutral-500 hover:border-white/15 hover:text-neutral-300'
+                          ]"
+                        >
+                          <div class="flex items-center gap-2">
+                            <UIcon :name="m.icon" class="size-3.5 shrink-0" />
+                            {{ m.label }}
+                          </div>
+                          <span class="text-[10px] font-medium opacity-60 leading-tight">{{ m.desc }}</span>
+                        </button>
+                      </div>
+                    </UFormField>
+
+                    <UFormField label="Tipe Lokasi" name="venue_type" required>
+                      <div class="grid grid-cols-2 gap-3 mt-1">
+                        <button
+                          v-for="v in venueTypes"
+                          :key="v.value"
+                          type="button"
+                          @click="venueType = v.value"
+                          :class="[
+                            'flex items-center justify-center gap-2 px-4 py-3 rounded-xl border text-sm font-semibold transition-all duration-200',
+                            venueType === v.value
+                              ? 'border-primary-500 bg-primary-500/10 text-primary-400'
+                              : 'border-white/8 bg-white/[0.02] text-neutral-500 hover:border-white/15 hover:text-neutral-300'
+                          ]"
+                        >
+                          <UIcon :name="v.icon" class="size-4 shrink-0" />
+                          {{ v.label }}
+                        </button>
+                      </div>
+                    </UFormField>
+                  </div>
 
                   <div class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 items-start">
                     <UFormField label="Tipe Kepesertaan" name="participant_type" required class="flex-1">
@@ -423,6 +467,16 @@ const onSubmit = async () => {
                     </UFormField>
                   </div>
 
+                  <UFormField label="Detail Pembagian Hadiah" name="prize_description">
+                    <UTextarea
+                      v-model="state.prize_description"
+                      placeholder="Juara 1: Rp 1.000.000&#10;Juara 2: Rp 500.000..."
+                      :rows="3"
+                      size="xl"
+                      class="w-full"
+                    />
+                  </UFormField>
+
                   <Transition
                     enter-active-class="transition-all duration-300 ease-out"
                     enter-from-class="opacity-0 -translate-y-2"
@@ -431,7 +485,7 @@ const onSubmit = async () => {
                     leave-from-class="opacity-100 translate-y-0"
                     leave-to-class="opacity-0 -translate-y-2"
                   >
-                    <UFormField v-if="state.mode === 'offline'" label="Lokasi / Venue" name="venue" required>
+                    <UFormField v-if="venueType === 'offline'" label="Lokasi / Venue" name="venue" required>
                       <UInput
                         v-model="state.venue"
                         placeholder="Nama gedung, jalan, kota..."

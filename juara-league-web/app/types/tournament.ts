@@ -1,20 +1,23 @@
-export type TournamentStatus = 'open' | 'ongoing' | 'finished' | 'draft' | 'canceled';
+export type TournamentStatus = 'draft' | 'registration' | 'open' | 'ongoing' | 'completed' | 'canceled';
+export type ApprovalStatus = 'auto_approved' | 'pending_review' | 'approved' | 'rejected';
 export type TournamentMode = 'online' | 'offline';
 export type BracketType = 'single' | 'double' | 'round_robin' | 'swiss' | 'group_stage';
 export type ParticipantType = 'individual' | 'team';
+export type PaymentStatus = 'free' | 'pending' | 'paid' | 'rejected';
 
 export interface User {
-  id: number;
+  id: string;
   name: string;
   email: string;
   avatar?: string;
+  plan?: 'Free' | 'Pro';
 }
 
 import type { Sport } from './sport';
 
 export interface Stage {
-  id: number;
-  tournament_id: number;
+  id: string;
+  tournament_id: string;
   name: string;
   type: string;
   order: number;
@@ -24,28 +27,31 @@ export interface Stage {
 }
 
 export interface Participant {
-  id: number;
-  tournament_id: number;
-  user_id?: number;
-  team_id?: number;
+  id: string;
+  tournament_id: string;
+  user_id?: string;
+  team_id?: string;
   user?: User;
   team?: Team;
   tournament?: Tournament;
-  status: 'pending' | 'approved' | 'rejected' | 'paid';
+  status: 'pending' | 'approved' | 'rejected' | 'disqualified';
+  payment_status: PaymentStatus;
   payment_proof_url?: string;
+  seed?: number;
   notes?: string;
   created_at: string;
   updated_at: string;
 }
 
 export interface UserParticipation {
-  id: number;
-  status: 'pending' | 'approved' | 'rejected' | 'paid';
-  team_id?: number;
+  id: string;
+  status: 'pending' | 'approved' | 'rejected';
+  payment_status: PaymentStatus;
+  team_id?: string;
 }
 
 export interface Tournament {
-  id: number;
+  id: string;
   user?: User;
   sport?: Sport;
   sport_id: string;
@@ -54,6 +60,7 @@ export interface Tournament {
   description: string;
   category: string;
   status: TournamentStatus;
+  approval_status: ApprovalStatus;
   mode: TournamentMode;
   participant_type: ParticipantType;
   team_size?: number;
@@ -61,6 +68,7 @@ export interface Tournament {
   venue?: string;
   banner_url?: string;
   prize_pool: number | string;
+  prize_description?: string;
   entry_fee: number | string;
   max_participants: number;
   current_participants: number;
@@ -94,6 +102,7 @@ export interface StoreTournamentPayload {
   bracket_type: BracketType;
   max_participants: number;
   prize_pool: number;
+  prize_description?: string;
   entry_fee: number;
   registration_start_at?: string;
   registration_end_at?: string;
@@ -103,12 +112,12 @@ export interface StoreTournamentPayload {
 }
 
 export interface Team {
-  id: number;
+  id: string;
   name: string;
   slug: string;
   logo_url?: string;
   description?: string;
-  captain_id: number;
+  captain_id: string;
   status: 'active' | 'pending' | 'disqualified';
   created_at: string;
   updated_at: string;

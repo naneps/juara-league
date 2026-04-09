@@ -11,10 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('tournaments', function (Blueprint $table) {
-            $table->string('participant_type')->default('individual');
-            $table->integer('team_size')->nullable();
-        });
+        //
     }
 
     /**
@@ -22,8 +19,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('tournaments', function (Blueprint $table) {
-            $table->dropColumn(['participant_type', 'team_size']);
-        });
+        //
     }
 };

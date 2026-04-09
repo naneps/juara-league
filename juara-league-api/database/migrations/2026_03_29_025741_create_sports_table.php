@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('sports', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->ulid('id')->primary();
             $table->string('name', 100)->unique();
             $table->enum('type', ['sport', 'esport']);
             $table->string('icon_url')->nullable();

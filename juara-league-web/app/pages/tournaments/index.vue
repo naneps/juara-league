@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { useTournamentStore } from '~/stores/tournamentStore'
-import type { TournamentFilter } from '~/types/tournament'
 
 const tournamentStore = useTournamentStore()
 const sportStore = useSportStore()

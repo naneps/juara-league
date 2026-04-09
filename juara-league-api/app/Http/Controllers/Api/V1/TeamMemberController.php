@@ -17,13 +17,19 @@ class TeamMemberController extends Controller
     
     public function myInvitations(Request $request): JsonResponse
     {
-        $invitations = \App\Models\TeamInvitation::with(['team.captain'])
-            ->where('email', $request->user()->email)
-            ->where('status', 'pending')
-            ->where('expires_at', '>', now())
-            ->get();
+        $status = $request->query('status', 'pending');
+        
+        $query = \App\Models\TeamInvitation::with(['team.captain'])
+            ->where('email', $request->user()->email);
+
+        if ($status === 'history') {
+            $query->whereIn('status', ['accepted', 'declined']);
+        } else {
+            $query->where('status', 'pending')
+                  ->where('expires_at', '>', now());
+        }
             
-        return response()->json($invitations);
+        return response()->json($query->orderBy('updated_at', 'desc')->get());
     }
 
     public function invite(InviteMemberRequest $request, Team $team): JsonResponse

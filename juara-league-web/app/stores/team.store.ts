@@ -14,6 +14,7 @@ export const useTeamStore = defineStore('team', () => {
   const teams = ref<Team[]>([])
   const myTeams = ref<Team[]>([])
   const myInvitations = ref<TeamInvitation[]>([])
+  const invitationHistory = ref<TeamInvitation[]>([])
   const currentTeam = ref<Team | null>(null)
   const total = ref(0)
   const currentPage = ref(1)
@@ -235,6 +236,25 @@ export const useTeamStore = defineStore('team', () => {
   }
 
   /**
+   * GET /api/v1/my-invitations?status=history — riwayat undangan (accepted/declined)
+   */
+  const fetchInvitationHistory = async () => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const response = await useApi<TeamInvitation[]>('/api/v1/my-invitations', {
+        params: { status: 'history' }
+      })
+      invitationHistory.value = response
+    } catch (e: any) {
+      error.value = e.data?.message || 'Gagal mengambil riwayat undangan'
+      throw e
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
    * POST /api/v1/teams/invitations/{token}/accept — terima undangan
    */
   const acceptInvitation = async (token: string) => {
@@ -285,6 +305,7 @@ export const useTeamStore = defineStore('team', () => {
     teams,
     myTeams,
     myInvitations,
+    invitationHistory,
     currentTeam,
     total,
     currentPage,
@@ -295,6 +316,7 @@ export const useTeamStore = defineStore('team', () => {
     fetchTeams,
     fetchMyTeams,
     fetchMyInvitations,
+    fetchInvitationHistory,
     fetchTeam,
     createTeam,
     updateTeam,

@@ -24,7 +24,7 @@ class UpdateTournamentRequest extends FormRequest
     {
         return [
             'title' => ['sometimes', 'string', 'max:255'],
-            'sport_id' => ['sometimes', 'uuid', 'exists:sports,id'],
+            'sport_id' => ['sometimes', 'ulid', 'exists:sports,id'],
             'description' => ['nullable', 'string'],
             'category' => ['sometimes', 'string'],
             'mode' => ['sometimes', Rule::in(['online', 'offline'])],

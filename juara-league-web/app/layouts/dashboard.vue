@@ -6,93 +6,127 @@ const toast = useToast()
 
 const open = ref(false)
 
-const links = [[{
-  label: 'Ringkasan',
-  icon: 'i-lucide-layout-dashboard',
-  to: '/dashboard',
-  onSelect: () => {
-    open.value = false
+const { user: authUser } = useAuth()
+const isAdmin = computed(() => authUser.value?.roles?.some(role => ['admin', 'super_admin'].includes(role)))
+
+const links = computed(() => {
+  const allLinks: NavigationMenuItem[][] = []
+
+  // 1. Admin Section (Exclusive Indigo Style)
+  if (isAdmin.value) {
+    allLinks.push([{
+      label: 'Manajemen Platform',
+      type: 'label',
+      class: 'text-[10px] uppercase tracking-[2px] font-black text-indigo-500/70 mb-2 px-2'
+    }, {
+      label: 'Dashboard Admin',
+      icon: 'i-lucide-shield-check',
+      to: '/admin/dashboard',
+      color: 'indigo',
+      onSelect: () => {
+        open.value = false
+      }
+    }, {
+      label: 'Moderasi Turnamen',
+      icon: 'i-lucide-list-checks',
+      to: '/admin/tournaments',
+      color: 'indigo',
+      onSelect: () => {
+        open.value = false
+      }
+    }])
   }
-}, {
-  label: 'Turnamen',
-  icon: 'i-lucide-trophy',
-  to: '/dashboard/tournaments',
-  onSelect: () => {
-    open.value = false
-  }
-}, {
-  label: 'Riwayat Ikut Serta',
-  icon: 'i-lucide-history',
-  to: '/dashboard/participations',
-  onSelect: () => {
-    open.value = false
-  }
-}, {
-  label: 'Tim Saya',
-  icon: 'i-lucide-users-round',
-  to: '/dashboard/teams',
-  onSelect: () => {
-    open.value = false
-  }
-}, {
-  label: 'Notifikasi',
-  icon: 'i-lucide-bell',
-  to: '/dashboard/inbox',
-  badge: '4',
-  onSelect: () => {
-    open.value = false
-  }
-}, {
-  label: 'Master Data',
-  icon: 'i-lucide-database',
-  defaultOpen: false,
-  type: 'trigger',
-  children: [{
-    label: 'Cabang Olahraga',
-    icon: 'i-lucide-award',
-    to: '/dashboard/admin/sports',
-    onSelect: () => {
-      open.value = false
-    }
-  }]
-}, {
-  label: 'Pengaturan',
-  to: '/dashboard/settings',
-  icon: 'i-lucide-settings',
-  defaultOpen: true,
-  type: 'trigger',
-  children: [{
-    label: 'Profil',
-    to: '/dashboard/settings',
-    exact: true,
+
+  // 2. User Section (Friendly Emerald Style)
+  allLinks.push([{
+    label: 'Menu Utama',
+    type: 'label',
+    class: 'text-[10px] uppercase tracking-[2px] font-black text-neutral-500/70 mb-2 px-2'
+  }, {
+    label: 'Ringkasan',
+    icon: 'i-lucide-layout-dashboard',
+    to: '/dashboard',
+    color: 'primary',
     onSelect: () => {
       open.value = false
     }
   }, {
-    label: 'Anggota',
-    to: '/dashboard/settings/members',
+    label: 'Turnamen Saya',
+    icon: 'i-lucide-trophy',
+    to: '/dashboard/tournaments',
+    color: 'primary',
+    onSelect: () => {
+      open.value = false
+    }
+  }, {
+    label: 'Riwayat Ikut Serta',
+    icon: 'i-lucide-history',
+    to: '/dashboard/participations',
+    color: 'primary',
+    onSelect: () => {
+      open.value = false
+    }
+  }, {
+    label: 'Tim Saya',
+    icon: 'i-lucide-users-round',
+    to: '/dashboard/teams',
+    color: 'primary',
     onSelect: () => {
       open.value = false
     }
   }, {
     label: 'Notifikasi',
-    to: '/dashboard/settings/notifications',
+    icon: 'i-lucide-bell',
+    to: '/dashboard/inbox',
+    badge: '4',
+    color: 'primary',
     onSelect: () => {
       open.value = false
     }
   }, {
-    label: 'Keamanan',
-    to: '/dashboard/settings/security',
+    label: 'Undangan Tim',
+    icon: 'i-lucide-mail-search',
+    to: '/dashboard/invitations',
+    color: 'primary',
     onSelect: () => {
       open.value = false
     }
-  }]
-}]] satisfies NavigationMenuItem[][]
+  }, {
+    label: 'Pengaturan',
+    to: '/dashboard/settings',
+    icon: 'i-lucide-settings',
+    color: 'primary',
+    defaultOpen: false,
+    type: 'trigger',
+    children: [{
+      label: 'Profil',
+      to: '/dashboard/settings',
+      exact: true,
+      onSelect: () => {
+        open.value = false
+      }
+    }, {
+      label: 'Anggota',
+      to: '/dashboard/settings/members',
+      onSelect: () => {
+        open.value = false
+      }
+    }, {
+      label: 'Keamanan',
+      to: '/dashboard/settings/security',
+      onSelect: () => {
+        open.value = false
+      }
+    }]
+  }])
+
+  return allLinks
+})
 
 const groups = computed(() => [{
   id: 'links',
   label: 'Cari navigasi',
-  items: links.flat()
+  items: links.value.flat()
 }])
 
 onMounted(async () => {
@@ -128,31 +162,39 @@ onMounted(async () => {
       v-model:open="open"
       collapsible
       resizable
-      class="bg-elevated/25"
-      :ui="{ footer: 'lg:border-t lg:border-default' }"
+      class="bg-neutral-900/40 backdrop-blur-xl border-r border-white/5"
+      :ui="{ 
+        footer: 'lg:border-t lg:border-white/5',
+        header: 'border-b border-white/5 bg-transparent'
+      }"
     >
       <template #header="{ collapsed }">
-        <TeamsMenu :collapsed="collapsed" />
+        <div class="flex items-center gap-3 px-1">
+          <UIcon name="i-lucide-trophy" class="size-6 text-primary-400" v-if="!collapsed" />
+          <TeamsMenu :collapsed="collapsed" />
+        </div>
       </template>
 
       <template #default="{ collapsed }">
-        <UDashboardSearchButton :collapsed="collapsed" class="bg-transparent ring-default" />
+        <div class="px-2 mb-4">
+          <UDashboardSearchButton :collapsed="collapsed" class="bg-white/5 border-white/10 hover:bg-white/10 ring-0 transition-all duration-300" />
+        </div>
 
-        <UNavigationMenu
-          :collapsed="collapsed"
-          :items="links[0]"
-          orientation="vertical"
-          tooltip
-          popover
-        />
-
-        <UNavigationMenu
-          :collapsed="collapsed"
-          :items="links[1]"
-          orientation="vertical"
-          tooltip
-          class="mt-auto"
-        />
+        <div class="flex flex-col gap-8 px-1">
+          <UNavigationMenu
+            v-for="(group, index) in links"
+            :key="index"
+            :collapsed="collapsed"
+            :items="group"
+            orientation="vertical"
+            tooltip
+            popover
+            :ui="{
+              label: 'font-bold tracking-tight',
+              item: 'rounded-xl transition-all duration-300'
+            }"
+          />
+        </div>
       </template>
 
       <template #footer="{ collapsed }">
@@ -167,3 +209,33 @@ onMounted(async () => {
     <NotificationsSlideover />
   </UDashboardGroup>
 </template>
+
+<style scoped>
+:deep(.bg-elevated) {
+  background-color: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+:deep(.ring-default) {
+  --tw-ring-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Custom indicator for active state */
+:deep(.router-link-active) {
+  position: relative;
+  overflow: hidden;
+}
+
+:deep(.router-link-active)::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 25%;
+  bottom: 25%;
+  width: 2px;
+  background-color: currentColor;
+  border-radius: 9999px;
+  filter: blur(1px);
+}
+</style>

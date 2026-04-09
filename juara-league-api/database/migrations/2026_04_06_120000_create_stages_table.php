@@ -11,8 +11,8 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('stages', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('tournament_id')->constrained()->onDelete('cascade');
+            $table->ulid('id')->primary();
+            $table->foreignUlid('tournament_id')->constrained()->onDelete('cascade');
             $table->string('name');
             $table->string('type'); // single_elim, double_elim, round_robin, swiss
             $table->integer('order')->default(1);

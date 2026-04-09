@@ -78,11 +78,17 @@ Route::prefix('v1')->group(function () {
         Route::patch('/participants/{participant}/status', [ParticipantController::class, 'updateStatus']);
         Route::delete('/participants/{participant}', [ParticipantController::class, 'destroy']);
 
-        // Admin - Sport Management
-        Route::prefix('admin')->group(function () {
+        // Admin - Management
+        Route::prefix('admin')->middleware('role:admin|super_admin')->group(function () {
+            // Sports
             Route::post('/sports', [\App\Http\Controllers\Api\V1\Admin\SportController::class, 'store']);
             Route::put('/sports/{id}', [\App\Http\Controllers\Api\V1\Admin\SportController::class, 'update']);
             Route::delete('/sports/{id}', [\App\Http\Controllers\Api\V1\Admin\SportController::class, 'destroy']);
+
+            // Tournaments
+            Route::get('/tournaments', [\App\Http\Controllers\Api\V1\Admin\TournamentController::class, 'index']);
+            Route::post('/tournaments/{id}/approve', [\App\Http\Controllers\Api\V1\Admin\TournamentController::class, 'approve']);
+            Route::post('/tournaments/{id}/reject', [\App\Http\Controllers\Api\V1\Admin\TournamentController::class, 'reject']);
         });
 
         // Team Management

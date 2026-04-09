@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tournament_staff', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('tournament_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('role'); // co_organizer, referee
+            $table->ulid('id')->primary();
+            $table->foreignUlid('tournament_id')->constrained()->onDelete('cascade');
+            $table->foreignUlid('user_id')->constrained()->onDelete('cascade');
+            $table->enum('role', ['owner', 'co_organizer', 'referee']);
             $table->timestamps();
             
             // Ensure a user can only have one staff role per tournament

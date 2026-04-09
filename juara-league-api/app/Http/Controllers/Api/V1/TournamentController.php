@@ -35,6 +35,7 @@ class TournamentController extends Controller
         $tournament = $this->tournamentService->createTournament($request->user(), $request->validated());
         
         return (new TournamentResource($tournament))
+            ->additional(['message' => 'Turnamen berhasil dibuat.'])
             ->response()
             ->setStatusCode(201);
     }
@@ -47,7 +48,7 @@ class TournamentController extends Controller
         $tournament = $this->tournamentService->getTournamentBySlug($slug);
         
         if (!$tournament) {
-            abort(404, 'Tournament not found.');
+             throw new \App\Exceptions\TournamentException('Turnamen tidak ditemukan.', 'TOURNAMENT_NOT_FOUND', 404);
         }
 
         return new TournamentResource($tournament);
@@ -58,10 +59,7 @@ class TournamentController extends Controller
      */
     public function update(UpdateTournamentRequest $request, Tournament $tournament): TournamentResource
     {
-        // Simple authorization check
-        if ($request->user()->id !== $tournament->user_id) {
-            abort(403, 'Unauthorized action.');
-        }
+        $this->authorize('update', $tournament);
 
         $updatedTournament = $this->tournamentService->updateTournament($tournament, $request->validated());
         
@@ -73,15 +71,30 @@ class TournamentController extends Controller
      */
     public function destroy(Request $request, Tournament $tournament): JsonResponse
     {
-        if ($request->user()->id !== $tournament->user_id) {
-            abort(403, 'Unauthorized action.');
-        }
+        $this->authorize('delete', $tournament);
 
         $this->tournamentService->deleteTournament($tournament);
         
         return response()->json(['message' => 'Tournament deleted successfully.']);
     }
-    
+
+    /**
+     * Publish tournament: Move from draft to registration.
+     */
+    public function publish(Request $request, Tournament $tournament): JsonResponse
+    {
+        $this->authorize('publish', $tournament);
+
+        try {
+            $this->tournamentService->publish($tournament);
+            return response()->json(['message' => 'Tournament published successfully.']);
+        } catch (\App\Exceptions\TournamentException $e) {
+            return $e->render($request);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
+
     /**
      * Display a listing of tournaments owned by the authenticated user.
      */
@@ -93,22 +106,5 @@ class TournamentController extends Controller
         );
         
         return TournamentResource::collection($tournaments);
-    }
-
-    /**
-     * Publish tournament: Move from draft to registration.
-     */
-    public function publish(Request $request, Tournament $tournament): JsonResponse
-    {
-        if ($request->user()->id !== $tournament->user_id) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        try {
-            $this->tournamentService->publish($tournament);
-            return response()->json(['message' => 'Tournament published successfully.']);
-        } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 422);
-        }
     }
 }

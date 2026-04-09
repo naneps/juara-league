@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('team_invitations', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('team_id')->constrained('teams')->onDelete('cascade');
+            $table->ulid('id')->primary();
+            $table->foreignUlid('team_id')->constrained('teams')->onDelete('cascade');
             $table->string('email');
             $table->string('token')->unique();
             $table->string('status')->default('pending'); // pending, accepted, declined

@@ -24,10 +24,10 @@ class StoreTournamentRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'max:255'],
-            'sport_id' => ['nullable', 'uuid', 'exists:sports,id'],
+            'sport_id' => ['nullable', 'ulid', 'exists:sports,id'],
             'description' => ['nullable', 'string'],
             'category' => ['required', 'string'],
-            'mode' => ['required', Rule::in(['online', 'offline'])],
+            'mode' => ['required', Rule::in(['open', 'invite'])],
             'bracket_type' => ['required', Rule::in(['single', 'double', 'round_robin', 'swiss', 'group_stage'])],
             'participant_type' => ['nullable', Rule::in(['individual', 'team'])],
             'team_size' => ['nullable', 'integer', 'min:2', 'required_if:participant_type,team'],

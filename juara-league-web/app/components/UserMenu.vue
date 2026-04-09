@@ -20,95 +20,112 @@ const user = computed(() => ({
   }
 }))
 
-const items = computed<DropdownMenuItem[][]>(() => ([[{
-  type: 'label',
-  label: user.value.name,
-  avatar: user.value.avatar
-}], [{
-  label: 'Profil',
-  icon: 'i-lucide-user'
-}, {
-  label: 'Pengaturan',
-  icon: 'i-lucide-settings',
-  to: '/dashboard/settings'
-}], [{
-  label: 'Theme',
-  icon: 'i-lucide-palette',
-  children: [{
-    label: 'Primary',
-    slot: 'chip',
-    chip: appConfig.ui.colors.primary,
-    content: {
-      align: 'center',
-      collisionPadding: 16
-    },
-    children: colors.map(color => ({
-      label: color,
-      chip: color,
-      slot: 'chip',
-      checked: appConfig.ui.colors.primary === color,
-      type: 'checkbox',
-      onSelect: (e) => {
-        e.preventDefault()
+const isAdmin = computed(() => authUser.value?.roles?.some(role => ['admin', 'super_admin'].includes(role)))
 
-        appConfig.ui.colors.primary = color
-      }
-    }))
+const items = computed<DropdownMenuItem[][]>(() => {
+  const baseItems = [[{
+    type: 'label',
+    label: user.value.name,
+    avatar: user.value.avatar
+  }], [{
+    label: 'Profil',
+    icon: 'i-lucide-user'
   }, {
-    label: 'Neutral',
-    slot: 'chip',
-    chip: appConfig.ui.colors.neutral === 'neutral' ? 'old-neutral' : appConfig.ui.colors.neutral,
-    content: {
-      align: 'end',
-      collisionPadding: 16
-    },
-    children: neutrals.map(color => ({
-      label: color,
-      chip: color === 'neutral' ? 'old-neutral' : color,
-      slot: 'chip',
-      type: 'checkbox',
-      checked: appConfig.ui.colors.neutral === color,
-      onSelect: (e) => {
-        e.preventDefault()
+    label: 'Pengaturan',
+    icon: 'i-lucide-settings',
+    to: '/dashboard/settings'
+  }]] as DropdownMenuItem[][]
 
-        appConfig.ui.colors.neutral = color
-      }
-    }))
-  }]
-}, {
-  label: 'Appearance',
-  icon: 'i-lucide-sun-moon',
-  children: [{
-    label: 'Light',
-    icon: 'i-lucide-sun',
-    type: 'checkbox',
-    checked: colorMode.value === 'light',
-    onSelect(e: Event) {
-      e.preventDefault()
-
-      colorMode.preference = 'light'
-    }
-  }, {
-    label: 'Dark',
-    icon: 'i-lucide-moon',
-    type: 'checkbox',
-    checked: colorMode.value === 'dark',
-    onUpdateChecked(checked: boolean) {
-      if (checked) {
-        colorMode.preference = 'dark'
-      }
-    },
-    onSelect(e: Event) {
-      e.preventDefault()
-    }
-  }]
-}], [{
-  label: 'Keluar',
-  icon: 'i-lucide-log-out',
-  onSelect: async () => {
-    await logout()
+  if (isAdmin.value) {
+    baseItems[1].push({
+      label: 'Admin Panel',
+      icon: 'i-lucide-shield-check',
+      to: '/admin/dashboard',
+      class: 'text-indigo-500 font-bold'
+    })
   }
-}]]))
+
+  baseItems.push([{
+    label: 'Theme',
+    icon: 'i-lucide-palette',
+    children: [{
+      label: 'Primary',
+      slot: 'chip',
+      chip: appConfig.ui.colors.primary,
+      content: {
+        align: 'center',
+        collisionPadding: 16
+      },
+      children: colors.map(color => ({
+        label: color,
+        chip: color,
+        slot: 'chip',
+        checked: appConfig.ui.colors.primary === color,
+        type: 'checkbox',
+        onSelect: (e) => {
+          e.preventDefault()
+
+          appConfig.ui.colors.primary = color
+        }
+      }))
+    }, {
+      label: 'Neutral',
+      slot: 'chip',
+      chip: appConfig.ui.colors.neutral === 'neutral' ? 'old-neutral' : appConfig.ui.colors.neutral,
+      content: {
+        align: 'end',
+        collisionPadding: 16
+      },
+      children: neutrals.map(color => ({
+        label: color,
+        chip: color === 'neutral' ? 'old-neutral' : color,
+        slot: 'chip',
+        type: 'checkbox',
+        checked: appConfig.ui.colors.neutral === color,
+        onSelect: (e) => {
+          e.preventDefault()
+
+          appConfig.ui.colors.neutral = color
+        }
+      }))
+    }]
+  }, {
+    label: 'Appearance',
+    icon: 'i-lucide-sun-moon',
+    children: [{
+      label: 'Light',
+      icon: 'i-lucide-sun',
+      type: 'checkbox',
+      checked: colorMode.value === 'light',
+      onSelect(e: Event) {
+        e.preventDefault()
+
+        colorMode.preference = 'light'
+      }
+    }, {
+      label: 'Dark',
+      icon: 'i-lucide-moon',
+      type: 'checkbox',
+      checked: colorMode.value === 'dark',
+      onUpdateChecked(checked: boolean) {
+        if (checked) {
+          colorMode.preference = 'dark'
+        }
+      },
+      onSelect(e: Event) {
+        e.preventDefault()
+      }
+    }]
+  }], [{
+    label: 'Keluar',
+    icon: 'i-lucide-log-out',
+    onSelect: async () => {
+      await logout()
+    }
+  }])
+
+  return baseItems
+})
 </script>
 
 <template>

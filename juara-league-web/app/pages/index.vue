@@ -331,6 +331,21 @@
   </div>
 </template>
 
+<script setup lang="ts">
+const { user, loggedIn } = useAuth()
+
+onMounted(() => {
+  if (loggedIn.value && user.value) {
+    const isAdmin = user.value.roles?.some((role: string) => ['admin', 'super_admin'].includes(role))
+    if (isAdmin) {
+      navigateTo('/admin/dashboard')
+    } else {
+      navigateTo('/dashboard')
+    }
+  }
+})
+</script>
+
 <style scoped>
 .hero-item {
   opacity: 0;

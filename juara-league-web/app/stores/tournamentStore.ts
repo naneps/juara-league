@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { Tournament, StoreTournamentPayload, Participant } from '~/types/tournament'
+import type { Participant, StoreTournamentPayload, Tournament } from '~/types/tournament'
 
 export const useTournamentStore = defineStore('tournament', () => {
   const tournaments = ref<Tournament[]>([])
@@ -75,7 +75,7 @@ export const useTournamentStore = defineStore('tournament', () => {
     try {
       await useApi(`/api/v1/tournaments/${slug}/publish`, { method: 'POST' })
       // Update local state
-      const updateStatus = (t: Tournament) => { if (t.slug === slug) t.status = 'open' }
+      const updateStatus = (t: Tournament) => { if (t.slug === slug) t.status = 'registration' }
       tournaments.value.forEach(updateStatus)
       myTournaments.value.forEach(updateStatus)
     } catch (e: any) {

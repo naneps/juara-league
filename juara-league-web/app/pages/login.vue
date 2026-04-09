@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { login, loggedIn } = useAuth()
+const { login, loggedIn, user: authUser } = useAuth()
 const config = useRuntimeConfig()
 
 definePageMeta({
@@ -18,8 +18,14 @@ async function onSubmit() {
   loading.value = true
   error.value = ''
   try {
-    await login(state)
-    navigateTo('/')
+    const response = await login(state)
+    const isAdmin = response.data.roles?.some((role: string) => ['admin', 'super_admin'].includes(role))
+    
+    if (isAdmin) {
+      await navigateTo('/admin/dashboard')
+    } else {
+      await navigateTo('/dashboard')
+    }
   } catch (err: any) {
     error.value = err.data?.message || 'Login gagal. Silakan cek kembali email dan password Anda.'
   } finally {
@@ -32,8 +38,13 @@ function loginWithGoogle() {
 }
 
 onMounted(() => {
-  if (loggedIn.value) {
-    navigateTo('/')
+  if (loggedIn.value && authUser.value) {
+    const isAdmin = authUser.value.roles?.some((role: string) => ['admin', 'super_admin'].includes(role))
+    if (isAdmin) {
+      navigateTo('/admin/dashboard')
+    } else {
+      navigateTo('/dashboard')
+    }
   }
 })
 </script>

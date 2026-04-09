@@ -11,12 +11,14 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('participants', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('tournament_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null'); // For Individual
-            $table->foreignId('team_id')->nullable()->constrained()->onDelete('set null'); // For Team
-            $table->string('status')->default('pending'); // pending, approved, rejected, paid
-            $table->string('payment_proof_url')->nullable();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('tournament_id')->constrained()->onDelete('cascade');
+            $table->foreignUlid('user_id')->nullable()->constrained()->onDelete('set null'); // For Individual
+            $table->foreignUlid('team_id')->nullable()->constrained()->onDelete('set null'); // For Team
+            $table->enum('status', ['pending', 'approved', 'rejected', 'disqualified'])->default('pending');
+            $table->enum('payment_status', ['free', 'pending', 'paid', 'rejected'])->default('free');
+            $table->integer('seed')->nullable();
+            $table->text('payment_proof_url')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
         });

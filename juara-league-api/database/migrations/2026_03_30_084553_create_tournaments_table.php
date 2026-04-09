@@ -12,24 +12,29 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tournaments', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('title');
-            $table->string('slug')->unique();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('user_id')->constrained()->onDelete('cascade');
+            $table->foreignUlid('sport_id')->constrained()->onDelete('cascade');
+            $table->string('title', 150);
+            $table->string('slug', 170)->unique();
             $table->text('description')->nullable();
-            $table->string('category');
-            $table->string('status')->default('draft'); // draft, open, ongoing, finished
-            $table->string('mode')->default('online');   // online, offline
-            $table->string('bracket_type');             // single, double, round_robin, swiss
-            $table->string('venue')->nullable();
-            $table->string('banner_url')->nullable();
-            $table->bigInteger('prize_pool')->default(0);
-            $table->bigInteger('entry_fee')->default(0);
+            $table->string('category', 100)->nullable();
+            $table->enum('status', ['draft', 'registration', 'ongoing', 'completed'])->default('draft');
+            $table->enum('approval_status', ['auto_approved', 'pending_review', 'approved', 'rejected'])->default('auto_approved');
+            $table->enum('mode', ['open', 'invite'])->default('open');
+            $table->string('bracket_type', 50)->nullable();
+            $table->enum('participant_type', ['individual', 'team']);
+            $table->integer('team_size')->nullable();
             $table->integer('max_participants')->default(0);
+            $table->decimal('entry_fee', 12, 2)->default(0);
+            $table->decimal('prize_pool', 12, 2)->nullable();
+            $table->text('prize_description')->nullable();
+            $table->string('venue', 200)->nullable();
+            $table->string('banner_url')->nullable();
             
-            $table->dateTime('registration_start_at')->nullable();
-            $table->dateTime('registration_end_at')->nullable();
-            $table->dateTime('start_at')->nullable();
+            $table->timestamp('registration_start_at')->nullable();
+            $table->timestamp('registration_end_at')->nullable();
+            $table->timestamp('start_at')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

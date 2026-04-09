@@ -12,12 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('teams', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('name')->unique();
             $table->string('slug')->unique();
             $table->string('logo_url')->nullable();
             $table->text('description')->nullable();
-            $table->foreignId('captain_id')->constrained('users')->onDelete('restrict');
+            $table->foreignUlid('captain_id')->constrained('users')->onDelete('restrict');
             $table->timestamps();
             $table->softDeletes();
         });

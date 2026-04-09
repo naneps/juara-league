@@ -10,8 +10,8 @@ import type { Period, Range } from '~/types'
 const { isNotificationsSlideoverOpen } = useDashboard()
 
 const items = [[{
-  label: 'Undang Anggota',
-  icon: 'i-lucide-user-plus',
+  label: 'Daftar Undangan Tim',
+  icon: 'i-lucide-mail-search',
   to: '/dashboard/invitations'
 }, {
   label: 'Buat Turnamen',

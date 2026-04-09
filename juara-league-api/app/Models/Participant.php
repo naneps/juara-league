@@ -2,19 +2,27 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Participant extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUlids;
+
     protected $fillable = [
         'tournament_id',
         'user_id',
         'team_id',
         'status',
+        'payment_status',
+        'seed',
         'payment_proof_url',
         'notes',
+    ];
+
+    protected $casts = [
+        'seed' => 'integer',
     ];
 
     /**

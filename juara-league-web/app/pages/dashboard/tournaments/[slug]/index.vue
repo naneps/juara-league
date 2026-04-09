@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useTournamentStore } from '~/stores/tournamentStore'
-
-import { getTournamentStatus } from '~/utils/tournamentStatus'
+import { getApprovalStatus, getTournamentStatus } from '~/utils/tournamentStatus'
 
 const route = useRoute()
 const slug = route.params.slug as string
@@ -13,6 +12,16 @@ const { data: tournament, refresh } = await useAsyncData(`tournament-${slug}`, (
 const isPublishing = ref(false)
 
 const handlePublish = async () => {
+  if (tournament.value?.approval_status === 'pending_review') {
+    toast.add({ title: 'Menunggu Review', description: 'Turnamen Anda sedang menunggu peninjauan dari tim platform.', color: 'warning' })
+    return
+  }
+  
+  if (tournament.value?.approval_status === 'rejected') {
+    toast.add({ title: 'Turnamen Ditolak', description: 'Maaf, turnamen ini tidak disetujui untuk dipublikasikan.', color: 'error' })
+    return
+  }
+
   if (!confirm('Publish turnamen ini? Peserta bisa mulai mendaftar setelah ini.')) return
 
   isPublishing.value = true
@@ -28,6 +37,7 @@ const handlePublish = async () => {
 }
 
 const tournamentStatus = computed(() => getTournamentStatus(tournament.value?.status))
+const approvalStatus = computed(() => getApprovalStatus(tournament.value?.approval_status))
 
 const formatDate = (d: string | null | undefined) => {
   if (!d) return '—'
@@ -37,6 +47,28 @@ const formatDate = (d: string | null | undefined) => {
 
 <template>
   <div v-if="tournament" class="space-y-6">
+
+    <!-- ── Review Notice ── -->
+    <template v-if="tournament.status === 'draft'">
+      <UAlert
+        v-if="tournament.approval_status === 'pending_review'"
+        icon="i-lucide-scroll-text"
+        color="warning"
+        variant="subtle"
+        title="Sedang Ditinjau"
+        description="Turnamen ini memerlukan peninjauan manual oleh tim Juara League. Anda bisa melanjutkan persiapan babak (stage) dan detail lainnya, namun fitur Publish akan terbuka setelah disetujui."
+        class="border-warning-500/20"
+      />
+      <UAlert
+        v-else-if="tournament.approval_status === 'rejected'"
+        icon="i-lucide-alert-octagon"
+        color="error"
+        variant="subtle"
+        title="Turnamen Ditolak"
+        description="Mohon maaf, turnamen Anda tidak disetujui oleh platform. Silakan hubungi dukungan atau periksa kembali deskripsi turnamen Anda."
+        class="border-error-500/20"
+      />
+    </template>
 
     <!-- ── Page Header ── -->
     <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
@@ -53,6 +85,9 @@ const formatDate = (d: string | null | undefined) => {
           </h1>
           <div class="flex flex-wrap items-center gap-2">
             <UBadge :color="tournamentStatus.color" variant="subtle" size="sm">{{ tournamentStatus.label }}</UBadge>
+            <UBadge v-if="tournament.approval_status !== 'auto_approved'" :color="approvalStatus.color" variant="outline" size="sm" class="border-current">
+              {{ approvalStatus.label }}
+            </UBadge>
             <span class="text-xs text-neutral-500 dark:text-neutral-400">
               {{ tournament.category }}
               <template v-if="tournament.mode"> · {{ tournament.mode }}</template>
@@ -69,6 +104,7 @@ const formatDate = (d: string | null | undefined) => {
           color="primary"
           icon="i-lucide-send"
           :loading="isPublishing"
+          :disabled="tournament.approval_status === 'pending_review' || tournament.approval_status === 'rejected'"
           size="sm"
           @click="handlePublish"
         >
@@ -93,7 +129,8 @@ const formatDate = (d: string | null | undefined) => {
           { label: 'Peserta',      value: String(tournament.participants_count ?? 0),                                                           sub: `dari ${tournament.max_participants}`, icon: 'i-lucide-users' },
           { label: 'Total Hadiah', value: tournament.prize_pool ? formatCurrency(tournament.prize_pool) : '—',                                  sub: 'Prize pool',                         icon: 'i-lucide-trophy' },
           { label: 'Entry Fee',    value: !tournament.entry_fee || tournament.entry_fee == 0 ? 'Gratis' : formatCurrency(tournament.entry_fee), sub: 'Per peserta',                        icon: 'i-lucide-ticket' },
-          { label: 'Mulai',        value: formatDate(tournament.start_at),                                                                       sub: 'Tanggal pertandingan',                icon: 'i-lucide-calendar' },
+          { label: 'Reg. Tutup',   value: formatDate(tournament.registration_end_at),                                                            sub: 'Batas akhir pendaftaran',             icon: 'i-lucide-timer' },
+          { label: 'Kickoff',      value: formatDate(tournament.start_at),                                                                       sub: 'Hari pertama pertandingan',           icon: 'i-lucide-calendar' },
         ]"
         :key="stat.label"
         class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5"
@@ -107,35 +144,62 @@ const formatDate = (d: string | null | undefined) => {
       </div>
     </div>
 
-    <!-- ── Deskripsi ── -->
-    <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl">
-      <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800">
-        <h3 class="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-          <UIcon name="i-lucide-file-text" class="size-4 text-neutral-400" />
-          Deskripsi & Aturan
-        </h3>
-        <UButton
-          size="xs"
-          color="neutral"
-          variant="ghost"
-          icon="i-lucide-pencil"
-          :to="`/dashboard/tournaments/create?edit=${tournament.slug}`"
-        >
-          Edit
-        </UButton>
-      </div>
-      <div class="px-6 py-5">
-        <p
-          v-if="tournament.description"
-          class="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed whitespace-pre-wrap"
-        >
-          {{ tournament.description }}
-        </p>
-        <div v-else class="py-10 text-center">
-          <UIcon name="i-lucide-file-x" class="size-9 text-neutral-300 dark:text-neutral-700 mx-auto mb-2" />
-          <p class="text-sm text-neutral-400 dark:text-neutral-500">Belum ada deskripsi.</p>
+    <!-- ── Deskripsi & Hadiah ── -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      
+      <!-- Deskripsi -->
+      <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800">
+          <h3 class="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
+            <UIcon name="i-lucide-file-text" class="size-4 text-neutral-400" />
+            Deskripsi & Aturan
+          </h3>
+          <UButton
+            size="xs"
+            color="neutral"
+            variant="ghost"
+            icon="i-lucide-pencil"
+            :to="`/dashboard/tournaments/create?edit=${tournament.slug}`"
+          >
+            Edit
+          </UButton>
+        </div>
+        <div class="px-6 py-5">
+          <p
+            v-if="tournament.description"
+            class="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed whitespace-pre-wrap"
+          >
+            {{ tournament.description }}
+          </p>
+          <div v-else class="py-10 text-center">
+            <UIcon name="i-lucide-file-x" class="size-9 text-neutral-300 dark:text-neutral-700 mx-auto mb-2" />
+            <p class="text-sm text-neutral-400 dark:text-neutral-500">Belum ada deskripsi.</p>
+          </div>
         </div>
       </div>
+
+      <!-- Detail Hadiah -->
+      <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800">
+          <h3 class="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
+            <UIcon name="i-lucide-trophy" class="size-4 text-amber-500" />
+            Breakdown Hadiah
+          </h3>
+        </div>
+        <div class="px-6 py-5">
+          <p
+            v-if="tournament.prize_description"
+            class="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed whitespace-pre-wrap font-mono bg-neutral-50 dark:bg-neutral-800/50 p-4 rounded-xl border border-neutral-100 dark:border-white/5"
+          >
+            {{ tournament.prize_description }}
+          </p>
+          <div v-else class="py-10 text-center">
+            <UIcon name="i-lucide-award" class="size-9 text-neutral-300 dark:text-neutral-700 mx-auto mb-2" />
+            <p class="text-sm text-neutral-400 dark:text-neutral-500">Belum ada rincian hadiah.</p>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <!-- ── Inline managers ── -->

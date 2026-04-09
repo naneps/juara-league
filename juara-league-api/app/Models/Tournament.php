@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Tournament extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasUlids;
     
     /**
      * Get the route key for the model.
@@ -27,6 +28,7 @@ class Tournament extends Model
         'description',
         'category',
         'status',
+        'approval_status',
         'mode',
         'bracket_type',
         'participant_type',
@@ -35,6 +37,7 @@ class Tournament extends Model
         'banner_url',
         'prize_pool',
         'entry_fee',
+        'prize_description',
         'max_participants',
         'registration_start_at',
         'registration_end_at',
@@ -42,9 +45,10 @@ class Tournament extends Model
     ];
 
     protected $casts = [
-        'prize_pool' => 'integer',
-        'entry_fee' => 'integer',
+        'prize_pool' => 'decimal:2',
+        'entry_fee' => 'decimal:2',
         'max_participants' => 'integer',
+        'team_size' => 'integer',
         'registration_start_at' => 'datetime',
         'registration_end_at' => 'datetime',
         'start_at' => 'datetime',

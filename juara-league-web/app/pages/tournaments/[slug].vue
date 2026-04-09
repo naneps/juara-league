@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useAuth } from '~/composables/useAuth'
 import { useTournamentStore } from '~/stores/tournamentStore'
-import { getTournamentStatus } from '~/utils/tournamentStatus'
 import type { Tournament } from '~/types/tournament'
+import { getTournamentStatus } from '~/utils/tournamentStatus'
 
 const route = useRoute()
 const tournamentStore = useTournamentStore()

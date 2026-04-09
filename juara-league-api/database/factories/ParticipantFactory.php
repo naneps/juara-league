@@ -13,8 +13,10 @@ class ParticipantFactory extends Factory
         return [
             'tournament_id' => Tournament::factory(),
             'user_id' => User::factory(),
-            'status' => 'pending',
-            'notes' => 'Looking forward to it!',
+            'status' => $this->faker->randomElement(['pending', 'approved', 'rejected']),
+            'payment_status' => $this->faker->randomElement(['pending', 'paid', 'free']),
+            'notes' => $this->faker->sentence(),
+            'created_at' => now()->subDays($this->faker->numberBetween(1, 15)),
         ];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\TournamentException;
 use App\Models\Tournament;
 use App\Models\User;
 use App\Repositories\Contracts\TournamentRepositoryInterface;
@@ -11,7 +12,8 @@ use Illuminate\Support\Str;
 class TournamentService
 {
     public function __construct(
-        protected TournamentRepositoryInterface $tournamentRepository
+        protected TournamentRepositoryInterface $tournamentRepository,
+        protected TournamentApprovalService $approvalService
     ) {}
 
     public function getAllTournaments(int $perPage = 15): LengthAwarePaginator
@@ -33,9 +35,14 @@ class TournamentService
     {
         $data['user_id'] = $user->id;
         $data['slug'] = $this->generateUniqueSlug($data['title']);
-        $data['status'] = $data['status'] ?? 'draft';
+        $data['status'] = 'draft'; // Always start as draft per SRS
 
-        return $this->tournamentRepository->create($data);
+        $tournament = $this->tournamentRepository->create($data);
+
+        // Evaluate approval status
+        $this->approvalService->evaluate($tournament);
+
+        return $tournament;
     }
 
     public function updateTournament(Tournament $tournament, array $data): Tournament
@@ -44,11 +51,23 @@ class TournamentService
             $data['slug'] = $this->generateUniqueSlug($data['title']);
         }
 
+        // BR03: sport_id cannot be changed after publication
+        if (isset($data['sport_id']) && $data['sport_id'] !== $tournament->sport_id) {
+            if ($tournament->status !== 'draft') {
+                throw new TournamentException('Sport cannot be changed after publication.', 'BR03_VIOLATION', 409);
+            }
+        }
+
         return $this->tournamentRepository->update($tournament, $data);
     }
 
     public function deleteTournament(Tournament $tournament): bool
     {
+        // BR12: Ongoing or completed tournaments cannot be deleted
+        if (in_array($tournament->status, ['ongoing', 'completed'])) {
+            throw new TournamentException('Ongoing or completed tournaments cannot be deleted.', 'TOURNAMENT_ONGOING', 409);
+        }
+
         return $this->tournamentRepository->delete($tournament);
     }
 
@@ -58,15 +77,21 @@ class TournamentService
     public function publish(Tournament $tournament): Tournament
     {
         if ($tournament->status !== 'draft') {
-            throw new \Exception('Tournament is already published or in progress.');
+            throw new TournamentException('Tournament is already published or in progress.', 'INVALID_STATUS', 409);
         }
 
-        // Validate: Must have at least one stage
+        // BR01: Must have at least one stage
         if ($tournament->stages()->count() === 0) {
-            throw new \Exception('Tournament must have at least one stage before being published.');
+            throw new TournamentException('Tournament must have at least one stage before being published.', 'NO_STAGE_CONFIGURED', 400);
         }
 
-        return $this->tournamentRepository->update($tournament, ['status' => 'open']);
+        // Rule: Approval status must not be rejected or pending_review
+        if (in_array($tournament->approval_status, ['rejected', 'pending_review'])) {
+            $errorCode = $tournament->approval_status === 'rejected' ? 'TOURNAMENT_REJECTED' : 'TOURNAMENT_PENDING_REVIEW';
+            throw new TournamentException("Tournament cannot be published while in {$tournament->approval_status} status.", $errorCode, 403);
+        }
+
+        return $this->tournamentRepository->update($tournament, ['status' => 'registration']);
     }
 
     /**
@@ -77,6 +102,12 @@ class TournamentService
         // Simple role validation
         if (!in_array($role, ['co_organizer', 'referee'])) {
             throw new \Exception('Invalid staff role.');
+        }
+
+        // BR06/BR07: Staff/Owner cannot be participants
+        $isParticipant = $tournament->participants()->where('user_id', $userId)->exists();
+        if ($isParticipant) {
+             throw new TournamentException('A participant cannot be designated as staff for the same tournament.', 'REFEREE_IS_PARTICIPANT', 409);
         }
 
         // Create or update staff role

@@ -25,6 +25,11 @@ class RepositoryServiceProvider extends ServiceProvider
             \App\Repositories\Contracts\SportRepositoryInterface::class,
             \App\Repositories\Eloquent\SportRepository::class
         );
+
+        $this->app->bind(
+            \App\Repositories\Contracts\StageRepositoryInterface::class,
+            \App\Repositories\Eloquent\EloquentStageRepository::class
+        );
     }
 
     /**
