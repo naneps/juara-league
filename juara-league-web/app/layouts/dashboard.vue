@@ -34,6 +34,22 @@ const links = computed(() => {
       onSelect: () => {
         open.value = false
       }
+    }, {
+      label: 'Manajemen User',
+      icon: 'i-lucide-users',
+      to: '/admin/users',
+      color: 'indigo',
+      onSelect: () => {
+        open.value = false
+      }
+    }, {
+      label: 'Cabor',
+      icon: 'i-lucide-gamepad-2',
+      to: '/admin/sports',
+      color: 'indigo',
+      onSelect: () => {
+        open.value = false
+      }
     }])
   }
 
@@ -120,14 +136,57 @@ const links = computed(() => {
     }]
   }])
 
+  // 3. Additional Section (Landing Page)
+  allLinks.push([{
+    label: 'Platform',
+    type: 'label',
+    class: 'text-[10px] uppercase tracking-[2px] font-black text-neutral-500/70 mb-2 px-2'
+  }, {
+    label: 'Halaman Utama',
+    icon: 'i-lucide-external-link',
+    to: '/',
+    color: 'neutral',
+    onSelect: () => {
+      open.value = false
+    }
+  }])
+
   return allLinks
 })
 
-const groups = computed(() => [{
-  id: 'links',
-  label: 'Cari navigasi',
-  items: links.value.flat()
-}])
+const groups = computed(() => {
+  const searchItems = links.value.flat().reduce((acc: any[], item: any) => {
+    // Jika punya children (seperti menu Pengaturan), masukkan anak-anaknya ke hasil pencarian
+    if (item.children) {
+      item.children.forEach((child: any) => {
+        acc.push({
+          label: child.label,
+          icon: child.icon || item.icon, // Gunakan ikon parent jika anak tidak punya
+          to: child.to,
+          onSelect: child.onSelect
+        })
+      })
+    } 
+    // Jika item sendiri punya link 'to' atau 'href', masukkan ke hasil pencarian
+    else if (item.to || item.href) {
+      acc.push({
+        label: item.label,
+        icon: item.icon,
+        to: item.to,
+        href: item.href,
+        target: item.target,
+        onSelect: item.onSelect
+      })
+    }
+    return acc
+  }, [])
+
+  return [{
+    id: 'links',
+    label: 'Cari navigasi',
+    items: searchItems
+  }]
+})
 
 onMounted(async () => {
   const cookie = useCookie('cookie-consent')
@@ -162,10 +221,10 @@ onMounted(async () => {
       v-model:open="open"
       collapsible
       resizable
-      class="bg-neutral-900/40 backdrop-blur-xl border-r border-white/5"
+      class="bg-gray-100 dark:bg-white/50 dark:bg-neutral-900/40 backdrop-blur-xl border-r border-gray-200 dark:border-white/5"
       :ui="{ 
-        footer: 'lg:border-t lg:border-white/5',
-        header: 'border-b border-white/5 bg-transparent'
+        footer: 'lg:border-t lg:border-gray-200 dark:border-white/5',
+        header: 'border-b border-gray-200 dark:border-white/5 bg-transparent'
       }"
     >
       <template #header="{ collapsed }">
@@ -177,7 +236,7 @@ onMounted(async () => {
 
       <template #default="{ collapsed }">
         <div class="px-2 mb-4">
-          <UDashboardSearchButton :collapsed="collapsed" class="bg-white/5 border-white/10 hover:bg-white/10 ring-0 transition-all duration-300" />
+          <UDashboardSearchButton :collapsed="collapsed" class="bg-gray-100 dark:bg-white/5 border-gray-200 dark:border-white/10 hover:bg-white/10 ring-0 transition-all duration-300" />
         </div>
 
         <div class="flex flex-col gap-8 px-1">

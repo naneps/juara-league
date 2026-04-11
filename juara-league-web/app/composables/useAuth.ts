@@ -9,6 +9,8 @@ export const useAuth = () => {
 
   const loggedIn = computed(() => !!token.value)
 
+  let fetchPromise: Promise<User | null> | null = null
+
   const fetchUser = async (explicitToken?: string) => {
     const activeToken = explicitToken || token.value
     
@@ -17,31 +19,36 @@ export const useAuth = () => {
       return null
     }
 
-    if (isFetching.value) return null
-    isFetching.value = true
+    if (fetchPromise && !explicitToken) return fetchPromise
 
     // Debugging: Kita tambahkan log agar Anda bisa cek di Console browser (F12)
     console.log('🔄 JuaraLeague: Mengambil profil user...')
 
-    try {
-      const { data } = await useApi<ApiResponse<User>>('/api/v1/me', {
-        headers: {
-          Authorization: `Bearer ${activeToken}`
+    fetchPromise = (async () => {
+      isFetching.value = true
+      try {
+        const { data } = await useApi<ApiResponse<User>>('/api/v1/me', {
+          headers: {
+            Authorization: `Bearer ${activeToken}`
+          }
+        })
+        user.value = data
+        console.log('✅ JuaraLeague: Profil user berhasil dimuat!', data.name)
+        return data
+      } catch (error) {
+        console.error('❌ JuaraLeague: Gagal mengambil profil user', error)
+        if (!explicitToken) {
+          token.value = null
+          user.value = null
         }
-      })
-      user.value = data
-      console.log('✅ JuaraLeague: Profil user berhasil dimuat!', data.name)
-      return data
-    } catch (error) {
-      console.error('❌ JuaraLeague: Gagal mengambil profil user', error)
-      if (!explicitToken) {
-        token.value = null
-        user.value = null
+        return null
+      } finally {
+        isFetching.value = false
+        fetchPromise = null
       }
-      return null
-    } finally {
-      isFetching.value = false
-    }
+    })()
+
+    return fetchPromise
   }
 
   // Auto-fetch user when token changes (captured from URL/callback)

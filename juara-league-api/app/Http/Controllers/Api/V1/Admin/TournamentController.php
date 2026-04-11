@@ -10,6 +10,10 @@ use Illuminate\Http\Request;
 
 class TournamentController extends Controller
 {
+    public function __construct(
+        protected \App\Services\TournamentApprovalService $approvalService
+    ) {}
+
     /**
      * Display a listing of all tournaments for moderation.
      */
@@ -33,13 +37,11 @@ class TournamentController extends Controller
     /**
      * Approve a tournament.
      */
-    public function approve(string $id): JsonResponse
+    public function approve(Request $request, string $id): JsonResponse
     {
         $tournament = Tournament::findOrFail($id);
         
-        $tournament->update([
-            'approval_status' => 'approved'
-        ]);
+        $this->approvalService->approveManually($tournament, $request->user()->id, $request->note);
 
         return response()->json([
             'message' => 'Turnamen berhasil disetujui.',
@@ -58,11 +60,7 @@ class TournamentController extends Controller
 
         $tournament = Tournament::findOrFail($id);
         
-        $tournament->update([
-            'approval_status' => 'rejected',
-            // Kita bisa tambahkan kolom notes/reason nanti jika diperlukan
-            // Untuk sekarang kita update status saja
-        ]);
+        $this->approvalService->rejectManually($tournament, $request->user()->id, $request->reason);
 
         return response()->json([
             'message' => 'Turnamen telah ditolak.',

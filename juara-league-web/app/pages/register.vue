@@ -18,17 +18,22 @@ const errors = ref<any>({})
 async function onSubmit() {
   loading.value = true
   errors.value = {}
+
+  let success = false
   try {
     await register(state)
-    navigateTo('/')
+    success = true
   } catch (err: any) {
     if (err.data?.errors) {
       errors.value = err.data.errors
     } else {
       errors.value = { global: err.data?.message || 'Registrasi gagal. Silakan coba lagi.' }
     }
-  } finally {
     loading.value = false
+  }
+
+  if (success) {
+    await navigateTo('/')
   }
 }
 

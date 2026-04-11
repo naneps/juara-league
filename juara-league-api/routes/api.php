@@ -80,6 +80,9 @@ Route::prefix('v1')->group(function () {
 
         // Admin - Management
         Route::prefix('admin')->middleware('role:admin|super_admin')->group(function () {
+            // Dashboard Stats
+            Route::get('/stats', [\App\Http\Controllers\Api\V1\Admin\StatsController::class, 'index']);
+
             // Sports
             Route::post('/sports', [\App\Http\Controllers\Api\V1\Admin\SportController::class, 'store']);
             Route::put('/sports/{id}', [\App\Http\Controllers\Api\V1\Admin\SportController::class, 'update']);
@@ -89,6 +92,12 @@ Route::prefix('v1')->group(function () {
             Route::get('/tournaments', [\App\Http\Controllers\Api\V1\Admin\TournamentController::class, 'index']);
             Route::post('/tournaments/{id}/approve', [\App\Http\Controllers\Api\V1\Admin\TournamentController::class, 'approve']);
             Route::post('/tournaments/{id}/reject', [\App\Http\Controllers\Api\V1\Admin\TournamentController::class, 'reject']);
+
+            // Users
+            Route::get('/users', [\App\Http\Controllers\Api\V1\Admin\UserController::class, 'index']);
+            Route::patch('/users/{user}/role', [\App\Http\Controllers\Api\V1\Admin\UserController::class, 'updateRole']);
+            Route::patch('/users/{user}/suspend', [\App\Http\Controllers\Api\V1\Admin\UserController::class, 'toggleSuspension']);
+            Route::delete('/users/{user}', [\App\Http\Controllers\Api\V1\Admin\UserController::class, 'destroy']);
         });
 
         // Team Management

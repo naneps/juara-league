@@ -17,19 +17,26 @@ const error = ref('')
 async function onSubmit() {
   loading.value = true
   error.value = ''
+  
+  let success = false
+  let loginResponse: any = null
+
   try {
-    const response = await login(state)
-    const isAdmin = response.data.roles?.some((role: string) => ['admin', 'super_admin'].includes(role))
+    loginResponse = await login(state)
+    success = true
+  } catch (err: any) {
+    error.value = err.data?.message || 'Login gagal. Silakan cek kembali email dan password Anda.'
+    loading.value = false
+  }
+
+  if (success && loginResponse) {
+    const isAdmin = loginResponse.data?.roles?.some((role: string) => ['admin', 'super_admin'].includes(role))
     
     if (isAdmin) {
       await navigateTo('/admin/dashboard')
     } else {
       await navigateTo('/dashboard')
     }
-  } catch (err: any) {
-    error.value = err.data?.message || 'Login gagal. Silakan cek kembali email dan password Anda.'
-  } finally {
-    loading.value = false
   }
 }
 

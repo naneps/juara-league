@@ -16,17 +16,26 @@ onMounted(async () => {
     // Give Nuxt/Browser a tiny moment to commit the cookie
     await nextTick()
     
+    let success = false
+    let authError = ''
+    
     try {
       // Kita panggil fetchUser dengan token mentah dari URL
       // Ini jauh lebih aman dan cepat daripada nunggu cookie
       const userData = await fetchUser(queryToken.trim())
       if (userData) {
-        navigateTo('/')
+        success = true
       } else {
-        navigateTo('/login?error=Session activation failed')
+        authError = 'Session activation failed'
       }
     } catch (e) {
-      navigateTo('/login?error=Authentication error')
+      authError = 'Authentication error'
+    }
+
+    if (success) {
+      await navigateTo('/')
+    } else {
+      await navigateTo(`/login?error=${encodeURIComponent(authError)}`)
     }
   } else {
     navigateTo('/login?error=No token received')

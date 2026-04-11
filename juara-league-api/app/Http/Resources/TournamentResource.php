@@ -26,6 +26,7 @@ class TournamentResource extends JsonResource
             'status' => $this->status,
             'approval_status' => $this->approval_status,
             'mode' => $this->mode,
+            'venue_type' => $this->venue_type,
             'participant_type' => $this->participant_type,
             'team_size' => $this->team_size,
             'bracket_type' => $this->bracket_type,

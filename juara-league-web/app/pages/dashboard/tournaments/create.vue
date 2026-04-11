@@ -24,6 +24,7 @@ const state = reactive<StoreTournamentPayload>({
   description: '',
   category: 'Pro',
   mode: 'open',
+  venue_type: 'online',
   participant_type: 'individual',
   team_size: undefined,
   bracket_type: 'single',
@@ -38,9 +39,7 @@ const state = reactive<StoreTournamentPayload>({
   banner_url: ''
 })
 
-const venueType = ref<'online' | 'offline'>('online')
-
-watch(venueType, (newType) => {
+watch(() => state.venue_type, (newType) => {
   if (newType === 'online') {
     state.venue = 'Online'
   } else if (state.venue === 'Online') {
@@ -80,8 +79,7 @@ onMounted(async () => {
         state.start_at = formatDateForInput(tournament.start_at)
         state.venue = tournament.venue || ''
         state.banner_url = tournament.banner_url || ''
-        
-        venueType.value = state.venue?.toLowerCase() === 'online' ? 'online' : 'offline'
+        state.venue_type = (tournament as any).venue_type || (state.venue?.toLowerCase() === 'online' ? 'online' : 'offline')
       }
     } else if (!state.sport_id && sports.value && sports.value.length > 0) {
       state.sport_id = sports.value[0]?.id || ''
@@ -109,7 +107,7 @@ const enrollmentModes: { label: string, value: TournamentMode, icon: string, des
   { label: 'Invitasi', value: 'invite', icon: 'i-lucide-lock', desc: 'Hanya peserta dengan undangan.' }
 ]
 
-const venueTypes: { label: string, value: 'online' | 'offline', icon: string }[] = [
+const venueTypes: { label: string, value: VenueType, icon: string }[] = [
   { label: 'Online / Remote', value: 'online', icon: 'i-lucide-globe' },
   { label: 'Offline / On-site', value: 'offline', icon: 'i-lucide-map-pin' }
 ]
@@ -205,20 +203,19 @@ const onSubmit = async () => {
       <div class="min-h-full bg-neutral-50 dark:bg-neutral-950 transition-colors duration-300">
 
         <!-- Page Header -->
-        <div class="border-b border-neutral-200 dark:border-white/5 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl px-8 py-10 sticky top-0 z-10">
-          <div class="max-w-6xl mx-auto">
-            <div class="flex items-end justify-between">
-              <div>
-                <p class="text-xs font-bold text-primary-500 uppercase tracking-[0.3em] mb-3">{{ isEdit ? 'Ubah Informasi' : 'Turnamen Baru' }}</p>
-                <h1 class="text-4xl font-black text-neutral-900 dark:text-white tracking-tight leading-none">
-                  Konfigurasi<br>
-                  <span class="text-neutral-400 dark:text-neutral-500">Turnamen</span>
+        <div class="border-b border-neutral-200 dark:border-white/5 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl px-8 py-6 sticky top-0 z-10 transition-all duration-300">
+          <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <div class="flex flex-col">
+                <p class="text-[10px] font-bold text-primary-500 uppercase tracking-[0.2em] mb-1">{{ isEdit ? 'Ubah Informasi' : 'Turnamen Baru' }}</p>
+                <h1 class="text-2xl font-black text-neutral-900 dark:text-white tracking-tight leading-none flex items-center gap-2">
+                  Konfigurasi <span class="text-neutral-400 dark:text-neutral-500">Turnamen</span>
                 </h1>
               </div>
-              <div class="hidden sm:flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-600 font-medium">
-                <UIcon name="i-lucide-shield-check" class="size-3.5" />
-                {{ isEdit ? 'Semua perubahan tersimpan permanen' : 'Data tersimpan otomatis sebagai draft' }}
-              </div>
+            </div>
+            <div class="hidden sm:flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-600 font-medium bg-neutral-100 dark:bg-white/5 px-3 py-1.5 rounded-full border border-neutral-200 dark:border-white/5">
+              <UIcon name="i-lucide-shield-check" class="size-3.5" />
+              {{ isEdit ? 'Semua perubahan tersimpan permanen' : 'Data tersimpan otomatis sebagai draft' }}
             </div>
           </div>
         </div>
@@ -303,12 +300,12 @@ const onSubmit = async () => {
                           v-for="v in venueTypes"
                           :key="v.value"
                           type="button"
-                          @click="venueType = v.value"
+                          @click="state.venue_type = v.value"
                           :class="[
                             'flex items-center justify-center gap-2 px-4 py-3 rounded-xl border text-sm font-semibold transition-all duration-200',
-                            venueType === v.value
+                            state.venue_type === v.value
                               ? 'border-primary-500 bg-primary-500/10 text-primary-400'
-                              : 'border-white/8 bg-white/[0.02] text-neutral-500 hover:border-white/15 hover:text-neutral-300'
+                              : 'border-neutral-200 dark:border-white/8 bg-white dark:bg-white/[0.02] text-neutral-500 hover:border-neutral-300 dark:hover:border-white/15 hover:text-neutral-700 dark:hover:text-neutral-300'
                           ]"
                         >
                           <UIcon :name="v.icon" class="size-4 shrink-0" />
@@ -485,7 +482,7 @@ const onSubmit = async () => {
                     leave-from-class="opacity-100 translate-y-0"
                     leave-to-class="opacity-0 -translate-y-2"
                   >
-                    <UFormField v-if="venueType === 'offline'" label="Lokasi / Venue" name="venue" required>
+                    <UFormField v-if="state.venue_type === 'offline'" label="Lokasi / Venue" name="venue" required>
                       <UInput
                         v-model="state.venue"
                         placeholder="Nama gedung, jalan, kota..."
@@ -630,4 +627,4 @@ const onSubmit = async () => {
       </div>
     </template>
   </UDashboardPanel>
-</template>
+</template> 

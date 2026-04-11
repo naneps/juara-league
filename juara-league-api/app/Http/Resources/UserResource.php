@@ -23,6 +23,8 @@ class UserResource extends JsonResource
             'bio' => $this->bio,
             'phone' => $this->phone,
             'google_id' => $this->google_id,
+            'plan' => $this->plan,
+            'is_suspended' => (bool) $this->is_suspended,
             'roles' => $this->getRoleNames(),
             'permissions' => $this->getAllPermissions()->pluck('name'),
             'created_at' => $this->created_at,

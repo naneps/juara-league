@@ -30,6 +30,7 @@ class Tournament extends Model
         'status',
         'approval_status',
         'mode',
+        'venue_type',
         'bracket_type',
         'participant_type',
         'team_size',
@@ -92,5 +93,13 @@ class Tournament extends Model
     public function staff()
     {
         return $this->hasMany(TournamentStaff::class);
+    }
+
+    /**
+     * Get the approval logs for the tournament.
+     */
+    public function approvals()
+    {
+        return $this->hasMany(TournamentApproval::class);
     }
 }

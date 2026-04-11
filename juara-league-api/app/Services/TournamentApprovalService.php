@@ -116,6 +116,38 @@ class TournamentApprovalService
     }
 
     /**
+     * Approve the tournament manually by an admin.
+     */
+    public function approveManually(Tournament $tournament, string $reviewerId, ?string $note = null): void
+    {
+        $tournament->update(['approval_status' => 'approved']);
+
+        TournamentApproval::create([
+            'tournament_id' => $tournament->id,
+            'status' => 'approved',
+            'reviewed_by' => $reviewerId,
+            'reviewed_at' => now(),
+            'note' => $note ?: 'Approved by administrator.'
+        ]);
+    }
+
+    /**
+     * Reject the tournament manually by an admin.
+     */
+    public function rejectManually(Tournament $tournament, string $reviewerId, string $note): void
+    {
+        $tournament->update(['approval_status' => 'rejected']);
+
+        TournamentApproval::create([
+            'tournament_id' => $tournament->id,
+            'status' => 'rejected',
+            'reviewed_by' => $reviewerId,
+            'reviewed_at' => now(),
+            'note' => $note
+        ]);
+    }
+
+    /**
      * Simple banned words check.
      */
     private function checkBannedWords(string $text): bool

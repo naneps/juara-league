@@ -1,6 +1,7 @@
 export type TournamentStatus = 'draft' | 'registration' | 'open' | 'ongoing' | 'completed' | 'canceled';
 export type ApprovalStatus = 'auto_approved' | 'pending_review' | 'approved' | 'rejected';
-export type TournamentMode = 'online' | 'offline';
+export type TournamentMode = 'open' | 'invite';
+export type VenueType = 'online' | 'offline';
 export type BracketType = 'single' | 'double' | 'round_robin' | 'swiss' | 'group_stage';
 export type ParticipantType = 'individual' | 'team';
 export type PaymentStatus = 'free' | 'pending' | 'paid' | 'rejected';
@@ -62,6 +63,7 @@ export interface Tournament {
   status: TournamentStatus;
   approval_status: ApprovalStatus;
   mode: TournamentMode;
+  venue_type: VenueType;
   participant_type: ParticipantType;
   team_size?: number;
   bracket_type: BracketType;
@@ -97,6 +99,7 @@ export interface StoreTournamentPayload {
   description: string;
   category: string;
   mode: TournamentMode;
+  venue_type: VenueType;
   participant_type: ParticipantType;
   team_size?: number;
   bracket_type: BracketType;
