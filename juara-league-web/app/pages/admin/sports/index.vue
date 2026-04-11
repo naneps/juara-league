@@ -141,15 +141,15 @@ const { refresh, status } = await useAsyncData('admin-sports-list', () =>
     <template #body>
       <!-- Stats / Header Decorator -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div class="p-4 rounded-2xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/5 relative overflow-hidden group">
+        <div class="p-4 rounded-2xl bg-neutral-50 dark:bg-white/5 border border-neutral-200 dark:border-white/5 relative overflow-hidden group">
           <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           <p class="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Total Olahraga</p>
-          <p class="text-2xl font-black text-gray-900 dark:text-white italic tracking-tighter">{{ sports?.length || 0 }}</p>
+          <p class="text-2xl font-black dark:text-white italic tracking-tighter">{{ sports?.length || 0 }}</p>
         </div>
       </div>
 
       <UCard
-        class="bg-gray-100 dark:bg-white/50 dark:bg-neutral-900/40 backdrop-blur-xl border border-gray-200 dark:border-white/5 overflow-hidden"
+        class="dark:bg-neutral-900/40 backdrop-blur-xl border border-neutral-200 dark:border-white/5 overflow-hidden"
         :ui="{ body: 'p-0 sm:p-0' }"
       >
         <UTable
@@ -157,9 +157,9 @@ const { refresh, status } = await useAsyncData('admin-sports-list', () =>
           :columns="columns"
           :loading="sportStore.isLoading || status === 'pending'"
           :ui="{ 
-            thead: 'bg-gray-50 dark:bg-white/[0.02]',
-            th: { base: 'text-[10px] uppercase tracking-widest font-black text-neutral-500 py-4 px-4 border-b border-gray-200 dark:border-white/5' },
-            td: { base: 'py-4 px-4 border-b border-gray-100 dark:border-white/[0.02]' }
+            thead: 'bg-neutral-50 dark:bg-white/[0.02]',
+            th: { base: 'text-[10px] uppercase tracking-widest font-black text-neutral-500 py-4 px-4 border-b border-neutral-200 dark:border-white/5' },
+            td: { base: 'py-4 px-4 border-b border-neutral-100 dark:border-white/[0.02]' }
           }"
         >
           <template #name-cell="{ row }">
@@ -172,14 +172,14 @@ const { refresh, status } = await useAsyncData('admin-sports-list', () =>
               />
               <div 
                 v-else
-                class="size-8 rounded-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center text-gray-900 dark:text-white/50"
+                class="size-8 rounded-full bg-neutral-50 dark:bg-white/5 border border-neutral-300 dark:border-white/10 flex items-center justify-center dark:text-white/50"
               >
                 <UIcon
                   :name="(row.original as any).type === 'e-sport' ? 'i-lucide-gamepad-2' : 'i-lucide-trophy'"
                   class="size-4"
                 />
               </div>
-              <span class="font-bold text-gray-900 dark:text-slate-100 tracking-tight">{{ (row.original as any).name }}</span>
+              <span class="font-bold dark:text-slate-100 tracking-tight">{{ (row.original as any).name }}</span>
             </div>
           </template>
 
@@ -264,7 +264,7 @@ const { refresh, status } = await useAsyncData('admin-sports-list', () =>
             <UCheckbox v-model="state.is_active" label="Aktifkan cabang olahraga ini untuk turnamen" />
           </UFormField>
 
-          <div class="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-white/5 mt-6">
+          <div class="flex justify-end gap-3 pt-6 border-t border-neutral-200 dark:border-white/5 mt-6">
             <UButton label="Batal" color="neutral" variant="ghost" @click="isAddModalOpen = false" />
             <UButton type="submit" label="Simpan Data" color="indigo" class="px-6 font-bold" :loading="isLoading" />
           </div>
@@ -303,7 +303,7 @@ const { refresh, status } = await useAsyncData('admin-sports-list', () =>
             <UCheckbox v-model="state.is_active" label="Aktifkan cabang olahraga ini untuk turnamen" />
           </UFormField>
 
-          <div class="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-white/5 mt-6">
+          <div class="flex justify-end gap-3 pt-6 border-t border-neutral-200 dark:border-white/5 mt-6">
             <UButton label="Batal" color="neutral" variant="ghost" @click="isEditModalOpen = false" />
             <UButton type="submit" label="Simpan Perubahan" color="indigo" class="px-6 font-bold" :loading="isLoading" />
           </div>

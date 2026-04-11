@@ -221,10 +221,10 @@ onMounted(async () => {
       v-model:open="open"
       collapsible
       resizable
-      class="bg-gray-100 dark:bg-white/50 dark:bg-neutral-900/40 backdrop-blur-xl border-r border-gray-200 dark:border-white/5"
+      class="dark:bg-neutral-900/40 backdrop-blur-xl border-r border-neutral-200 dark:border-white/5"
       :ui="{ 
-        footer: 'lg:border-t lg:border-gray-200 dark:border-white/5',
-        header: 'border-b border-gray-200 dark:border-white/5 bg-transparent'
+        footer: 'lg:border-t lg:border-neutral-200 dark:border-white/5',
+        header: 'border-b border-neutral-200 dark:border-white/5 bg-transparent'
       }"
     >
       <template #header="{ collapsed }">
@@ -236,7 +236,7 @@ onMounted(async () => {
 
       <template #default="{ collapsed }">
         <div class="px-2 mb-4">
-          <UDashboardSearchButton :collapsed="collapsed" class="bg-gray-100 dark:bg-white/5 border-gray-200 dark:border-white/10 hover:bg-white/10 ring-0 transition-all duration-300" />
+          <UDashboardSearchButton :collapsed="collapsed" class="bg-neutral-50 dark:bg-white/5 border-neutral-300 dark:border-white/10 hover:bg-white/10 ring-0 transition-all duration-300" />
         </div>
 
         <div class="flex flex-col gap-8 px-1">

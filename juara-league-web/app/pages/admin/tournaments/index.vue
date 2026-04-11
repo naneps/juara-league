@@ -150,14 +150,14 @@ const formatDate = (date: any) => {
     <template #body>
       <!-- Stats Summary -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div class="p-4 rounded-2xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/5">
+        <div class="p-4 rounded-2xl bg-neutral-50 dark:bg-white/5 border border-neutral-200 dark:border-white/5">
           <p class="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Menunggu Review</p>
-          <p class="text-2xl font-black text-gray-900 dark:text-white">{{ pendingTournaments?.length || 0 }}</p>
+          <p class="text-2xl font-black dark:text-white">{{ pendingTournaments?.length || 0 }}</p>
         </div>
       </div>
 
       <UCard
-        class="bg-gray-100 dark:bg-white/50 dark:bg-neutral-900/40 backdrop-blur-xl border border-gray-200 dark:border-white/5 overflow-hidden"
+        class="dark:bg-neutral-900/40 backdrop-blur-xl border border-neutral-200 dark:border-white/5 overflow-hidden"
         :ui="{ body: 'p-0 sm:p-0' }"
       >
         <UTable
@@ -165,14 +165,14 @@ const formatDate = (date: any) => {
           :columns="columns"
           :loading="isLoading || status === 'pending'"
           :ui="{ 
-            thead: 'bg-gray-50 dark:bg-white/[0.02]',
-            th: { base: 'text-[10px] uppercase tracking-widest font-black text-neutral-500 py-4 px-4 border-b border-gray-200 dark:border-white/5' },
+            thead: 'bg-neutral-50 dark:bg-white/[0.02]',
+            th: { base: 'text-[10px] uppercase tracking-widest font-black text-neutral-500 py-4 px-4 border-b border-neutral-200 dark:border-white/5' },
             td: { base: 'py-4 px-4' }
           }"
         >
           <template #title-cell="{ row }">
             <div class="flex flex-col py-2">
-              <span class="font-bold text-gray-900 dark:text-slate-100 hover:text-indigo-400 cursor-pointer transition-colors" @click="openDetail(row.original as any)">
+              <span class="font-bold dark:text-slate-100 hover:text-indigo-400 cursor-pointer transition-colors" @click="openDetail(row.original as any)">
                 {{ (row.original as any).title }}
               </span>
               <span class="text-[10px] text-slate-500 uppercase font-medium tracking-tight">
@@ -185,7 +185,7 @@ const formatDate = (date: any) => {
             <div class="flex items-center gap-2">
               <UAvatar :src="(row.original as any).user?.avatar" :alt="(row.original as any).user?.name" size="2xs" />
               <div class="flex flex-col">
-                <span class="text-xs font-semibold text-gray-800 dark:text-slate-200">{{ (row.original as any).user?.name }}</span>
+                <span class="text-xs font-semibold dark:text-slate-200">{{ (row.original as any).user?.name }}</span>
                 <span class="text-[10px] text-slate-500">{{ (row.original as any).user?.email }}</span>
               </div>
             </div>
@@ -194,7 +194,7 @@ const formatDate = (date: any) => {
           <template #sport-cell="{ row }">
             <div class="flex items-center gap-2">
               <img v-if="(row.original as any).sport?.icon_url" :src="(row.original as any).sport.icon_url" class="size-4" />
-              <span class="text-xs font-bold text-gray-600 dark:text-neutral-400 uppercase tracking-tighter">{{ (row.original as any).sport?.name }}</span>
+              <span class="text-xs font-bold dark:text-neutral-400 uppercase tracking-tighter">{{ (row.original as any).sport?.name }}</span>
             </div>
           </template>
 
@@ -237,7 +237,7 @@ const formatDate = (date: any) => {
 
           <template #empty-state>
             <div class="flex flex-col items-center justify-center py-24 text-neutral-600">
-              <div class="size-16 rounded-3xl bg-gray-100 dark:bg-white/5 flex items-center justify-center mb-6">
+              <div class="size-16 rounded-3xl bg-neutral-50 dark:bg-white/5 flex items-center justify-center mb-6">
                 <UIcon name="i-lucide-coffee" class="size-8 opacity-20" />
               </div>
               <p class="font-bold text-sm tracking-tight">Kopi dulu, Gan!</p>
@@ -252,8 +252,8 @@ const formatDate = (date: any) => {
   <!-- SLIDEOVER: TOURNAMENT DETAIL -->
   <USlideover v-model:open="showDetailSlideover" title="Detail Turnamen" class="z-[60]">
     <template #content>
-      <div v-if="detailTournament" class="flex flex-col h-full bg-white dark:bg-neutral-900 border-l border-gray-200 dark:border-white/5 space-y-8 p-6 overflow-y-auto font-sans">
-        <div class="relative aspect-video rounded-2xl overflow-hidden border border-gray-200 dark:border-white/5">
+      <div v-if="detailTournament" class="flex flex-col h-full dark:bg-neutral-900 border-l border-neutral-200 dark:border-white/5 space-y-8 p-6 overflow-y-auto font-sans">
+        <div class="relative aspect-video rounded-2xl overflow-hidden border border-neutral-200 dark:border-white/5">
           <img :src="detailTournament.banner_url || '/placeholder-banner.jpg'" class="object-cover w-full h-full" />
           <div class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
             <UBadge color="indigo" variant="solid" size="sm" class="font-black uppercase tracking-widest">
@@ -265,17 +265,17 @@ const formatDate = (date: any) => {
         <div class="space-y-4">
           <div>
             <p class="text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em] mb-1">Informasi Dasar</p>
-            <h2 class="text-2xl font-black text-gray-900 dark:text-white leading-tight uppercase italic tracking-tighter">{{ detailTournament.title }}</h2>
+            <h2 class="text-2xl font-black dark:text-white leading-tight uppercase italic tracking-tighter">{{ detailTournament.title }}</h2>
           </div>
-          <p class="text-sm text-gray-600 dark:text-neutral-400 leading-relaxed">{{ detailTournament.description }}</p>
+          <p class="text-sm dark:text-neutral-400 leading-relaxed">{{ detailTournament.description }}</p>
           <div class="grid grid-cols-2 gap-3">
-            <div class="p-3 rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/5">
+            <div class="p-3 rounded-xl bg-neutral-50 dark:bg-white/5 border border-neutral-200 dark:border-white/5">
               <p class="text-[9px] font-bold text-neutral-500 uppercase mb-1">Mode</p>
-              <p class="text-xs font-bold text-gray-900 dark:text-white">{{ detailTournament.mode === 'open' ? 'Terbuka' : 'Invitasi' }}</p>
+              <p class="text-xs font-bold dark:text-white">{{ detailTournament.mode === 'open' ? 'Terbuka' : 'Invitasi' }}</p>
             </div>
-            <div class="p-3 rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/5">
+            <div class="p-3 rounded-xl bg-neutral-50 dark:bg-white/5 border border-neutral-200 dark:border-white/5">
               <p class="text-[9px] font-bold text-neutral-500 uppercase mb-1">Tipe Peserta</p>
-              <p class="text-xs font-bold text-gray-900 dark:text-white uppercase">{{ detailTournament.participant_type }}</p>
+              <p class="text-xs font-bold dark:text-white uppercase">{{ detailTournament.participant_type }}</p>
             </div>
           </div>
         </div>
@@ -285,7 +285,7 @@ const formatDate = (date: any) => {
           <div class="space-y-2">
             <div class="flex items-center justify-between text-xs px-1">
               <span class="text-neutral-500">Maks. Peserta</span>
-              <span class="font-bold text-gray-900 dark:text-white">{{ detailTournament.max_participants }} Entitas</span>
+              <span class="font-bold dark:text-white">{{ detailTournament.max_participants }} Entitas</span>
             </div>
             <div class="flex items-center justify-between text-xs px-1">
               <span class="text-neutral-500">Prize Pool</span>
@@ -300,19 +300,19 @@ const formatDate = (date: any) => {
 
         <div class="space-y-3">
           <p class="text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em]">Waktu & Lokasi</p>
-          <div class="p-4 rounded-2xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/5 space-y-3">
+          <div class="p-4 rounded-2xl bg-neutral-50 dark:bg-white/5 border border-neutral-200 dark:border-white/5 space-y-3">
             <div class="flex items-start gap-3">
               <UIcon name="i-lucide-calendar" class="size-4 text-neutral-500 mt-0.5" />
               <div class="flex flex-col">
                 <span class="text-[10px] font-bold text-neutral-500 uppercase">Pendaftaran</span>
-                <span class="text-xs text-gray-700 dark:text-neutral-300">{{ formatDate(detailTournament.registration_start_at) }} - {{ formatDate(detailTournament.registration_end_at) }}</span>
+                <span class="text-xs dark:text-neutral-300">{{ formatDate(detailTournament.registration_start_at) }} - {{ formatDate(detailTournament.registration_end_at) }}</span>
               </div>
             </div>
-            <div class="flex items-start gap-3 border-t border-gray-200 dark:border-white/5 pt-3">
+            <div class="flex items-start gap-3 border-t border-neutral-200 dark:border-white/5 pt-3">
               <UIcon name="i-lucide-map-pin" class="size-4 text-neutral-500 mt-0.5" />
               <div class="flex flex-col">
                 <span class="text-[10px] font-bold text-neutral-500 uppercase">Lokasi / Venue</span>
-                <span class="text-xs text-gray-700 dark:text-neutral-300 font-bold tracking-tight">{{ detailTournament.venue }}</span>
+                <span class="text-xs dark:text-neutral-300 font-bold tracking-tight">{{ detailTournament.venue }}</span>
               </div>
             </div>
           </div>

@@ -124,7 +124,7 @@ const formatDate = (date: string) => {
               v-model="search"
               icon="i-lucide-search"
               placeholder="Cari user..."
-              class="w-48 lg:w-64 border-gray-200 dark:border-white/5"
+              class="w-48 lg:w-64 border-neutral-200 dark:border-white/5"
               size="sm"
             />
             <USelectMenu
@@ -154,15 +154,15 @@ const formatDate = (date: string) => {
       <div v-if="error && !users.length" class="p-12 text-center">
         <div class="p-8 rounded-3xl bg-error-500/10 border border-error-500/20 max-w-md mx-auto">
           <UIcon name="i-lucide-alert-triangle" class="size-12 text-error-500 mb-4" />
-          <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Gagal Memuat Data</h3>
-          <p class="text-sm text-gray-600 dark:text-neutral-400 mb-6">{{ error }}</p>
+          <h3 class="text-lg font-bold dark:text-white mb-2">Gagal Memuat Data</h3>
+          <p class="text-sm dark:text-neutral-400 mb-6">{{ error }}</p>
           <UButton color="neutral" variant="outline" @click="refresh">Coba Lagi</UButton>
         </div>
       </div>
 
       <div v-else class="space-y-6">
         <UCard
-          class="bg-gray-100 dark:bg-white/50 dark:bg-neutral-900/40 backdrop-blur-xl border border-gray-200 dark:border-white/5 overflow-hidden"
+          class="dark:bg-neutral-900/40 backdrop-blur-xl border border-neutral-200 dark:border-white/5 overflow-hidden"
           :ui="{ body: 'p-0 sm:p-0' }"
         >
           <UTable
@@ -170,8 +170,8 @@ const formatDate = (date: string) => {
             :columns="columns"
             :loading="isLoading || status === 'pending'"
             :ui="{ 
-              thead: 'bg-gray-50 dark:bg-white/[0.02]',
-              th: { base: 'text-[10px] uppercase tracking-widest font-black text-neutral-500 py-4 px-4 border-b border-gray-200 dark:border-white/5' },
+              thead: 'bg-neutral-50 dark:bg-white/[0.02]',
+              th: { base: 'text-[10px] uppercase tracking-widest font-black text-neutral-500 py-4 px-4 border-b border-neutral-200 dark:border-white/5' },
               td: { base: 'py-4 px-4' }
             }"
           >
@@ -184,7 +184,7 @@ const formatDate = (date: string) => {
                   class="ring-1 ring-white/10"
                 />
                 <div class="flex flex-col min-w-0">
-                  <span class="font-bold text-gray-900 dark:text-slate-100 italic tracking-tight truncate">{{ (row.original as any).name }}</span>
+                  <span class="font-bold dark:text-slate-100 italic tracking-tight truncate">{{ (row.original as any).name }}</span>
                   <span class="text-[10px] text-slate-500 font-medium truncate">@{{ (row.original as any).username || 'user' }} • {{ (row.original as any).email }}</span>
                 </div>
               </div>
@@ -250,7 +250,7 @@ const formatDate = (date: string) => {
 
             <template #empty-state>
               <div class="flex flex-col items-center justify-center py-24 text-neutral-600">
-                <div class="size-16 rounded-3xl bg-gray-100 dark:bg-white/5 flex items-center justify-center mb-6">
+                <div class="size-16 rounded-3xl bg-neutral-50 dark:bg-white/5 flex items-center justify-center mb-6">
                   <UIcon name="i-lucide-ghost" class="size-8 opacity-20" />
                 </div>
                 <p class="font-bold text-sm tracking-tight italic">Hampa bosku...</p>
@@ -259,7 +259,7 @@ const formatDate = (date: string) => {
             </template>
           </UTable>
 
-          <div v-if="usersMeta && usersMeta.total > usersMeta.per_page" class="p-4 border-t border-gray-200 dark:border-white/5 flex justify-end">
+          <div v-if="usersMeta && usersMeta.total > usersMeta.per_page" class="p-4 border-t border-neutral-200 dark:border-white/5 flex justify-end">
             <UPagination
               v-model="page"
               :total="usersMeta.total"
