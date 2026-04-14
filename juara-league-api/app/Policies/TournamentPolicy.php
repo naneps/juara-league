@@ -42,7 +42,7 @@ class TournamentPolicy
         // Only Owner can publish
         // Rule: Approval status must not be rejected or pending_review
         return $tournament->user_id === $user->id
-            && $tournament->approval_status === 'auto_approved' // Or 'approved' after manual review
+            && in_array($tournament->approval_status, ['approved', 'auto_approved'])
             && $tournament->status === 'draft';
     }
 

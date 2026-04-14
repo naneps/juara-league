@@ -148,6 +148,22 @@ const formatDate = (date: any) => {
     </template>
 
     <template #body>
+      <!-- Error State -->
+      <div v-if="error" class="mb-6 p-4 rounded-2xl bg-error-500/10 border border-error-500/20 flex items-center gap-3">
+        <UIcon name="i-lucide-alert-circle" class="size-5 text-error-500 shrink-0" />
+        <p class="text-sm font-bold text-error-500">{{ error }}</p>
+        <UButton
+          icon="i-lucide-refresh-cw"
+          variant="ghost"
+          color="error"
+          size="xs"
+          class="ml-auto"
+          @click="refresh"
+        >
+          Coba Lagi
+        </UButton>
+      </div>
+
       <!-- Stats Summary -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <div class="p-4 rounded-2xl bg-neutral-50 dark:bg-white/5 border border-neutral-200 dark:border-white/5">
@@ -161,9 +177,10 @@ const formatDate = (date: any) => {
         :ui="{ body: 'p-0 sm:p-0' }"
       >
         <UTable
-          :rows="pendingTournaments || []"
+          :data="pendingTournaments || []"
           :columns="columns"
           :loading="isLoading || status === 'pending'"
+          :row-key="row => row.id"
           :ui="{ 
             thead: 'bg-neutral-50 dark:bg-white/[0.02]',
             th: { base: 'text-[10px] uppercase tracking-widest font-black text-neutral-500 py-4 px-4 border-b border-neutral-200 dark:border-white/5' },

@@ -3,8 +3,6 @@ import type { User } from '~/types/auth'
 import type { Tournament } from '~/types/tournament'
 
 export const useAdminStore = defineStore('admin', () => {
-  const { $api } = useNuxtApp()
-
   // --- STATE ---
   const stats = ref<any>(null)
   const users = ref<User[]>([])
@@ -19,7 +17,7 @@ export const useAdminStore = defineStore('admin', () => {
     isLoading.value = true
     error.value = null
     try {
-      const response = await $api<any>('/admin/stats')
+      const response = await useApi<any>('/api/v1/admin/stats')
       stats.value = response
     } catch (e: any) {
       error.value = e.data?.message || 'Gagal mengambil statistik admin'
@@ -34,7 +32,7 @@ export const useAdminStore = defineStore('admin', () => {
     isLoading.value = true
     error.value = null
     try {
-      const response = await $api<any>('/admin/users', { params })
+      const response = await useApi<any>('/api/v1/admin/users', { params })
       users.value = response.data
       usersMeta.value = response.meta
     } catch (e: any) {
@@ -47,7 +45,7 @@ export const useAdminStore = defineStore('admin', () => {
 
   const toggleUserSuspension = async (userId: string | number) => {
     try {
-      const res = await $api<any>(`/admin/users/${userId}/suspend`, { method: 'PATCH' })
+      const res = await useApi<any>(`/api/v1/admin/users/${userId}/suspend`, { method: 'PATCH' })
       // Update local state if the user is in the current list
       const idx = users.value.findIndex(u => u.id === userId)
       if (idx !== -1) {
@@ -61,7 +59,7 @@ export const useAdminStore = defineStore('admin', () => {
 
   const changeUserRole = async (userId: string | number, role: string) => {
     try {
-      const res = await $api<any>(`/admin/users/${userId}/role`, { 
+      const res = await useApi<any>(`/api/v1/admin/users/${userId}/role`, { 
         method: 'PATCH',
         body: { role }
       })
@@ -81,7 +79,7 @@ export const useAdminStore = defineStore('admin', () => {
     isLoading.value = true
     error.value = null
     try {
-      const response = await $api<{ data: Tournament[] }>('/admin/tournaments', {
+      const response = await useApi<{ data: Tournament[] }>('/api/v1/admin/tournaments', {
         params: { approval_status: 'pending_review' }
       })
       pendingTournaments.value = response.data
@@ -95,7 +93,7 @@ export const useAdminStore = defineStore('admin', () => {
 
   const approveTournament = async (id: string | number) => {
     try {
-      await $api(`/admin/tournaments/${id}/approve`, { method: 'POST' })
+      await useApi(`/api/v1/admin/tournaments/${id}/approve`, { method: 'POST' })
       pendingTournaments.value = pendingTournaments.value.filter(t => t.id !== id)
     } catch (e: any) {
       throw e
@@ -104,7 +102,7 @@ export const useAdminStore = defineStore('admin', () => {
 
   const rejectTournament = async (id: string | number, reason: string) => {
     try {
-      await $api(`/admin/tournaments/${id}/reject`, { 
+      await useApi(`/api/v1/admin/tournaments/${id}/reject`, { 
         method: 'POST',
         body: { reason }
       })
