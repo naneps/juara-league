@@ -10,6 +10,7 @@ const toast = useToast()
 const { data: tournament, refresh } = await useAsyncData(`tournament-${slug}`, () => tournamentStore.getBySlug(slug))
 
 const isPublishing = ref(false)
+const isPublishModalOpen = ref(false)
 
 const handlePublish = async () => {
   if (tournament.value?.approval_status === 'pending_review') {
@@ -22,13 +23,16 @@ const handlePublish = async () => {
     return
   }
 
-  if (!confirm('Publish turnamen ini? Peserta bisa mulai mendaftar setelah ini.')) return
+  isPublishModalOpen.value = true
+}
 
+const confirmPublish = async () => {
   isPublishing.value = true
   try {
     await tournamentStore.publishTournament(slug)
     toast.add({ title: 'Berhasil dipublish!', description: 'Turnamen sekarang terbuka untuk pendaftaran.', color: 'success' })
     await refresh()
+    isPublishModalOpen.value = false
   } catch (e: any) {
     toast.add({ title: 'Gagal', description: e.data?.message || 'Gagal mempublikasikan turnamen', color: 'error' })
   } finally {
@@ -223,4 +227,52 @@ const formatDate = (d: string | null | undefined) => {
       <p class="text-neutral-500 dark:text-neutral-400">Turnamen tidak ditemukan.</p>
     </div>
   </div>
+
+  <!-- Publish Confirmation Modal -->
+  <UModal v-model:open="isPublishModalOpen" class="w-full sm:max-w-lg" :ui="{ content: 'rounded-[1.5rem] bg-neutral-900 border border-white/5 shadow-2xl' }">
+    <template #body>
+      <div class="p-2 space-y-6">
+        <div class="flex items-center gap-4">
+          <div class="flex-shrink-0 size-12 rounded-full bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
+            <UIcon name="i-lucide-alert-triangle" class="text-amber-500 size-6" />
+          </div>
+          <div>
+            <h3 class="text-xl font-black text-white uppercase tracking-wider leading-tight">Konfirmasi Publish</h3>
+            <p class="text-sm text-neutral-400 font-medium">Anda yakin mempublikasikan turnamen ini?</p>
+          </div>
+        </div>
+        
+        <div class="space-y-3 pl-4 border-l-2 border-white/5 text-sm text-neutral-300">
+          <p class="font-medium text-neutral-400">Setelah dipublikasi:</p>
+          <ul class="list-disc list-inside space-y-2 text-neutral-400 font-medium ml-2">
+            <li>Dapat dilihat oleh semua orang secara publik.</li>
+            <li>Pendaftar dapat mulai mendaftar ke turnamen.</li>
+            <li>Beberapa pengaturan tidak dapat diubah lagi.</li>
+          </ul>
+        </div>
+      </div>
+    </template>
+
+    <template #footer>
+      <div class="flex justify-end gap-3 w-full">
+        <UButton 
+          color="neutral" 
+          variant="ghost" 
+          class="font-bold uppercase tracking-wider"
+          @click="isPublishModalOpen = false"
+          :disabled="isPublishing"
+        >
+          Batal
+        </UButton>
+        <UButton 
+          color="success" 
+          class="font-black uppercase tracking-wider shadow-[0_0_15px_rgba(34,197,94,0.3)] px-6"
+          :loading="isPublishing"
+          @click="confirmPublish"
+        >
+          Ya, Publish
+        </UButton>
+      </div>
+    </template>
+  </UModal>
 </template>

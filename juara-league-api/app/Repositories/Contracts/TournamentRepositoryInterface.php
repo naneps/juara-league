@@ -9,11 +9,11 @@ interface TournamentRepositoryInterface
 {
     public function all(int $perPage = 15): LengthAwarePaginator;
 
-    public function findById(int $id): ?Tournament;
+    public function findById(string $id): ?Tournament;
 
     public function findBySlug(string $slug): ?Tournament;
 
-    public function findByUserId(int $userId, int $perPage = 15): LengthAwarePaginator;
+    public function findByUserId(string $userId, int $perPage = 15): LengthAwarePaginator;
 
     public function create(array $data): Tournament;
 

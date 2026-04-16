@@ -18,7 +18,7 @@ class ParticipantService
     public function register(Tournament $tournament, array $data): Participant
     {
         // Check if tournament is open for registration
-        if ($tournament->status !== 'open') {
+        if ($tournament->status !== 'registration') {
             throw ValidationException::withMessages([
                 'tournament' => ['Tournament is not open for registration.']
             ]);
@@ -85,7 +85,7 @@ class ParticipantService
         return $participant;
     }
 
-    public function getUserParticipations(int $userId): Collection
+    public function getUserParticipations(string $userId): Collection
     {
         return Participant::where('user_id', $userId)
             ->with(['tournament.sport', 'tournament.user', 'team'])

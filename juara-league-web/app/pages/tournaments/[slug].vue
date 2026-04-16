@@ -26,6 +26,7 @@ const isOwner = computed(() => {
 })
 
 const isPublishing = ref(false)
+const isPublishModalOpen = ref(false)
 const isJoinModalOpen = ref(false)
 
 const handleJoinClick = () => {
@@ -54,7 +55,10 @@ const publish = async () => {
   try {
     await tournamentStore.publishTournament(tournament.value.slug)
     await refresh()
-    tournament.value = data.value as Tournament
+    if (data.value) {
+      tournament.value = data.value as Tournament
+    }
+    isPublishModalOpen.value = false
     useToast().add({ title: 'Berhasil!', description: 'Turnamen telah dipublikasikan ke publik.', color: 'success' })
   } catch (e: any) {
     useToast().add({ title: 'Gagal', description: e.data?.message || 'Gagal mempublikasikan turnamen', color: 'error' })
@@ -187,7 +191,7 @@ const dummyBracket = [
                   size="xl" 
                   class="rounded-2xl font-black uppercase tracking-widest px-8 shadow-[0_0_20px_rgba(34,197,94,0.3)] animate-pulse"
                   :loading="isPublishing"
-                  @click="publish"
+                  @click="isPublishModalOpen = true"
                  >
                    Publish Turnamen
                  </UButton>
@@ -230,6 +234,14 @@ const dummyBracket = [
                  <h3 class="text-lg font-black text-white uppercase tracking-wider mb-6 relative z-10">Pendaftaran</h3>
                  
                  <div class="space-y-4 mb-8">
+                   <div class="flex justify-between items-center text-sm" v-if="tournament?.registration_start_at">
+                     <span class="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">Mulai Daftar</span>
+                     <span class="text-white font-black uppercase text-xs">{{ formatDate(tournament.registration_start_at) }}</span>
+                   </div>
+                   <div class="flex justify-between items-center text-sm" v-if="tournament?.registration_end_at">
+                     <span class="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">Tutup Daftar</span>
+                     <span class="text-white font-black uppercase text-xs">{{ formatDate(tournament.registration_end_at) }}</span>
+                   </div>
                    <div class="flex justify-between items-center text-sm">
                      <span class="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">Biaya Masuk</span>
                      <span class="text-primary-400 font-black text-lg">{{ tournament?.entry_fee == 0 ? 'Gratis' : formatCurrency(tournament?.entry_fee) }}</span>
@@ -246,7 +258,7 @@ const dummyBracket = [
 
                  <div v-if="tournament">
                     <!-- Not yet joined & tournament is open -->
-                    <template v-if="!userParticipation && tournament.status === 'open'">
+                    <template v-if="!userParticipation && (tournament.status === 'open' || tournament.status === 'registration')">
                       <UButton 
                         color="primary" 
                         block 
@@ -299,7 +311,7 @@ const dummyBracket = [
                       </UButton>
                     </template>
 
-                    <template v-else-if="tournament.status !== 'open'">
+                    <template v-else-if="tournament.status !== 'open' && tournament.status !== 'registration'">
                       <UButton 
                         color="neutral" 
                         disabled
@@ -391,5 +403,53 @@ const dummyBracket = [
         </template>
       </UTabs>
     </div>
+
+    <!-- Publish Confirmation Modal -->
+    <UModal v-model:open="isPublishModalOpen" class="w-full sm:max-w-lg" :ui="{ content: 'rounded-[1.5rem] bg-neutral-900 border border-white/5 shadow-2xl' }">
+      <template #body>
+        <div class="p-2 space-y-6">
+          <div class="flex items-center gap-4">
+            <div class="flex-shrink-0 size-12 rounded-full bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
+              <UIcon name="i-lucide-alert-triangle" class="text-amber-500 size-6" />
+            </div>
+            <div>
+              <h3 class="text-xl font-black text-white uppercase tracking-wider leading-tight">Konfirmasi Publish</h3>
+              <p class="text-sm text-neutral-400 font-medium">Anda yakin mempublikasikan turnamen ini?</p>
+            </div>
+          </div>
+          
+          <div class="space-y-3 pl-4 border-l-2 border-white/5 text-sm text-neutral-300">
+            <p class="font-medium text-neutral-400">Setelah dipublikasi:</p>
+            <ul class="list-disc list-inside space-y-2 text-neutral-400 font-medium ml-2">
+              <li>Dapat dilihat oleh semua orang secara publik.</li>
+              <li>Pendaftar dapat mulai mendaftar ke turnamen.</li>
+              <li>Beberapa pengaturan tidak dapat diubah lagi.</li>
+            </ul>
+          </div>
+        </div>
+      </template>
+
+      <template #footer>
+        <div class="flex justify-end gap-3 w-full">
+          <UButton 
+            color="neutral" 
+            variant="ghost" 
+            class="font-bold uppercase tracking-wider"
+            @click="isPublishModalOpen = false"
+            :disabled="isPublishing"
+          >
+            Batal
+          </UButton>
+          <UButton 
+            color="success" 
+            class="font-black uppercase tracking-wider shadow-[0_0_15px_rgba(34,197,94,0.3)] px-6"
+            :loading="isPublishing"
+            @click="publish"
+          >
+            Ya, Publish
+          </UButton>
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>

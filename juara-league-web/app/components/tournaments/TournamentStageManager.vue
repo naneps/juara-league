@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useTournamentStore } from '~/stores/tournamentStore'
-import type { Stage } from '~/types/tournament'
+import { useTournamentStore } from '~/stores/tournamentStore';
+import type { Stage } from '~/types/tournament';
 
 const props = defineProps<{
   tournamentSlug: string
@@ -184,7 +184,7 @@ onMounted(() => {
       <div class="flex-1">
         
         <!-- Add Stage Flow -->
-        <div v-if="isAdding" class="p-6">
+        <div v-if="isAdding" class="p-8 md:p-10">
           
           <!-- Step 1: Template Selection -->
           <div v-if="isSelectingTemplate" class="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -238,7 +238,7 @@ onMounted(() => {
 
           <!-- Step 2: Final Configuration -->
           <div v-else class="animate-in fade-in slide-in-from-right-4 duration-500">
-            <div class="flex items-center gap-3 mb-8">
+            <div class="flex items-center gap-4 mb-10">
               <UButton
                 variant="ghost"
                 color="neutral"
@@ -253,19 +253,19 @@ onMounted(() => {
               </div>
             </div>
 
-            <div class="space-y-6">
-              <UFormGroup label="Nama Babak" name="name" help="Nama ini akan tampil di publik (Contoh: Semifinal B)">
+            <div class="space-y-8 ga">
+              <UFormGroup  label="Nama Babak" name="name" help="Nama ini akan tampil di publik (Contoh: Semifinal B)">
                 <UInput
                   v-model="newStage.name"
                   placeholder="Masukkan nama babak..."
                   icon="i-lucide-edit-3"
                   size="xl"
-                  class="w-full"
+                  class="w-full mb-4"
                   :ui="{ base: 'font-bold' }"
                 />
               </UFormGroup>
 
-              <UFormGroup label="Format Pertandingan" name="type">
+              <UFormGroup  label="Format Pertandingan" name="type">
                 <USelectMenu
                   v-model="selectedStageType"
                   :items="stageTypes"
@@ -286,8 +286,8 @@ onMounted(() => {
                 </USelectMenu>
               </UFormGroup>
               
-              <div v-if="selectedStageType" class="p-4 rounded-xl bg-primary-50 dark:bg-primary-900/10 border border-primary-100 dark:border-primary-900/20">
-                <div class="flex gap-3">
+              <div v-if="selectedStageType" class="p-6 rounded-2xl bg-primary-50 dark:bg-primary-900/10 border border-primary-100 dark:border-primary-900/20 mt-4">
+                <div class="flex gap-4">
                   <UIcon name="i-lucide-info" class="size-5 text-primary-500 shrink-0 mt-0.5" />
                   <div>
                     <p class="text-xs font-bold text-primary-700 dark:text-primary-400 mb-1">Detail Format: {{ selectedStageType.label }}</p>
@@ -298,8 +298,8 @@ onMounted(() => {
                 </div>
               </div>
 
-              <div class="flex items-center justify-end gap-3 pt-6 border-t border-neutral-100 dark:border-neutral-800">
-                <UButton variant="ghost" color="neutral" @click="resetAddState">Batal</UButton>
+              <div class="flex items-center justify-end gap-4 pt-8 mt-12 border-t border-neutral-100 dark:border-neutral-800">
+                <UButton variant="ghost" color="neutral" size="lg" @click="resetAddState">Batal</UButton>
                 <UButton color="primary" size="lg" icon="i-lucide-save" :loading="isSubmitting" @click="addStage">Simpan Babak</UButton>
               </div>
             </div>

@@ -13,7 +13,7 @@ class EloquentTournamentRepository implements TournamentRepositoryInterface
         return Tournament::latest()->paginate($perPage);
     }
 
-    public function findById(int $id): ?Tournament
+    public function findById(string $id): ?Tournament
     {
         return Tournament::find($id);
     }
@@ -23,7 +23,7 @@ class EloquentTournamentRepository implements TournamentRepositoryInterface
         return Tournament::with(['user', 'sport'])->where('slug', $slug)->first();
     }
 
-    public function findByUserId(int $userId, int $perPage = 15): LengthAwarePaginator
+    public function findByUserId(string $userId, int $perPage = 15): LengthAwarePaginator
     {
         return Tournament::where('user_id', $userId)->latest()->paginate($perPage);
     }

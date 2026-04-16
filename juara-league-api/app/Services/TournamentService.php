@@ -26,7 +26,7 @@ class TournamentService
         return $this->tournamentRepository->findBySlug($slug);
     }
 
-    public function getUserTournaments(int $userId, int $perPage = 15): LengthAwarePaginator
+    public function getUserTournaments(string $userId, int $perPage = 15): LengthAwarePaginator
     {
         return $this->tournamentRepository->findByUserId($userId, $perPage);
     }
@@ -97,7 +97,7 @@ class TournamentService
     /**
      * Add a staff member to the tournament.
      */
-    public function addStaff(Tournament $tournament, int $userId, string $role): void
+    public function addStaff(Tournament $tournament, string $userId, string $role): void
     {
         // Simple role validation
         if (!in_array($role, ['co_organizer', 'referee'])) {
@@ -120,7 +120,7 @@ class TournamentService
     /**
      * Remove a staff member from the tournament.
      */
-    public function removeStaff(Tournament $tournament, int $userId): bool
+    public function removeStaff(Tournament $tournament, string $userId): bool
     {
         return $tournament->staff()->where('user_id', $userId)->delete();
     }
