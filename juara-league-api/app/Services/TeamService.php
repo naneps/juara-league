@@ -5,8 +5,7 @@ namespace App\Services;
 use App\Models\Team;
 use App\Models\TeamInvitation;
 use App\Models\User;
-use App\Mail\TeamInvitationMail;
-use Illuminate\Support\Facades\Mail;
+use App\Events\TeamInvitationCreated;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
@@ -54,7 +53,7 @@ class TeamService
 
         $invitation->load(['team.captain']);
 
-        Mail::to($email)->send(new TeamInvitationMail($invitation));
+        TeamInvitationCreated::dispatch($invitation);
 
         return $invitation;
     }

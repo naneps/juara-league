@@ -8,8 +8,7 @@ use App\Models\User;
 use App\Models\Team;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\ManualRegistrationMail;
+use App\Events\ParticipantManuallyRegistered;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -183,14 +182,14 @@ class ParticipantService
 
         $participant = Participant::create($participantData);
 
-        // Send Email if a new user was created with a REAL email (not the dummy guest email)
-        if ($isNewUser && !Str::endsWith($user->email, '@guest.juaraleague.com')) {
-            Mail::to($user->email)->send(new ManualRegistrationMail(
-                user: $user,
-                tournament: $tournament,
-                rawPassword: $rawPassword,
-                teamName: $data['team_name'] ?? null
-            ));
+        // Dispatch event immediately (Event Listener will handle if it should send an email or not)
+        if ($isNewUser) {
+            ParticipantManuallyRegistered::dispatch(
+                $user,
+                $tournament,
+                $rawPassword,
+                $data['team_name'] ?? null
+            );
         }
 
         return $participant;
