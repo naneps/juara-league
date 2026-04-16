@@ -54,7 +54,6 @@ class StatsController extends Controller
             ->select('sports.name', DB::raw('count(*) as count'))
             ->groupBy('sports.name')
             ->orderByDesc('count')
-            ->limit(5)
             ->get();
 
         return response()->json([
