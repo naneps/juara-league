@@ -59,6 +59,32 @@ class ParticipantController extends Controller
         }
     }
 
+    public function storeManual(Request $request, Tournament $tournament): JsonResponse
+    {
+        // Only tournament owner can add participants manually
+        if ($request->user()->id !== $tournament->user_id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:255',
+            'team_name' => 'nullable|string|max:255',
+        ]);
+
+        try {
+            $participant = $this->participantService->registerManual($tournament, $validated);
+
+            return response()->json([
+                'data' => $participant,
+                'message' => 'Registration successful.'
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
+
     public function updateStatus(Request $request, Participant $participant): JsonResponse
     {
         // Authorization: Only tournament owner can update status

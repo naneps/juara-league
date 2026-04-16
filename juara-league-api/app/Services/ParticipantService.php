@@ -5,7 +5,12 @@ namespace App\Services;
 use App\Models\Participant;
 use App\Models\Tournament;
 use App\Models\User;
+use App\Models\Team;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ManualRegistrationMail;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class ParticipantService
@@ -77,6 +82,115 @@ class ParticipantService
         $data['status'] = 'pending';
 
         return Participant::create($data);
+    }
+
+    public function registerManual(Tournament $tournament, array $data): Participant
+    {
+        // Require either email or phone
+        if (empty($data['email']) && empty($data['phone'])) {
+            throw ValidationException::withMessages([
+                'email' => ['Either Email or Phone Number is required.']
+            ]);
+        }
+
+        // Find or create User
+        $user = null;
+        if (!empty($data['email'])) {
+            $user = User::where('email', $data['email'])->first();
+        }
+        if (!$user && !empty($data['phone'])) {
+            $user = User::where('phone', $data['phone'])->first();
+        }
+
+        $isNewUser = false;
+        $rawPassword = null;
+        if (!$user) {
+            $isNewUser = true;
+            $rawPassword = Str::random(12);
+            $email = !empty($data['email']) ? $data['email'] : preg_replace('/[^0-9]/', '', $data['phone']) . '@guest.juaraleague.com';
+            $user = User::create([
+                'name' => $data['name'],
+                'email' => $email,
+                'phone' => $data['phone'] ?? null,
+                'password' => Hash::make($rawPassword), // Random password for guest
+                // Optionally set an is_guest flag if you add it to the DB later
+            ]);
+        }
+
+        $participantData = [
+            'tournament_id' => $tournament->id,
+            'user_id' => $user->id,
+            'status' => 'approved', // Directly approved by organizer
+            'notes' => 'Registered manually by Organizer.',
+        ];
+
+        // Handle Team validation
+        if ($tournament->participant_type === 'team') {
+            if (empty($data['team_name'])) {
+                throw ValidationException::withMessages([
+                    'team_name' => ['Team Name is required for team-based tournaments.']
+                ]);
+            }
+
+            // Check if user already manages a team with this name
+            $team = Team::where('captain_id', $user->id)
+                        ->where('name', $data['team_name'])
+                        ->first();
+
+            if (!$team) {
+                // Create Team automatically
+                $team = Team::create([
+                    'name' => $data['team_name'],
+                    'captain_id' => $user->id,
+                    'status' => 'active'
+                ]);
+                
+                // Add user to team_members
+                $team->members()->attach($user->id, ['joined_at' => now(), 'role' => 'member']); // We use role member/captain logic if any
+            }
+
+            $participantData['team_id'] = $team->id;
+            
+            // Check if this team is already registered
+            $alreadyRegistered = $tournament->participants()
+                ->where('status', '!=', 'rejected')
+                ->where('team_id', $participantData['team_id'])
+                ->exists();
+        } else {
+            // Individual check
+            $alreadyRegistered = $tournament->participants()
+                ->where('status', '!=', 'rejected')
+                ->where('user_id', $participantData['user_id'])
+                ->exists();
+        }
+
+        if ($alreadyRegistered) {
+            throw ValidationException::withMessages([
+                'registration' => ['Participant is already registered for this tournament.']
+            ]);
+        }
+
+        // Capacity check
+        if ($tournament->max_participants > 0 && 
+            $tournament->participants()->where('status', '!=', 'rejected')->count() >= $tournament->max_participants) {
+            throw ValidationException::withMessages([
+                'tournament' => ['Tournament participant capacity reached.']
+            ]);
+        }
+
+        $participant = Participant::create($participantData);
+
+        // Send Email if a new user was created with a REAL email (not the dummy guest email)
+        if ($isNewUser && !Str::endsWith($user->email, '@guest.juaraleague.com')) {
+            Mail::to($user->email)->send(new ManualRegistrationMail(
+                user: $user,
+                tournament: $tournament,
+                rawPassword: $rawPassword,
+                teamName: $data['team_name'] ?? null
+            ));
+        }
+
+        return $participant;
     }
 
     public function updateStatus(Participant $participant, string $status): Participant

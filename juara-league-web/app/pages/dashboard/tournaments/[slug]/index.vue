@@ -211,6 +211,7 @@ const formatDate = (d: string | null | undefined) => {
       <TournamentsTournamentParticipantManager
         :tournament-slug="tournament.slug"
         :initial-participants="tournament.participants || []"
+        :participant-type="tournament.participant_type"
       />
       <TournamentsTournamentStageManager
         :tournament-slug="tournament.slug"

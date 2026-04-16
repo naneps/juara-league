@@ -75,6 +75,7 @@ Route::prefix('v1')->group(function () {
         // Participant Management
         Route::get('/my-participations', [ParticipantController::class, 'mine']);
         Route::post('/tournaments/{tournament:slug}/participants', [ParticipantController::class, 'store']);
+        Route::post('/tournaments/{tournament:slug}/participants/manual', [ParticipantController::class, 'storeManual']);
         Route::patch('/participants/{participant}/status', [ParticipantController::class, 'updateStatus']);
         Route::delete('/participants/{participant}', [ParticipantController::class, 'destroy']);
 

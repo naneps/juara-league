@@ -11,16 +11,16 @@ const { users, usersMeta, isLoading, error } = storeToRefs(adminStore)
 const toast = useToast()
 
 const columns: any[] = [{
-  accessorKey: 'user',
+  id: 'user',
   header: 'User'
 }, {
-  accessorKey: 'roles',
+  id: 'roles',
   header: 'Role'
 }, {
-  accessorKey: 'status',
+  id: 'status',
   header: 'Status'
 }, {
-  accessorKey: 'created_at',
+  id: 'created_at',
   header: 'Bergabung'
 }, {
   id: 'actions',
@@ -166,9 +166,10 @@ const formatDate = (date: string) => {
           :ui="{ body: 'p-0 sm:p-0' }"
         >
           <UTable
-            :rows="users || []"
+            :data="users || []"
             :columns="columns"
             :loading="isLoading || status === 'pending'"
+            :row-key="row => row.id"
             :ui="{ 
               thead: 'bg-neutral-50 dark:bg-white/[0.02]',
               th: { base: 'text-[10px] uppercase tracking-widest font-black text-neutral-500 py-4 px-4 border-b border-neutral-200 dark:border-white/5' },
