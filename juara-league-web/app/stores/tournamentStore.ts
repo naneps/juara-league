@@ -200,10 +200,10 @@ export const useTournamentStore = defineStore('tournament', () => {
       })
       
       // Update local state
-      const updateIdx = tournaments.value.findIndex(t => t.id === Number(id))
+      const updateIdx = tournaments.value.findIndex(t => String(t.id) === String(id) || t.slug === String(id))
       if (updateIdx !== -1) tournaments.value[updateIdx] = response.data
       
-      const myUpdateIdx = myTournaments.value.findIndex(t => t.id === Number(id))
+      const myUpdateIdx = myTournaments.value.findIndex(t => String(t.id) === String(id) || t.slug === String(id))
       if (myUpdateIdx !== -1) myTournaments.value[myUpdateIdx] = response.data
       
       return response.data

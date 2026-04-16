@@ -91,24 +91,20 @@ const statuses = [
 
       <div v-else-if="filteredTournaments.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
         <div v-for="tournament in filteredTournaments" :key="tournament.id" class="group relative">
-           <TournamentCard :tournament="tournament" />
+           <TournamentCard 
+             :tournament="tournament" 
+             :link="`/dashboard/tournaments/${tournament.slug}`"
+             actionText="Kelola Turnamen"
+             actionIcon="i-lucide-settings-2"
+           />
            <!-- Management Overlay -->
            <div class="absolute top-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-all scale-95 group-hover:scale-100 flex gap-2">
              <UButton 
-              :to="`/dashboard/tournaments/${tournament.slug}`"
-              icon="i-lucide-settings-2" 
-              color="neutral" 
-              variant="solid" 
-              size="xs" 
-              class="rounded-lg bg-neutral-900 border border-white/10 hover:bg-white/5 shadow-2xl"
-              title="Pengaturan Cepat"
-             />
-             <UButton 
-              icon="i-lucide-trash" 
+              icon="i-lucide-trash-2" 
               color="error" 
               variant="solid" 
               size="xs" 
-              class="rounded-lg shadow-2xl"
+              class="rounded-lg shadow-2xl drop-shadow-lg"
               title="Hapus Turnamen"
              />
            </div>

@@ -58,8 +58,8 @@ Route::prefix('v1')->group(function () {
         // Tournament Management
         Route::get('/my-tournaments', [TournamentController::class, 'mine']);
         Route::post('/tournaments', [TournamentController::class, 'store']);
-        Route::put('/tournaments/{tournament:id}', [TournamentController::class, 'update']);
-        Route::delete('/tournaments/{tournament:id}', [TournamentController::class, 'destroy']);
+        Route::put('/tournaments/{tournament:slug}', [TournamentController::class, 'update']);
+        Route::delete('/tournaments/{tournament:slug}', [TournamentController::class, 'destroy']);
         Route::post('/tournaments/{tournament:slug}/publish', [TournamentController::class, 'publish']);
 
         // Tournament Staff Management

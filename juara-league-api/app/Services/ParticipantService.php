@@ -146,7 +146,10 @@ class ParticipantService
                 ]);
                 
                 // Add user to team_members
-                $team->members()->attach($user->id, ['joined_at' => now(), 'role' => 'member']); // We use role member/captain logic if any
+                $team->members()->attach($user->id, [
+                    'id' => (string) Str::ulid(),
+                    'joined_at' => now()
+                ]);
             }
 
             $participantData['team_id'] = $team->id;
