@@ -138,4 +138,16 @@ class TournamentService
 
         return $slug;
     }
+    /**
+     * Get all ongoing matches for tournaments owned by the user.
+     */
+    public function getUserOngoingMatches(int $userId)
+    {
+        return \App\Models\TournamentMatch::whereHas('stage.tournament', function ($query) use ($userId) {
+            $query->where('user_id', $userId);
+        })
+        ->where('status', 'ongoing')
+        ->with(['participant_1.team', 'participant_1.user', 'participant_2.team', 'participant_2.user', 'stage.tournament'])
+        ->get();
+    }
 }

@@ -20,6 +20,8 @@ const profileSchema = z.object({
   phone: z.string().optional()
 })
 
+const { t } = useI18n()
+
 type ProfileSchema = z.output<typeof profileSchema>
 
 const profile = reactive<Partial<ProfileSchema>>({
@@ -39,15 +41,15 @@ async function onSubmit(event: FormSubmitEvent<ProfileSchema>) {
   try {
     await updateProfile(event.data)
     toast.add({
-      title: 'Berhasil',
-      description: 'Profil Anda telah diperbarui.',
+      title: t('common.success'),
+      description: t('settings.profile.success'),
       icon: 'i-lucide-check',
       color: 'success'
     })
   } catch (error: any) {
     toast.add({
-      title: 'Gagal',
-      description: error.data?.message || 'Gagal memperbarui profil.',
+      title: t('common.error'),
+      description: error.data?.message || t('settings.profile.failed'),
       icon: 'i-lucide-x',
       color: 'error'
     })
@@ -86,15 +88,15 @@ function onFileClick() {
     @submit="onSubmit"
   >
     <UPageCard
-      title="Profile"
-      description="These informations will be displayed publicly."
+      :title="$t('settings.profile.title')"
+      :description="$t('settings.profile.desc')"
       variant="naked"
       orientation="horizontal"
       class="mb-4"
     >
       <UButton
         form="settings"
-        label="Simpan Perubahan"
+        :label="$t('common.save')"
         color="neutral"
         type="submit"
         class="w-fit lg:ms-auto font-bold"
@@ -105,8 +107,8 @@ function onFileClick() {
     <UPageCard variant="subtle">
       <UFormField
         name="name"
-        label="Name"
-        description="Will appear on receipts, invoices, and other communication."
+        :label="$t('settings.profile.name_label')"
+        :description="$t('settings.profile.name_desc')"
         required
         class="flex max-sm:flex-col justify-between items-start gap-4"
       >
@@ -118,8 +120,8 @@ function onFileClick() {
       <USeparator />
       <UFormField
         name="email"
-        label="Email"
-        description="Used to sign in, for email receipts and product updates."
+        :label="$t('settings.profile.email_label')"
+        :description="$t('settings.profile.email_desc')"
         required
         class="flex max-sm:flex-col justify-between items-start gap-4"
       >
@@ -132,8 +134,8 @@ function onFileClick() {
       <USeparator />
       <UFormField
         name="username"
-        label="Username"
-        description="Your unique username for logging in and your profile URL."
+        :label="$t('settings.profile.username_label')"
+        :description="$t('settings.profile.username_desc')"
         required
         class="flex max-sm:flex-col justify-between items-start gap-4"
       >
@@ -146,8 +148,8 @@ function onFileClick() {
       <USeparator />
       <UFormField
         name="avatar"
-        label="Avatar"
-        description="JPG, GIF or PNG. 1MB Max."
+        :label="$t('settings.profile.avatar_label')"
+        :description="$t('settings.profile.avatar_desc')"
         class="flex max-sm:flex-col justify-between sm:items-center gap-4"
       >
         <div class="flex flex-wrap items-center gap-3">
@@ -173,8 +175,8 @@ function onFileClick() {
       <USeparator />
       <UFormField
         name="bio"
-        label="Bio"
-        description="Brief description for your profile. URLs are hyperlinked."
+        :label="$t('settings.profile.bio_label')"
+        :description="$t('settings.profile.bio_desc')"
         class="flex max-sm:flex-col justify-between items-start gap-4"
         :ui="{ container: 'w-full' }"
       >
@@ -188,15 +190,15 @@ function onFileClick() {
       <USeparator />
       <UFormField
         name="phone"
-        label="Nomor Telepon"
-        description="Nomor WhatsApp/Telepon untuk koordinasi turnamen."
+        :label="$t('settings.profile.phone_label')"
+        :description="$t('settings.profile.phone_desc')"
         class="flex max-sm:flex-col justify-between items-start gap-4"
       >
         <UInput
           v-model="profile.phone"
           type="tel"
           autocomplete="off"
-          placeholder="Contoh: 08123456789"
+          :placeholder="$t('settings.profile.phone_placeholder')"
         />
       </UFormField>
     </UPageCard>

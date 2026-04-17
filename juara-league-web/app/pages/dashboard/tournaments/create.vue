@@ -14,6 +14,7 @@ const sportStore = useSportStore()
 const { isLoading } = storeToRefs(tournamentStore)
 const { sports } = storeToRefs(sportStore)
 const toast = useToast()
+const { t } = useI18n()
 const route = useRoute()
 const editId = computed(() => route.query.edit as string | undefined)
 const isEdit = computed(() => !!editId.value)
@@ -102,20 +103,20 @@ const selectedSportOption = computed({
   set: (val: any) => { if (val) state.sport_id = val.value }
 })
 
-const enrollmentModes: { label: string, value: TournamentMode, icon: string, desc: string }[] = [
-  { label: 'Terbuka', value: 'open', icon: 'i-lucide-lock-open', desc: 'Siapa saja bisa mendaftar.' },
-  { label: 'Invitasi', value: 'invite', icon: 'i-lucide-lock', desc: 'Hanya peserta dengan undangan.' }
-]
+const enrollmentModes = computed(() => [
+  { label: t('tournament_form.modes.open'), value: 'open', icon: 'i-lucide-lock-open', desc: t('tournament_form.modes.open_desc') },
+  { label: t('tournament_form.modes.invite'), value: 'invite', icon: 'i-lucide-lock', desc: t('tournament_form.modes.invite_desc') }
+])
 
-const venueTypes: { label: string, value: VenueType, icon: string }[] = [
-  { label: 'Online / Remote', value: 'online', icon: 'i-lucide-globe' },
-  { label: 'Offline / On-site', value: 'offline', icon: 'i-lucide-map-pin' }
-]
+const venueTypes = computed(() => [
+  { label: t('tournament_form.venues.online'), value: 'online', icon: 'i-lucide-globe' },
+  { label: t('tournament_form.venues.offline'), value: 'offline', icon: 'i-lucide-map-pin' }
+])
 
-const participantTypes: { label: string, value: ParticipantType, icon: string }[] = [
-  { label: 'Individu', value: 'individual', icon: 'i-lucide-user' },
-  { label: 'Tim / Grup', value: 'team', icon: 'i-lucide-users' }
-]
+const participantTypes = computed(() => [
+  { label: t('tournament_form.participants.individual'), value: 'individual', icon: 'i-lucide-user' },
+  { label: t('tournament_form.participants.team'), value: 'team', icon: 'i-lucide-users' }
+])
 
 const bracketTypes: { label: string, value: BracketType }[] = [
   { label: 'Single Elimination', value: 'single' },
@@ -135,38 +136,38 @@ const formValid = computed(() => {
 })
 
 const checks = computed(() => [
-  { label: 'Judul turnamen', done: !!state.title },
-  { label: 'Cabang olahraga', done: !!state.sport_id },
-  { label: 'Tanggal mulai', done: !!state.start_at },
-  { label: 'Deskripsi', done: !!state.description },
+  { label: t('tournament_form.checklist.title'), done: !!state.title },
+  { label: t('tournament_form.checklist.sport'), done: !!state.sport_id },
+  { label: t('tournament_form.checklist.start_at'), done: !!state.start_at },
+  { label: t('tournament_form.checklist.description'), done: !!state.description },
 ])
 
 const onSubmit = async () => {
   if (!state.sport_id) {
-    toast.add({ title: 'Cabor Harus Dipilih', color: 'error' })
+    toast.add({ title: t('tournament_form.toast.sport_required'), color: 'error' })
     return
   }
   try {
     if (isEdit.value && editId.value) {
       await tournamentStore.updateTournament(editId.value, state)
       toast.add({
-        title: 'Berhasil!',
-        description: 'Perubahan turnamen telah disimpan.',
+        title: t('tournament_form.toast.success_title'),
+        description: t('tournament_form.toast.update_success'),
         color: 'success'
       })
     } else {
       await tournamentStore.createTournament(state)
       toast.add({
-        title: 'Berhasil!',
-        description: 'Turnamen Anda telah berhasil dibuat.',
+        title: t('tournament_form.toast.success_title'),
+        description: t('tournament_form.toast.create_success'),
         color: 'success'
       })
     }
     navigateTo(`/dashboard/tournaments`)
   } catch (e: any) {
     toast.add({
-      title: isEdit.value ? 'Gagal Memperbarui Turnamen' : 'Gagal Membuat Turnamen',
-      description: e.data?.message || 'Terjadi kesalahan sistem.',
+      title: isEdit.value ? t('tournament_form.toast.update_failed') : t('tournament_form.toast.create_failed'),
+      description: e.data?.message || t('tournament_form.toast.system_error'),
       color: 'error'
     })
   }
@@ -189,12 +190,12 @@ const onSubmit = async () => {
             <div class="h-5 w-px bg-white/10" />
             <div class="flex items-center gap-2">
               <div class="size-2 rounded-full bg-primary-500 animate-pulse" />
-              <span class="text-xs font-semibold text-neutral-400 uppercase tracking-widest">{{ isEdit ? 'Edit Mode' : 'Draft Mode' }}</span>
+              <span class="text-xs font-semibold text-neutral-400 uppercase tracking-widest">{{ isEdit ? $t('tournament_form.edit_mode') : $t('tournament_form.draft_mode') }}</span>
             </div>
           </div>
         </template>
         <template #title>
-          <span class="font-black text-white tracking-tight">{{ isEdit ? 'Edit Turnamen' : 'Buat Turnamen' }}</span>
+          <span class="font-black text-white tracking-tight">{{ isEdit ? $t('tournament_form.edit_title') : $t('tournament_form.create_title') }}</span>
         </template>
       </UDashboardNavbar>
     </template>
@@ -207,15 +208,15 @@ const onSubmit = async () => {
           <div class="max-w-6xl mx-auto flex items-center justify-between">
             <div class="flex items-center gap-4">
               <div class="flex flex-col">
-                <p class="text-[10px] font-bold text-primary-500 uppercase tracking-[0.2em] mb-1">{{ isEdit ? 'Ubah Informasi' : 'Turnamen Baru' }}</p>
+                <p class="text-[10px] font-bold text-primary-500 uppercase tracking-[0.2em] mb-1">{{ isEdit ? $t('tournament_form.edit_info') : $t('tournament_form.new_tournament') }}</p>
                 <h1 class="text-2xl font-black text-neutral-900 dark:text-white tracking-tight leading-none flex items-center gap-2">
-                  Konfigurasi <span class="text-neutral-400 dark:text-neutral-500">Turnamen</span>
+                  {{ $t('tournament_form.config_title') }} <span class="text-neutral-400 dark:text-neutral-500">{{ $t('tournament_form.config_subtitle') }}</span>
                 </h1>
               </div>
             </div>
             <div class="hidden sm:flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-600 font-medium bg-neutral-100 dark:bg-white/5 px-3 py-1.5 rounded-full border border-neutral-200 dark:border-white/5">
               <UIcon name="i-lucide-shield-check" class="size-3.5" />
-              {{ isEdit ? 'Semua perubahan tersimpan permanen' : 'Data tersimpan otomatis sebagai draft' }}
+              {{ isEdit ? $t('tournament_form.all_saved') : $t('tournament_form.auto_saved') }}
             </div>
           </div>
         </div>
@@ -233,15 +234,15 @@ const onSubmit = async () => {
                   <div class="flex items-center justify-center size-7 rounded-lg bg-primary-500/10 text-primary-500 dark:text-primary-400">
                     <UIcon name="i-lucide-flag" class="size-3.5" />
                   </div>
-                  <span class="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wider">Identitas Turnamen</span>
+                  <span class="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wider">{{ $t('tournament_form.section_identity') }}</span>
                   <div class="ml-auto h-px flex-1 bg-neutral-200 dark:bg-white/5 max-w-[80px]" />
                 </div>
 
                 <div class="p-6 space-y-5">
-                  <UFormField label="Judul Turnamen" name="title" required>
+                  <UFormField :label="$t('tournament_form.field_title')" name="title" required>
                     <UInput
                       v-model="state.title"
-                      placeholder="Contoh: Juara Cup 2026"
+                      :placeholder="$t('tournament_form.field_title_placeholder')"
                       size="xl"
                       class="w-full"
                       :ui="{ base: 'font-semibold' }"
@@ -249,21 +250,21 @@ const onSubmit = async () => {
                   </UFormField>
 
                   <div class="grid grid-cols-2 gap-4">
-                    <UFormField label="Cabang Olahraga" name="sport_id" required>
+                    <UFormField :label="$t('tournament_form.field_sport')" name="sport_id" required>
                       <USelectMenu
                         v-model="selectedSportOption"
                         :items="sportOptions"
                         size="xl"
-                        placeholder="Pilih Cabor"
+                        :placeholder="$t('tournament_form.field_sport_placeholder')"
                         :loading="sportStore.isLoading"
                         class="w-full"
-                        :search-input="{ placeholder: 'Cari cabor...', icon: 'i-lucide-search' }"
+                        :search-input="{ placeholder: $t('tournament_form.field_sport_search'), icon: 'i-lucide-search' }"
                       />
                     </UFormField>
-                    <UFormField label="Kategori" name="category" required>
+                    <UFormField :label="$t('tournament_form.field_category')" name="category" required>
                       <UInput
                         v-model="state.category"
-                        placeholder="Pro, Amateur, U-17..."
+                        :placeholder="$t('tournament_form.field_category_placeholder')"
                         size="xl"
                         class="w-full"
                       />
@@ -271,7 +272,7 @@ const onSubmit = async () => {
                   </div>
 
                   <div class="grid grid-cols-2 gap-6">
-                    <UFormField label="Mode Pendaftaran" name="mode" required>
+                    <UFormField :label="$t('tournament_form.field_enrollment')" name="mode" required>
                       <div class="grid grid-cols-2 gap-3 mt-1">
                         <button
                           v-for="m in enrollmentModes"
@@ -294,7 +295,7 @@ const onSubmit = async () => {
                       </div>
                     </UFormField>
 
-                    <UFormField label="Tipe Lokasi" name="venue_type" required>
+                    <UFormField :label="$t('tournament_form.field_venue_type')" name="venue_type" required>
                       <div class="grid grid-cols-2 gap-3 mt-1">
                         <button
                           v-for="v in venueTypes"
@@ -316,7 +317,7 @@ const onSubmit = async () => {
                   </div>
 
                   <div class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 items-start">
-                    <UFormField label="Tipe Kepesertaan" name="participant_type" required class="flex-1">
+                    <UFormField :label="$t('tournament_form.field_participant_type')" name="participant_type" required class="flex-1">
                       <div class="grid grid-cols-2 gap-3 mt-1">
                         <button
                           v-for="p in participantTypes"
@@ -344,7 +345,7 @@ const onSubmit = async () => {
                       leave-from-class="opacity-100 translate-x-0 w-[180px]"
                       leave-to-class="opacity-0 -translate-x-4 max-w-0"
                     >
-                      <UFormField v-if="state.participant_type === 'team'" label="Pemain Per Tim" name="team_size" required class="w-[180px]">
+                      <UFormField v-if="state.participant_type === 'team'" :label="$t('tournament_form.field_team_size')" name="team_size" required class="w-[180px]">
                         <UInput
                           v-model.number="state.team_size"
                           type="number"
@@ -357,17 +358,17 @@ const onSubmit = async () => {
                     </Transition>
                   </div>
 
-                  <UFormField label="Deskripsi" name="description" required>
+                  <UFormField :label="$t('tournament_form.field_description')" name="description" required>
                     <UTextarea
                       v-model="state.description"
-                      placeholder="Jelaskan detail turnamen, syarat peserta, dan aturan pertandingan..."
+                      :placeholder="$t('tournament_form.field_description_placeholder')"
                       :rows="4"
                       size="xl"
                       class="w-full"
                     />
                   </UFormField>
 
-                  <UFormField label="Link Banner" name="banner_url">
+                  <UFormField :label="$t('tournament_form.field_banner')" name="banner_url">
                     <UInput
                       v-model="state.banner_url"
                       placeholder="https://..."
@@ -385,26 +386,26 @@ const onSubmit = async () => {
                   <div class="flex items-center justify-center size-7 rounded-lg bg-blue-500/10 text-blue-500 dark:text-blue-400">
                     <UIcon name="i-lucide-calendar-days" class="size-3.5" />
                   </div>
-                  <span class="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wider">Jadwal Pelaksanaan</span>
+                  <span class="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wider">{{ $t('tournament_form.section_schedule') }}</span>
                   <div class="ml-auto h-px flex-1 bg-neutral-200 dark:bg-white/5 max-w-[80px]" />
                 </div>
 
                 <div class="p-6 space-y-5">
                   <!-- Registration window -->
                   <div>
-                    <p class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">Periode Registrasi</p>
+                    <p class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">{{ $t('tournament_form.field_reg_period') }}</p>
                     <div class="grid grid-cols-2 gap-4">
-                      <UFormField label="Dibuka" name="registration_start_at">
+                      <UFormField :label="$t('tournament_form.field_reg_start')" name="registration_start_at">
                         <UInput v-model="state.registration_start_at" type="datetime-local" size="xl" class="w-full" />
                       </UFormField>
-                      <UFormField label="Ditutup" name="registration_end_at">
+                      <UFormField :label="$t('tournament_form.field_reg_end')" name="registration_end_at">
                         <UInput v-model="state.registration_end_at" type="datetime-local" size="xl" class="w-full" />
                       </UFormField>
                     </div>
                   </div>
 
                   <!-- Tournament kickoff -->
-                  <UFormField label="Pertandingan Dimulai" name="start_at" required>
+                  <UFormField :label="$t('tournament_form.field_start_at')" name="start_at" required>
                     <UInput v-model="state.start_at" type="datetime-local" size="xl" class="w-full" />
                   </UFormField>
                 </div>
@@ -416,13 +417,13 @@ const onSubmit = async () => {
                   <div class="flex items-center justify-center size-7 rounded-lg bg-amber-500/10 text-amber-500 dark:text-amber-400">
                     <UIcon name="i-lucide-settings-2" class="size-3.5" />
                   </div>
-                  <span class="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wider">Aturan & Logistik</span>
+                  <span class="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wider">{{ $t('tournament_form.section_rules') }}</span>
                   <div class="ml-auto h-px flex-1 bg-neutral-200 dark:bg-white/5 max-w-[80px]" />
                 </div>
 
                 <div class="p-6 space-y-5">
                   <div class="grid grid-cols-2 gap-4">
-                    <UFormField label="Format Bracket" name="bracket_type" required>
+                    <UFormField :label="$t('tournament_form.field_bracket')" name="bracket_type" required>
                       <USelectMenu
                         v-model="selectedBracketType"
                         :items="bracketTypes"
@@ -430,7 +431,7 @@ const onSubmit = async () => {
                         class="w-full"
                       />
                     </UFormField>
-                    <UFormField label="Maks. Peserta" name="max_participants" required>
+                    <UFormField :label="$t('tournament_form.field_max_participants')" name="max_participants" required>
                       <UInput
                         v-model.number="state.max_participants"
                         type="number"
@@ -442,7 +443,7 @@ const onSubmit = async () => {
                   </div>
 
                   <div class="grid grid-cols-2 gap-4">
-                    <UFormField label="Total Hadiah (IDR)" name="prize_pool">
+                    <UFormField :label="$t('tournament_form.field_prize')" name="prize_pool">
                       <UInput
                         v-model.number="state.prize_pool"
                         type="number"
@@ -452,22 +453,22 @@ const onSubmit = async () => {
                         class="w-full"
                       />
                     </UFormField>
-                    <UFormField label="Biaya Daftar (IDR)" name="entry_fee">
+                    <UFormField :label="$t('tournament_form.field_entry_fee')" name="entry_fee">
                       <UInput
                         v-model.number="state.entry_fee"
                         type="number"
                         size="xl"
                         icon="i-lucide-ticket"
-                        placeholder="Gratis"
+                        :placeholder="$t('tournament_form.field_entry_fee_free')"
                         class="w-full"
                       />
                     </UFormField>
                   </div>
 
-                  <UFormField label="Detail Pembagian Hadiah" name="prize_description">
+                  <UFormField :label="$t('tournament_form.field_prize_desc')" name="prize_description">
                     <UTextarea
                       v-model="state.prize_description"
-                      placeholder="Juara 1: Rp 1.000.000&#10;Juara 2: Rp 500.000..."
+                      :placeholder="$t('tournament_form.field_prize_desc_placeholder')"
                       :rows="3"
                       size="xl"
                       class="w-full"
@@ -482,10 +483,10 @@ const onSubmit = async () => {
                     leave-from-class="opacity-100 translate-y-0"
                     leave-to-class="opacity-0 -translate-y-2"
                   >
-                    <UFormField v-if="state.venue_type === 'offline'" label="Lokasi / Venue" name="venue" required>
+                    <UFormField v-if="state.venue_type === 'offline'" :label="$t('tournament_form.field_venue')" name="venue" required>
                       <UInput
                         v-model="state.venue"
-                        placeholder="Nama gedung, jalan, kota..."
+                        :placeholder="$t('tournament_form.field_venue_placeholder')"
                         size="xl"
                         icon="i-lucide-map-pin"
                         class="w-full"
@@ -510,10 +511,10 @@ const onSubmit = async () => {
                   <template #leading>
                     <UIcon name="i-lucide-send" class="size-4" />
                   </template>
-                  {{ isEdit ? 'Simpan Perubahan' : 'Publikasi sebagai Draft' }}
+                  {{ isEdit ? $t('tournament_form.submit_save') : $t('tournament_form.submit_publish') }}
                 </UButton>
                 <p class="text-center text-xs text-neutral-600 mt-3 font-medium">
-                  {{ isEdit ? 'Perubahan akan langsung diterapkan pada turnamen ini.' : 'Turnamen akan tersimpan sebagai draft — kamu bisa edit sebelum dipublikasi' }}
+                  {{ isEdit ? $t('tournament_form.submit_desc_save') : $t('tournament_form.submit_desc_publish') }}
                 </p>
               </div>
 
@@ -525,13 +526,13 @@ const onSubmit = async () => {
 
                 <!-- Preview Card -->
                 <div>
-                  <p class="text-xs font-bold text-neutral-600 uppercase tracking-[0.25em] mb-4">Preview Peserta</p>
+                  <p class="text-xs font-bold text-neutral-600 uppercase tracking-[0.25em] mb-4">{{ $t('tournament_form.preview_title') }}</p>
                   <TournamentCard
                     :tournament="({
                       id: 0,
                       sport_id: state.sport_id,
                       sport: selectedSport,
-                      title: state.title || 'Judul Turnamen Anda',
+                      title: state.title || (locale === 'id' ? 'Judul Turnamen Anda' : 'Your Tournament Title'),
                       slug: 'preview',
                       description: state.description,
                       category: state.category,
@@ -551,7 +552,7 @@ const onSubmit = async () => {
                       start_at: state.start_at,
                       created_at: new Date().toISOString(),
                       updated_at: new Date().toISOString(),
-                      user: { id: 0, name: 'Anda (Organizer)', email: '' }
+                      user: { id: 0, name: (locale === 'id' ? 'Anda (Organizer)' : 'You (Organizer)'), email: '' }
                     } as any)"
                   />
                 </div>
@@ -559,7 +560,7 @@ const onSubmit = async () => {
                 <!-- Checklist -->
                 <div class="rounded-2xl border border-neutral-200 dark:border-white/5 bg-white dark:bg-white/[0.02] p-5 shadow-sm dark:shadow-none">
                   <div class="flex items-center justify-between mb-4">
-                    <p class="text-xs font-bold text-neutral-400 uppercase tracking-wider">Kelengkapan Form</p>
+                    <p class="text-xs font-bold text-neutral-400 uppercase tracking-wider">{{ $t('tournament_form.checklist_title') }}</p>
                     <span class="text-xs font-black text-primary-400">
                       {{ checks.filter(c => c.done).length }}/{{ checks.length }}
                     </span>
@@ -602,20 +603,12 @@ const onSubmit = async () => {
                 <div class="rounded-2xl border border-neutral-200 dark:border-white/5 bg-white dark:bg-white/[0.02] p-5 shadow-sm dark:shadow-none">
                   <div class="flex items-center gap-2 mb-3">
                     <UIcon name="i-lucide-lightbulb" class="size-3.5 text-amber-400" />
-                    <p class="text-xs font-bold text-neutral-400 uppercase tracking-wider">Tips</p>
+                    <p class="text-xs font-bold text-neutral-400 uppercase tracking-wider">{{ $t('tournament_form.tips_title') }}</p>
                   </div>
                   <ul class="space-y-2.5">
-                    <li class="flex items-start gap-2 text-xs text-neutral-600 leading-relaxed">
+                    <li v-for="tip in $tm('tournament_form.tips')" :key="tip" class="flex items-start gap-2 text-xs text-neutral-600 leading-relaxed">
                       <span class="shrink-0 mt-0.5 size-1.5 rounded-full bg-neutral-700 block" />
-                      Gunakan banner berkualitas tinggi untuk meningkatkan daya tarik peserta.
-                    </li>
-                    <li class="flex items-start gap-2 text-xs text-neutral-600 leading-relaxed">
-                      <span class="shrink-0 mt-0.5 size-1.5 rounded-full bg-neutral-700 block" />
-                      Beri jeda minimal 3 hari antara penutupan registrasi dan hari H.
-                    </li>
-                    <li class="flex items-start gap-2 text-xs text-neutral-600 leading-relaxed">
-                      <span class="shrink-0 mt-0.5 size-1.5 rounded-full bg-neutral-700 block" />
-                      Deskripsi yang jelas menurunkan pertanyaan masuk dari peserta.
+                      {{ $rt(tip) }}
                     </li>
                   </ul>
                 </div>

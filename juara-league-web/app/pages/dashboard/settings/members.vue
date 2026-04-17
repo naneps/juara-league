@@ -23,14 +23,14 @@ const filteredMembers = computed(() => {
 <template>
   <div>
     <UPageCard
-      title="Members"
-      description="Invite new members by email address."
+      :title="$t('settings.members.title')"
+      :description="$t('settings.members.desc')"
       variant="naked"
       orientation="horizontal"
       class="mb-4"
     >
       <UButton
-        label="Invite people"
+        :label="$t('settings.members.invite_button')"
         color="neutral"
         class="w-fit lg:ms-auto"
       />
@@ -41,7 +41,7 @@ const filteredMembers = computed(() => {
         <UInput
           v-model="q"
           icon="i-lucide-search"
-          placeholder="Search members"
+          :placeholder="$t('settings.members.search_placeholder')"
           autofocus
           class="w-full"
         />

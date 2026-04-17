@@ -7,13 +7,16 @@ definePageMeta({
   middleware: 'auth'
 })
 
-const links = [
-  { label: 'Overview',  icon: 'i-lucide-layout-dashboard', to: `/dashboard/tournaments/${slug}`,              exact: true },
-  { label: 'Peserta',   icon: 'i-lucide-users',             to: `/dashboard/tournaments/${slug}/participants` },
-  { label: 'Babak',     icon: 'i-lucide-layers',            to: `/dashboard/tournaments/${slug}/stages` },
-  { label: 'Bracket',   icon: 'i-lucide-git-branch',        to: `/dashboard/tournaments/${slug}/bracket` },
-  { label: 'Staf',      icon: 'i-lucide-shield-check',      to: `/dashboard/tournaments/${slug}/staff` },
-]
+const { t } = useI18n()
+
+const links = computed(() => [
+  { label: t('dashboard.overview'),  icon: 'i-lucide-layout-dashboard', to: `/dashboard/tournaments/${slug}`,              exact: true },
+  { label: t('dashboard.participants'),   icon: 'i-lucide-users',             to: `/dashboard/tournaments/${slug}/participants` },
+  { label: t('dashboard.stages'),     icon: 'i-lucide-layers',            to: `/dashboard/tournaments/${slug}/stages` },
+  { label: t('dashboard.matches'), icon: 'i-lucide-swords', to: `/dashboard/tournaments/${slug}/matches` },
+  { label: t('dashboard.bracket'),   icon: 'i-lucide-git-branch',        to: `/dashboard/tournaments/${slug}/bracket` },
+  { label: t('dashboard.staff'),      icon: 'i-lucide-shield-check',      to: `/dashboard/tournaments/${slug}/staff` },
+])
 
 const isActive = (link: typeof links[0]) =>
   link.exact ? route.path === link.to : route.path.startsWith(link.to)
@@ -22,7 +25,7 @@ const isActive = (link: typeof links[0]) =>
 <template>
   <UDashboardPanel grow>
     <template #header>
-      <UDashboardNavbar title="Kelola Turnamen">
+      <UDashboardNavbar :title="$t('tournament_manager.title')">
         <template #leading>
           <UDashboardSidebarCollapse />
           <div class="h-5 w-px bg-neutral-200 dark:bg-neutral-800 mx-2" />

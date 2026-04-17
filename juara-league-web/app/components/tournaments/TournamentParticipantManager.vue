@@ -9,6 +9,7 @@ const props = defineProps<{
 }>()
 
 const tournamentStore = useTournamentStore()
+const { t, locale } = useI18n()
 const participants = ref<Participant[]>(props.initialParticipants || [])
 const isSubmitting = ref(false)
 
@@ -45,7 +46,11 @@ const toast = useToast()
 
 const handleManualSubmit = async () => {
   if (!manualForm.email && !manualForm.phone) {
-    toast.add({ title: 'Kekurangan Data', description: 'Wajib mengisi Email atau Nomor Telepon.', color: 'warning' })
+    toast.add({ 
+      title: t('managers.manual_modal.toast_missing_title'), 
+      description: t('managers.manual_modal.toast_missing_desc'), 
+      color: 'warning' 
+    })
     return
   }
 
@@ -55,7 +60,11 @@ const handleManualSubmit = async () => {
       method: 'POST',
       body: manualForm
     })
-    toast.add({ title: 'Berhasil', description: 'Peserta manual berhasil ditambahkan.', color: 'success' })
+    toast.add({ 
+      title: t('common.success'), 
+      description: t('managers.manual_modal.toast_success_desc'), 
+      color: 'success' 
+    })
     isManualModalOpen.value = false
     await fetchParticipants()
     
@@ -65,7 +74,11 @@ const handleManualSubmit = async () => {
     manualForm.phone = ''
     manualForm.team_name = ''
   } catch (e: any) {
-    toast.add({ title: 'Gagal', description: e.data?.message || 'Gagal mendaftar manual', color: 'error' })
+    toast.add({ 
+      title: t('common.error'), 
+      description: e.data?.message || t('managers.manual_modal.toast_failed_desc'), 
+      color: 'error' 
+    })
   } finally {
     isManualSubmitting.value = false
   }
@@ -73,10 +86,10 @@ const handleManualSubmit = async () => {
 
 const statusBadge = (status: string): { color: 'success' | 'error' | 'warning' | 'primary' | 'neutral'; label: string } => {
   switch (status) {
-    case 'approved': return { color: 'success', label: 'Disetujui' }
-    case 'rejected': return { color: 'error',   label: 'Ditolak' }
-    case 'paid':     return { color: 'primary',  label: 'Lunas' }
-    default:         return { color: 'warning',  label: 'Menunggu' }
+    case 'approved': return { color: 'success', label: t('managers.statuses.approved') }
+    case 'rejected': return { color: 'error',   label: t('managers.statuses.rejected') }
+    case 'paid':     return { color: 'primary',  label: t('managers.statuses.paid') }
+    default:         return { color: 'warning',  label: t('managers.statuses.pending') }
   }
 }
 
@@ -93,20 +106,20 @@ onMounted(() => {
     <!-- Header row -->
     <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800">
       <div class="flex items-center gap-3">
-        <h2 class="text-sm font-semibold text-neutral-900 dark:text-white">Peserta</h2>
+        <h2 class="text-sm font-semibold text-neutral-900 dark:text-white">{{ $t('managers.participants_title') }}</h2>
         <UBadge v-if="participants.length > 0" color="neutral" variant="subtle" size="xs">
           {{ participants.length }}
         </UBadge>
         <UBadge v-if="pendingCount > 0" color="warning" variant="subtle" size="xs">
-          {{ pendingCount }} menunggu
+          {{ pendingCount }} {{ $t('managers.waiting') }}
         </UBadge>
       </div>
       <div class="flex items-center gap-2">
         <UButton size="xs" color="primary" variant="subtle" icon="i-lucide-plus" @click="isManualModalOpen = true">
-          Tambah Manual
+          {{ $t('managers.add_participant') }}
         </UButton>
         <UButton size="xs" color="neutral" variant="ghost" icon="i-lucide-refresh-cw" @click="fetchParticipants">
-          Refresh
+          {{ $t('dashboard.refresh') }}
         </UButton>
       </div>
     </div>
@@ -116,11 +129,11 @@ onMounted(() => {
       <table class="w-full text-sm">
         <thead>
           <tr class="border-b border-neutral-100 dark:border-neutral-800">
-            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400">Peserta</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400">Tipe</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400">Status</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400">Daftar</th>
-            <th class="px-6 py-3 text-right text-xs font-medium text-neutral-500 dark:text-neutral-400">Aksi</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400">{{ $t('managers.participant') }}</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400">{{ $t('managers.type') }}</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400">{{ $t('common.status') }}</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400">{{ $t('managers.registered') }}</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-neutral-500 dark:text-neutral-400">{{ $t('common.actions') }}</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
@@ -142,7 +155,7 @@ onMounted(() => {
                     {{ participant.team ? participant.team.name : participant.user?.name || '—' }}
                   </span>
                   <span class="text-[10px] text-neutral-500 font-medium">
-                    {{ participant.team ? 'Kapt: ' + participant.user?.name : (participant.user?.email || participant.user?.phone || 'No Contact Data') }}
+                    {{ participant.team ? $t('managers.captain_prefix') + ' ' + (participant.user?.name || '—') : (participant.user?.email || participant.user?.phone || $t('managers.no_contact_data')) }}
                   </span>
                 </div>
               </div>
@@ -151,7 +164,7 @@ onMounted(() => {
             <!-- Type -->
             <td class="px-6 py-4">
               <span class="text-xs text-neutral-500 dark:text-neutral-400">
-                {{ participant.team ? 'Tim' : 'Individu' }}
+                {{ participant.team ? $t('managers.types.team') : $t('managers.types.individual') }}
               </span>
             </td>
 
@@ -165,7 +178,7 @@ onMounted(() => {
             <!-- Date -->
             <td class="px-6 py-4">
               <span class="text-xs text-neutral-400 dark:text-neutral-500">
-                {{ new Date(participant.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) }}
+                {{ new Date(participant.created_at).toLocaleDateString(locale === 'id' ? 'id-ID' : 'en-US', { day: 'numeric', month: 'short' }) }}
               </span>
             </td>
 
@@ -191,7 +204,7 @@ onMounted(() => {
                   />
                 </template>
                 <template v-else-if="participant.status === 'approved' || participant.status === 'paid'">
-                  <UTooltip text="Diskualifikasi / Tolak">
+                  <UTooltip :text="$t('managers.tooltips.disqualify')">
                     <UButton
                       color="error"
                       variant="ghost"
@@ -203,7 +216,7 @@ onMounted(() => {
                   </UTooltip>
                 </template>
                 <template v-else-if="participant.status === 'rejected'">
-                  <UTooltip text="Pulihkan (Approve)">
+                  <UTooltip :text="$t('managers.tooltips.restore')">
                     <UButton
                       color="success"
                       variant="ghost"
@@ -231,8 +244,8 @@ onMounted(() => {
     <!-- Empty state -->
     <div v-else class="py-16 text-center">
       <UIcon name="i-lucide-users" class="size-10 text-neutral-300 dark:text-neutral-700 mx-auto mb-3" />
-      <p class="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">Belum ada peserta</p>
-      <p class="text-xs text-neutral-400 dark:text-neutral-500">Pendaftar akan muncul di sini setelah turnamen dipublish.</p>
+      <p class="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">{{ $t('managers.empty_participants') }}</p>
+      <p class="text-xs text-neutral-400 dark:text-neutral-500">{{ $t('managers.empty_participants_desc') }}</p>
     </div>
 
   </div>
@@ -245,35 +258,35 @@ onMounted(() => {
           <UIcon name="i-lucide-user-plus" class="text-indigo-400 size-6" />
         </div>
         <div>
-          <h3 class="text-lg font-black text-white uppercase tracking-widest leading-tight">Tambah Peserta</h3>
-          <p class="text-xs text-neutral-400 mt-1">Auto-create data via dashboard organizer.</p>
+          <h3 class="text-lg font-black text-white uppercase tracking-widest leading-tight">{{ $t('managers.manual_modal.title') }}</h3>
+          <p class="text-xs text-neutral-400 mt-1">{{ $t('managers.manual_modal.subtitle') }}</p>
         </div>
       </div>
 
       <div class="p-6 bg-neutral-900">
         <UForm :state="manualForm" @submit="handleManualSubmit" class="space-y-5">
-          <UFormField v-if="props.participantType === 'team'" label="Nama Tim" name="team_name" description="Wajib untuk turnamen berbasis tim.">
+          <UFormField v-if="props.participantType === 'team'" :label="$t('managers.manual_modal.team_name')" name="team_name" :description="$t('managers.manual_modal.team_name_desc')">
             <UInput v-model="manualForm.team_name" placeholder="Misal: Evos Legends" size="lg" autofocus class="w-full" />
           </UFormField>
 
-          <UFormField :label="props.participantType === 'team' ? 'Nama Kapten' : 'Nama Lengkap'" name="name" description="Wajib diisi untuk ditampilkan di braket.">
+          <UFormField :label="props.participantType === 'team' ? $t('managers.manual_modal.captain_name') : $t('managers.manual_modal.full_name')" name="name" :description="$t('managers.manual_modal.name_desc')">
             <UInput v-model="manualForm.name" placeholder="Misal: Budi Santoso" size="lg" :autofocus="props.participantType !== 'team'" class="w-full" />
           </UFormField>
 
           <div class="flex flex-col sm:flex-row gap-5">
-            <UFormField label="Email" name="email" description="Opsional jika nomor HP diisi." class="flex-1">
+            <UFormField :label="$t('settings.profile.email_label')" name="email" :description="$t('managers.manual_modal.email_desc')" class="flex-1">
               <UInput v-model="manualForm.email" type="email" placeholder="contoh@mail.com" size="lg" class="w-full" />
             </UFormField>
             
-            <UFormField label="No. Handphone" name="phone" description="Opsional jika email diisi." class="flex-1">
+            <UFormField :label="$t('managers.manual_modal.phone_label')" name="phone" :description="$t('managers.manual_modal.phone_desc')" class="flex-1">
               <UInput v-model="manualForm.phone" placeholder="08123xxxx" size="lg" class="w-full" />
             </UFormField>
           </div>
 
           <div class="flex justify-end gap-3 pt-4 border-t border-white/5 mt-4">
-            <UButton color="neutral" variant="ghost" @click="isManualModalOpen = false" :disabled="isManualSubmitting" size="lg">Batal</UButton>
+            <UButton color="neutral" variant="ghost" @click="isManualModalOpen = false" :disabled="isManualSubmitting" size="lg">{{ $t('common.cancel') }}</UButton>
             <UButton type="submit" color="indigo" class="font-bold px-6 tracking-wide" :loading="isManualSubmitting" size="lg">
-              Tambahkan
+              {{ $t('managers.manual_modal.submit') }}
             </UButton>
           </div>
         </UForm>

@@ -1,0 +1,645 @@
+{
+  "common": {
+    "cancel": "Batal",
+    "save": "Simpan Perubahan",
+    "refresh": "Segarkan",
+    "loading": "Memuat...",
+    "success": "Berhasil",
+    "error": "Gagal",
+    "delete": "Hapus",
+    "edit": "Ubah",
+    "back": "Kembali",
+    "status": "Status",
+    "actions": "Aksi",
+    "view_detail": "Lihat Detail",
+    "no_description": "Tidak ada deskripsi",
+    "logout": "Keluar",
+    "profile": "Profil",
+    "fullscreen": "Layar Penuh",
+    "confirm": "Konfirmasi"
+  },
+  "dashboard": {
+    "overview": "Ringkasan",
+    "participants": "Peserta",
+    "stages": "Babak",
+    "matches": "Pertandingan",
+    "bracket": "Bracket",
+    "staff": "Staf",
+    "title_matches": "Daftar Pertandingan",
+    "subtitle_matches": "Kelola dan input skor pertandingan secara langsung lewat list.",
+    "select_stage": "Pilih Babak",
+    "refresh": "Refresh",
+    "select_stage_first": "Pilih babak terlebih dahulu.",
+    "no_matches": "Belum ada pertandingan di babak ini.",
+    "start_stage_prompt": "Mulai babak di menu 'Babak' untuk generate jadwal.",
+    "title_bracket": "Bagan Pertandingan",
+    "subtitle_bracket": "Visualisasi struktur turnamen dan input skor langsung dari bagan.",
+    "no_active_stage": "Belum ada babak yang aktif."
+  },
+  "match": {
+    "round": "Round",
+    "manage": "Kelola Pertandingan",
+    "live": "LIVE",
+    "upcoming": "UPCOMING",
+    "completed": "COMPLETED",
+    "bye": "BYE",
+    "first_to": "First to",
+    "match_champion": "Match Champion",
+    "pro_judge_info": "PRO-JUDGE INFO",
+    "pro_judge_desc": "Mulai pertandingan untuk mengaktifkan input skor. Input skor dilakukan per-game. Sistem akan otomatis memajukan pemenang jika syarat kemenangan BO terpenuhi.",
+    "start_live": "Start Live Match",
+    "determine_winner": "Tentukan Pemenang Game",
+    "pick": "Pick",
+    "submit_results": "Submit Game Results",
+    "close_monitor": "Close Monitor",
+    "score_p1": "Score P1",
+    "score_p2": "Skor P2",
+    "match_progress": "Progres Pertandingan",
+    "bracket": {
+      "winners": "Winners Bracket",
+      "main": "Bracket Utama",
+      "grand_final": "GRAND CHAMPIONSHIP",
+      "empty": "Belum ada pertandingan di babak ini",
+      "round": "Babak",
+      "final": "Final",
+      "semi_final": "Semi Final",
+      "qualifiers": "Kualifikasi",
+      "tbd": "TBD"
+    },
+    "toast": {
+      "start_success": "🔥 Match dimulai!",
+      "start_success_desc": "Silakan input skor per game.",
+      "failed": "Gagal",
+      "load_failed": "Gagal memuat pertandingan"
+    },
+    "no_match_selected": "Tidak ada pertandingan dipilih.",
+    "team_a": "TIM A",
+    "team_b": "TIM B",
+    "game_win": "Kemenangan Game",
+    "system_footer": "© Juara League Pro Judge v1.0",
+    "manage": "Kelola",
+    "live": "LIVE"
+  },
+  "public": {
+    "live_matches": "Laga Sedang Berjalan",
+    "no_live_matches": "Tidak Ada Laga Aktif",
+    "no_live_desc": "Mulai pertandingan dari tab Bracket atau Manajemen Tahapan untuk melihatnya di sini.",
+    "versus": "versus",
+    "click_update": "Klik untuk Update",
+    "no_bracket": "Belum Ada Bracket",
+    "no_bracket_desc": "Mulai babak di tab 'Manajemen Tahapan' untuk melihat bracket di sini."
+  },
+  "managers": {
+    "participants_title": "Manajemen Peserta",
+    "participants_desc": "Kelola dan verifikasi peserta turnamen Anda.",
+    "add_participant": "Tambah Peserta",
+    "search_participants": "Cari peserta...",
+    "stages_title": "Manajemen Babak",
+    "stages_desc": "Konfigurasikan format dan alur turnamen.",
+    "add_stage": "Tambah Babak Baru",
+    "staff_title": "Staf & Moderator",
+    "staff_desc": "Kelola akses dan perizinan staf turnamen Anda.",
+    "add_staff": "Undang Staff",
+    "waiting": "menunggu",
+    "stages": {
+      "templates": {
+        "single_elim": {
+          "title": "Playoff Klasik",
+          "desc": "Sistem gugur klasik. Kalah sekali langsung tereliminasi.",
+          "default": "Playoff"
+        },
+        "double_elim": {
+          "title": "Double Chance",
+          "desc": "Upper & Lower Bracket. Memberi kesempatan kedua.",
+          "default": "Final Playoff"
+        },
+        "round_robin": {
+          "title": "Liga / Fase Grup",
+          "desc": "Semua peserta saling bertanding.",
+          "default": "Group Stage"
+        },
+        "swiss": {
+          "title": "Elite Swiss",
+          "desc": "Bertanding melawan lawan seimbang.",
+          "default": "Swiss Stage"
+        }
+      },
+      "statuses": {
+        "pending": "Belum Mulai",
+        "ongoing": "Berlangsung",
+        "completed": "Selesai"
+      },
+      "config": {
+        "title": "Konfigurasi Babak",
+        "subtitle": "Sesuaikan detail babak.",
+        "name_label": "Nama Babak",
+        "name_placeholder": "Masukkan nama babak...",
+        "bo_label": "Format BO",
+        "advance_label": "Peserta Advance",
+        "groups_label": "Jumlah Grup",
+        "per_group_label": "Peserta / Grup",
+        "submit": "Simpan Babak",
+        "select_template": "Pilih Template Babak",
+        "select_template_desc": "Gunakan template untuk setup cepat.",
+        "use_template": "Gunakan Template"
+      },
+      "toast": {
+        "add_success": "Babak berhasil ditambahkan.",
+        "add_failed": "Gagal menambah babak",
+        "delete_success": "Babak berhasil dihapus.",
+        "delete_failed": "Gagal menghapus babak",
+        "start_success": "Babak Dimulai!",
+        "start_failed": "Gagal memulai babak",
+        "matches_gen": "{count} match telah digenerate."
+      },
+      "confirm": {
+        "delete": "Hapus tahapan ini? Semua bracket di babak ini akan hilang.",
+        "start": "Mulai babak \"{name}\"? Bracket akan digenerate dan tidak bisa diubah."
+      },
+      "empty": {
+        "title": "Belum Ada Babak",
+        "desc": "Klik tombol di atas untuk mulai membuat tahapan turnamen Anda.",
+        "create_first": "Buat Babak Pertama"
+      },
+      "tips": {
+        "title": "Tips & Contoh Alur",
+        "pattern": "Pola Standard",
+        "p1": "Group Stage (Round Robin) untuk menyaring tim terbaik.",
+        "p2": "Playoff (Single/Double Elim) sebagai babak final.",
+        "important": "PENTING",
+        "important_desc": "Setelah babak dimulai, format dan konfigurasi tidak bisa diubah. Pastikan semuanya sudah benar sebelum klik \"Mulai Babak\"."
+      },
+      "actions": {
+        "start": "Mulai Babak",
+        "view_bracket": "Lihat Bracket"
+      }
+    },
+    "roles": {
+      "co_organizer": "Rekan Penyelenggara",
+      "referee": "Wasit"
+    },
+    "toast": {
+      "add_success_desc": "Staf baru telah ditambahkan.",
+      "add_failed_desc": "Gagal menambahkan staf",
+      "remove_confirm": "Apakah Anda yakin ingin menghapus staf ini?",
+      "remove_success_desc": "Staf telah dihapus.",
+      "remove_failed_desc": "Gagal menghapus staf"
+    },
+    "staff_placeholder": "Email Pengguna",
+    "empty_staff": "Belum Ada Staf",
+    "empty_staff_desc": "Anda masih sendirian dalam mengelola turnamen ini.",
+    "participant": "Peserta",
+    "type": "Tipe",
+    "registered": "Daftar",
+    "captain_prefix": "Kapt:",
+    "no_contact_data": "Tanpa Data Kontak",
+    "types": {
+      "team": "Tim",
+      "individual": "Individu"
+    },
+    "statuses": {
+      "approved": "Disetujui",
+      "rejected": "Ditolak",
+      "paid": "Lunas",
+      "pending": "Menunggu"
+    },
+    "tooltips": {
+      "disqualify": "Diskualifikasi / Tolak",
+      "restore": "Pulihkan (Setujui)"
+    },
+    "empty_participants": "Belum ada peserta",
+    "empty_participants_desc": "Pendaftar akan muncul di sini setelah turnamen dipublikasikan.",
+    "manual_modal": {
+      "title": "Tambah Peserta",
+      "subtitle": "Buat data otomatis melalui dashboard penyelenggara.",
+      "team_name": "Nama Tim",
+      "team_name_desc": "Wajib untuk turnamen berbasis tim.",
+      "captain_name": "Nama Kapten",
+      "full_name": "Nama Lengkap",
+      "name_desc": "Wajib diisi untuk ditampilkan di braket.",
+      "email_desc": "Opsional jika nomor HP diisi.",
+      "phone_label": "Nomor Handphone",
+      "phone_desc": "Opsional jika email diisi.",
+      "submit": "Tambahkan Peserta",
+      "toast_missing_title": "Kekurangan Data",
+      "toast_missing_desc": "Wajib mengisi Email atau Nomor Telepon.",
+      "toast_success_desc": "Peserta manual berhasil ditambahkan.",
+      "toast_failed_desc": "Gagal mendaftar manual"
+    }
+  },
+  "home": {
+    "summary": "Ringkasan",
+    "team_invites": "Daftar Undangan Tim",
+    "create_tournament": "Buat Turnamen",
+    "notifications": "Notifikasi",
+    "stats": {
+      "total_teams": "Total Tim",
+      "registrations": "Pendaftaran",
+      "prize_pool": "Total Hadiah",
+      "matches": "Pertandingan"
+    },
+    "matches_title": "Pertandingan Berjalan",
+    "no_matches": "Tidak ada pertandingan yang sedang berjalan"
+  },
+  "sidebar": {
+    "admin_section": "Manajemen Platform",
+    "admin_dashboard": "Dashboard Admin",
+    "tournament_moderation": "Moderasi Turnamen",
+    "user_management": "Manajemen User",
+    "sports": "Cabor",
+    "main_menu": "Menu Utama",
+    "summary": "Ringkasan",
+    "my_tournaments": "Turnamen Saya",
+    "participation_history": "Riwayat Ikut Serta",
+    "my_teams": "Tim Saya",
+    "notifications": "Notifikasi",
+    "team_invitations": "Undangan Tim",
+    "settings": "Pengaturan",
+    "profile": "Profil",
+    "members": "Anggota",
+    "security": "Keamanan",
+    "platform": "Platform",
+    "homepage": "Halaman Utama",
+    "search_placeholder": "Cari navigasi",
+    "cookie": {
+      "title": "Kami menggunakan cookie pihak pertama untuk meningkatkan pengalaman Anda di situs web kami.",
+      "accept": "Terima",
+      "opt_out": "Tolak"
+    }
+  },
+  "teams": {
+    "title": "Manajemen Tim",
+    "search_placeholder": "Cari nama atau slug tim...",
+    "cancel_all": "Batalkan Semua",
+    "select_all": "Pilih Semua",
+    "delete_count": "Hapus ({count})",
+    "filter_status": "Filter status",
+    "all_status": "Semua Status",
+    "active": "Aktif",
+    "pending": "Menunggu",
+    "disqualified": "Didiskualifikasi",
+    "status": {
+      "active": "Aktif",
+      "pending": "Menunggu",
+      "disqualified": "Didiskualifikasi"
+    },
+    "showing_teams": "Menampilkan {count} tim",
+    "selected_count": "{count} dipilih",
+    "no_teams": "Belum ada tim",
+    "no_matches": "Tidak ada tim yang cocok dengan filter.",
+    "start_creating": "Mulai dengan membuat tim pertama Anda.",
+    "create_new_team": "Buat Tim Baru",
+    "delete_team": "Hapus Tim",
+    "delete_confirm": "Apakah Anda yakin ingin menghapus tim \"{name}\"?",
+    "delete_undone": "Tindakan ini tidak dapat dibatalkan. Hanya kapten yang dapat menghapus tim.",
+    "deleted_success": "{count} tim berhasil dihapus",
+    "delete_failed": "Gagal menghapus",
+    "delete_captain_only": "Pastikan Anda adalah kapten dari tim tersebut",
+    "team_deleted": "Tim \"{name}\" dihapus",
+    "menu": {
+      "create": "Buat tim",
+      "manage": "Kelola tim"
+    },
+    "detail": {
+      "role_owner": "Kapten",
+      "members_tab": "Anggota",
+      "no_members": "Belum ada anggota",
+      "no_desc": "Belum ada deskripsi"
+    },
+    "detail_slideover": {
+      "failed_load": "Gagal memuat detail tim",
+      "member_removed_title": "Anggota Dihapus",
+      "member_removed_desc": "{name} telah dihapus dari tim"
+    },
+    "invite_modal": {
+      "title": "Undang Anggota",
+      "desc": "Undang pengguna untuk bergabung dengan tim Anda dengan mencari nama atau email mereka.",
+      "search_placeholder": "Cari pengguna berdasarkan nama atau email...",
+      "submit": "Kirim Undangan",
+      "success_title": "Undangan Terkirim",
+      "success_desc": "{name} telah diundang untuk bergabung ke tim.",
+      "success_desc_simple": "Pengguna berhasil diundang.",
+      "failed_title": "Undangan Gagal"
+    },
+    "add_modal": {
+      "title": "Buat Tim Baru",
+      "cancel": "Batal",
+      "submit": "Buat Tim"
+    },
+    "edit_modal": {
+      "title": "Edit Tim"
+    }
+  },
+  "participations": {
+    "title": "Riwayat Ikut Serta",
+    "registered_on": "Terdaftar pada {date}",
+    "status": {
+      "pending": "Menunggu",
+      "approved": "Terkonfirmasi",
+      "rejected": "Ditolak",
+      "paid": "Sudah Bayar"
+    },
+    "type": {
+      "team": "Tim: {name}",
+      "individual": "Individu"
+    },
+    "no_participations": "Belum Bergabung",
+    "no_participations_desc": "Anda belum mendaftar di turnamen manapun. Cari turnamen menarik dan mulai berkompetisi!",
+    "find_tournament": "Cari Turnamen"
+  },
+  "invitations": {
+    "title": "Undangan Tim",
+    "all_invitations": "Semua Undangan",
+    "desc": "Kelola undangan bergabung ke tim di sini. Lihat daftar pending atau cek riwayat undangan sebelumnya.",
+    "tabs": {
+      "pending": "Undangan Pending",
+      "history": "Riwayat"
+    },
+    "no_pending": "Tidak ada undangan pending",
+    "no_pending_desc": "Saat ini Anda tidak memiliki undangan bergabung ke tim mana pun."
+  },
+  "inbox": {
+    "title": "Pesan & Undangan",
+    "tabs": {
+      "all": "Semua",
+      "unread": "Belum Baca"
+    },
+    "mail": {
+      "mark_unread": "Tandai belum baca",
+      "mark_important": "Tandai penting",
+      "star_thread": "Bintangi",
+      "mute_thread": "Bisukan",
+      "toast_sent_title": "Email terkirim",
+      "toast_sent_desc": "Email Anda telah berhasil dikirim",
+      "archive": "Arsip",
+      "reply": "Balas",
+      "reply_to": "Balas ke {name}",
+      "placeholder": "Tulis balasan Anda...",
+      "attach": "Lampirkan file",
+      "save_draft": "Simpan draf",
+      "send": "Kirim"
+    }
+  },
+  "settings": {
+    "profile": {
+      "title": "Profil",
+      "desc": "Informasi ini akan ditampilkan secara publik.",
+      "name_label": "Nama",
+      "name_desc": "Akan muncul pada struk, faktur, dan komunikasi lainnya.",
+      "email_label": "Email",
+      "email_desc": "Digunakan untuk masuk, instruksi pembayaran, dan pembaruan produk.",
+      "username_label": "Username",
+      "username_desc": "Username unik Anda untuk masuk dan URL profil Anda.",
+      "avatar_label": "Avatar",
+      "avatar_desc": "JPG, GIF atau PNG. Maksimal 1MB.",
+      "bio_label": "Bio",
+      "bio_desc": "Deskripsi singkat untuk profil Anda. URL akan otomatis menjadi link.",
+      "phone_label": "Nomor Telepon",
+      "phone_desc": "Nomor WhatsApp/Telepon untuk koordinasi turnamen.",
+      "phone_placeholder": "Contoh: 08123456789",
+      "success_title": "Berhasil",
+      "success_desc": "Undangan dikirim ke {name}",
+      "success_desc_simple": "Undangan berhasil dikirim",
+      "failed_title": "Gagal mengirim undangan"
+    },
+    "members": {
+      "title": "Anggota",
+      "desc": "Undang anggota baru melalui alamat email.",
+      "invite_button": "Undang orang",
+      "search_placeholder": "Cari anggota"
+    },
+    "notifications": {
+      "channels_title": "Saluran notifikasi",
+      "channels_desc": "Di mana kami dapat memberi tahu Anda?",
+      "email_label": "Email",
+      "email_desc": "Terima ringkasan email harian.",
+      "desktop_label": "Desktop",
+      "desktop_desc": "Terima notifikasi desktop.",
+      "account_updates_title": "Pembaruan akun",
+      "account_updates_desc": "Terima informasi terbaru tentang platform kami.",
+      "weekly_digest_label": "Ringkasan mingguan",
+      "weekly_digest_desc": "Terima ringkasan berita mingguan.",
+      "product_updates_label": "Pembaruan produk",
+      "product_updates_desc": "Terima email bulanan berisi fitur dan pembaruan baru.",
+      "important_updates_label": "Pembaruan penting",
+      "important_updates_desc": "Terima email tentang pembaruan penting seperti perbaikan keamanan, pemeliharaan, dll."
+    },
+    "security": {
+      "title": "Keamanan & Password",
+      "desc": "Konfirmasi password lama Anda sebelum mengatur password baru.",
+      "current_password_label": "Password Saat Ini",
+      "current_password_placeholder": "Masukkan password lama",
+      "new_password_label": "Password Baru",
+      "new_password_placeholder": "Masukkan password baru",
+      "update_button": "Perbarui Password",
+      "success": "Password Anda telah diperbarui.",
+      "failed": "Gagal memperbarui password.",
+      "error_min_length": "Minimal 8 karakter",
+      "error_must_be_different": "Password baru harus berbeda dengan password saat ini",
+      "delete_account_title": "Akun",
+      "delete_account_desc": "Sudah tidak ingin menggunakan layanan kami? Anda dapat menghapus akun Anda. Tindakan ini tidak dapat dibatalkan. Semua data terkait akun ini akan dihapus secara permanen.",
+      "delete_account_button": "Hapus Akun"
+    }
+  },
+  "tournament_manager": {
+    "title": "Manajemen Turnamen",
+    "create_button": "Buat Turnamen",
+    "search_placeholder": "Cari turnamen...",
+    "filter_all": "Semua Status",
+    "filter_draft": "Draft",
+    "filter_open": "Terbuka",
+    "filter_ongoing": "Berlangsung",
+    "filter_finished": "Selesai",
+    "status": {
+      "draft": "Draft",
+      "open": "Buka",
+      "ongoing": "Berlangsung",
+      "finished": "Selesai"
+    },
+    "manage_action": "Kelola Turnamen",
+    "delete_action": "Hapus Turnamen",
+    "no_results": "Tidak Ada Hasil",
+    "no_tournaments": "Belum Ada Turnamen",
+    "no_results_desc": "Coba cari dengan kata kunci lain.",
+    "no_tournaments_desc": "Mulailah petualangan kompetisi Anda hari ini.",
+    "create_first": "Buat Turnamen Pertama"
+  },
+  "tournament_form": {
+    "edit_mode": "Mode Edit",
+    "draft_mode": "Mode Draft",
+    "edit_title": "Edit Turnamen",
+    "create_title": "Buat Turnamen",
+    "new_tournament": "Turnamen Baru",
+    "edit_info": "Ubah Informasi",
+    "config_title": "Konfigurasi",
+    "config_subtitle": "Turnamen",
+    "all_saved": "Semua perubahan tersimpan permanen",
+    "auto_saved": "Data tersimpan otomatis sebagai draft",
+    "section_identity": "Identitas Turnamen",
+    "section_schedule": "Jadwal Pelaksanaan",
+    "section_rules": "Aturan & Logistik",
+    "field_title": "Judul Turnamen",
+    "field_title_placeholder": "Contoh: Juara Cup 2026",
+    "field_sport": "Cabang Olahraga",
+    "field_sport_placeholder": "Pilih Cabor",
+    "field_sport_search": "Cari cabor...",
+    "field_category": "Kategori",
+    "field_category_placeholder": "Pro, Amateur, U-17...",
+    "field_enrollment": "Mode Pendaftaran",
+    "field_venue_type": "Tipe Lokasi",
+    "field_participant_type": "Tipe Kepesertaan",
+    "field_team_size": "Pemain Per Tim",
+    "field_description": "Deskripsi",
+    "field_description_placeholder": "Jelaskan detail turnamen, syarat peserta, dan aturan pertandingan...",
+    "field_banner": "Link Banner",
+    "field_reg_period": "Periode Registrasi",
+    "field_reg_start": "Dibuka",
+    "field_reg_end": "Ditutup",
+    "field_start_at": "Pertandingan Dimulai",
+    "field_bracket": "Format Bracket",
+    "field_max_participants": "Maks. Peserta",
+    "field_prize": "Total Hadiah (IDR)",
+    "field_entry_fee": "Biaya Daftar (IDR)",
+    "field_entry_fee_free": "Gratis",
+    "field_prize_desc": "Detail Pembagian Hadiah",
+    "field_prize_desc_placeholder": "Juara 1: Rp 1.000.000\nJuara 2: Rp 500.000...",
+    "field_venue": "Lokasi / Venue",
+    "field_venue_placeholder": "Nama gedung, jalan, kota...",
+    "modes": {
+      "open": "Terbuka",
+      "open_desc": "Siapa saja bisa mendaftar.",
+      "invite": "Invitasi",
+      "invite_desc": "Hanya peserta dengan undangan."
+    },
+    "venues": {
+      "online": "Online / Remote",
+      "offline": "Offline / On-site"
+    },
+    "participants": {
+      "individual": "Individu",
+      "team": "Tim / Grup"
+    },
+    "submit_save": "Simpan Perubahan",
+    "submit_publish": "Publikasi sebagai Draft",
+    "submit_desc_save": "Perubahan akan langsung diterapkan pada turnamen ini.",
+    "submit_desc_publish": "Turnamen akan tersimpan sebagai draft — kamu bisa edit sebelum dipublikasi",
+    "preview_title": "Preview Peserta",
+    "checklist_title": "Kelengkapan Form",
+    "checklist": {
+      "title": "Judul turnamen",
+      "sport": "Cabang olahraga",
+      "start_at": "Tanggal mulai",
+      "description": "Deskripsi"
+    },
+    "tips_title": "Tips",
+    "tips": [
+      "Gunakan banner berkualitas tinggi untuk meningkatkan daya tarik peserta.",
+      "Beri jeda minimal 3 hari antara penutupan registrasi dan hari H.",
+      "Deskripsi yang jelas menurunkan pertanyaan masuk dari peserta."
+    ],
+    "toast": {
+      "sport_required": "Cabang olahraga harus dipilih",
+      "success_title": "Berhasil!",
+      "update_success": "Perubahan turnamen telah disimpan.",
+      "create_success": "Turnamen Anda telah berhasil dibuat.",
+      "update_failed": "Gagal Memperbarui Turnamen",
+      "create_failed": "Gagal Membuat Turnamen",
+      "system_error": "Terjadi kesalahan sistem."
+    }
+  },
+  "tournament_card": {
+    "view_tournament": "Lihat Turnamen",
+    "prize_pool": "Prize Pool",
+    "slots": "Slot",
+    "type_format": "Tipe & Format",
+    "location_venue": "Lokasi & Venue",
+    "organizer_label": "Penyelenggara",
+    "entry_fee_label": "Biaya Daftar",
+    "free": "GRATIS",
+    "bracket_types": {
+      "single": "Single Elimination",
+      "double": "Double Elimination",
+      "round_robin": "Round Robin"
+    }
+  },
+  "tournament_join": {
+    "title_prefix": "Gabung",
+    "desc_instruction": "Silakan lengkapi konfirmasi pendaftaran di bawah ini.",
+    "team_registration": "Pendaftaran Tim",
+    "individual_registration": "Pendaftaran Individu",
+    "team_size_limit": "Batasan Anggota Tim",
+    "unlimited": "Tidak Terbatas",
+    "members_per_team": "Anggota / Tim",
+    "select_team_label": "Pilih Tim Pendaftar",
+    "select_team_placeholder": "Pilih Tim Anda...",
+    "no_teams_warning": "Anda belum memiliki tim yang aktif. Silakan buat tim di Dashboard sebelum mendaftar.",
+    "individual_info": "Anda akan mendaftar sebagai **Individu**. Pastikan nama akun Anda sesuai dengan identitas asli.",
+    "notes_label": "Catatan Tambahan (Opsional)",
+    "notes_placeholder": "Tambahkan catatan jika ada...",
+    "submit_button": "Kirim Pendaftaran",
+    "success_title": "Registrasi Berhasil!",
+    "success_desc": "Pendaftaran Anda sedang menunggu moderasi.",
+    "failed_title": "Registrasi Gagal",
+    "failed_desc": "Gagal mengirim pendaftaran"
+  },
+  "usermenu": {
+    "profile": "Profil",
+    "settings": "Pengaturan",
+    "admin_panel": "Panel Admin",
+    "theme": "Tema",
+    "appearance": "Tampilan",
+    "light": "Terang",
+    "dark": "Gelap",
+    "logout": "Keluar",
+    "fallback_name": "Juara User"
+  },
+  "tournament_detail": {
+    "notices": {
+      "under_review": "Sedang Ditinjau",
+      "under_review_desc": "Turnamen ini memerlukan peninjauan manual oleh tim Juara League. Anda bisa melanjutkan persiapan babak (stage) dan detail lainnya, namun fitur Publish akan terbuka setelah disetujui.",
+      "rejected": "Turnamen Ditolak",
+      "rejected_desc": "Mohon maaf, turnamen Anda tidak disetujui oleh platform. Silakan hubungi dukungan atau periksa kembali deskripsi turnamen Anda."
+    },
+    "publish_modal": {
+      "title": "Konfirmasi Publish",
+      "subtitle": "Anda yakin mempublikasikan turnamen ini?",
+      "after_publish": "Setelah dipublikasi:",
+      "item1": "Dapat dilihat oleh semua orang secara publik.",
+      "item2": "Pendaftar dapat mulai mendaftar ke turnamen.",
+      "item3": "Beberapa pengaturan tidak dapat diubah lagi.",
+      "confirm": "Ya, Publish"
+    },
+    "stats": {
+      "participants": "Peserta",
+      "prize": "Total Hadiah",
+      "fee": "Entry Fee",
+      "reg_close": "Reg. Tutup",
+      "kickoff": "Kickoff",
+      "from": "dari",
+      "prize_pool_sub": "Prize pool",
+      "per_participant": "Per peserta",
+      "reg_deadline": "Batas akhir pendaftaran",
+      "first_day": "Hari pertama pertandingan",
+      "free": "Gratis"
+    },
+    "sections": {
+      "rules": "Deskripsi & Aturan",
+      "prizes": "Breakdown Hadiah"
+    },
+    "empty": {
+      "desc": "Belum ada deskripsi.",
+      "prizes": "Belum ada rincian hadiah.",
+      "not_found": "Turnamen tidak ditemukan."
+    },
+    "toast": {
+      "reviewing": "Menunggu Review",
+      "reviewing_desc": "Turnamen Anda sedang menunggu peninjauan dari tim platform.",
+      "rejected": "Turnamen Ditolak",
+      "rejected_desc": "Maaf, turnamen ini tidak disetujui untuk dipublikasikan.",
+      "publish_success": "Berhasil dipublish!",
+      "publish_success_desc": "Turnamen sekarang terbuka untuk pendaftaran.",
+      "publish_failed": "Gagal mempublikasikan turnamen"
+    },
+    "live_subtitle": "Update skor & monitor pertandingan aktif"
+  }
+}

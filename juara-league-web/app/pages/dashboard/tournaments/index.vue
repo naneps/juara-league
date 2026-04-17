@@ -9,6 +9,7 @@ definePageMeta({
 
 const tournamentStore = useTournamentStore()
 const { myTournaments, isLoading, error } = storeToRefs(tournamentStore)
+const { t } = useI18n()
 
 // Initial fetch
 const { pending } = await useAsyncData('dashboard-my-tournaments', () => tournamentStore.fetchMyTournaments())
@@ -18,7 +19,7 @@ const refreshMyTournaments = () => {
 }
 
 const searchQuery = ref('')
-const statusFilter = ref({ label: 'Semua Status', value: 'all' })
+const statusFilter = ref({ label: t('tournament_manager.filter_all'), value: 'all' })
 
 const filteredTournaments = computed(() => {
   return myTournaments.value.filter(t => {
@@ -28,19 +29,19 @@ const filteredTournaments = computed(() => {
   })
 })
 
-const statuses = [
-  { label: 'Semua Status', value: 'all' },
-  { label: 'Draft', value: 'draft' },
-  { label: 'Terbuka', value: 'open' },
-  { label: 'Berlangsung', value: 'ongoing' },
-  { label: 'Selesai', value: 'finished' }
-]
+const statuses = computed(() => [
+  { label: t('tournament_manager.filter_all'), value: 'all' },
+  { label: t('tournament_manager.filter_draft'), value: 'draft' },
+  { label: t('tournament_manager.filter_open'), value: 'open' },
+  { label: t('tournament_manager.filter_ongoing'), value: 'ongoing' },
+  { label: t('tournament_manager.filter_finished'), value: 'finished' }
+])
 </script>
 
 <template>
   <UDashboardPanel id="tournaments" grow>
     <template #header>
-      <UDashboardNavbar title="Manajemen Turnamen">
+      <UDashboardNavbar :title="$t('tournament_manager.title')">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
@@ -49,7 +50,7 @@ const statuses = [
             to="/dashboard/tournaments/create" 
             icon="i-lucide-plus" 
             color="primary" 
-            label="Buat Turnamen"
+            :label="$t('tournament_manager.create_button')"
             class="rounded-xl font-bold px-4 h-9 shadow-lg shadow-primary-500/20"
           />
         </template>
@@ -62,7 +63,7 @@ const statuses = [
         <template #left>
           <UInput 
             v-model="searchQuery" 
-            placeholder="Cari turnamen..." 
+            :placeholder="$t('tournament_manager.search_placeholder')" 
             icon="i-lucide-search"
             class="w-64"
           />
@@ -94,7 +95,7 @@ const statuses = [
            <TournamentCard 
              :tournament="tournament" 
              :link="`/dashboard/tournaments/${tournament.slug}`"
-             actionText="Kelola Turnamen"
+             :actionText="$t('tournament_manager.manage_action')"
              actionIcon="i-lucide-settings-2"
            />
            <!-- Management Overlay -->
@@ -105,7 +106,7 @@ const statuses = [
               variant="solid" 
               size="xs" 
               class="rounded-lg shadow-2xl drop-shadow-lg"
-              title="Hapus Turnamen"
+              :title="$t('tournament_manager.delete_action')"
              />
            </div>
         </div>
@@ -116,17 +117,17 @@ const statuses = [
            <UIcon name="i-lucide-trophy" class="size-20 text-neutral-800 group-hover:text-primary-500 transition-colors" />
         </div>
         <h3 class="text-2xl font-black text-white mb-2 uppercase tracking-tight">
-          {{ searchQuery ? 'Tidak Ada Hasil' : 'Belum Ada Turnamen' }}
+          {{ searchQuery ? $t('tournament_manager.no_results') : $t('tournament_manager.no_tournaments') }}
         </h3>
         <p class="text-neutral-500 font-medium max-w-sm mb-8">
-          {{ searchQuery ? 'Coba cari dengan kata kunci lain.' : 'Mulailah petualangan kompetisi Anda hari ini.' }}
+          {{ searchQuery ? $t('tournament_manager.no_results_desc') : $t('tournament_manager.no_tournaments_desc') }}
         </p>
         <UButton 
           v-if="!searchQuery"
           to="/dashboard/tournaments/create" 
           icon="i-lucide-plus" 
           color="primary" 
-          label="Buat Turnamen Pertama"
+          :label="$t('tournament_manager.create_first')"
           class="font-black rounded-2xl px-8 py-3 uppercase tracking-widest shadow-xl shadow-primary-500/20"
         />
       </div>

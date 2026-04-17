@@ -7,10 +7,11 @@ import * as z from 'zod'
 import type { FormError, FormSubmitEvent } from '@nuxt/ui'
 
 const { updatePassword } = useAuth()
+const { t } = useI18n()
 
 const passwordSchema = z.object({
-  current: z.string().min(8, 'Minimal 8 karakter'),
-  new: z.string().min(8, 'Minimal 8 karakter')
+  current: z.string().min(8, t('settings.security.error_min_length')),
+  new: z.string().min(8, t('settings.security.error_min_length'))
 })
 
 type PasswordSchema = z.output<typeof passwordSchema>
@@ -26,7 +27,7 @@ const toast = useToast()
 const validate = (state: Partial<PasswordSchema>): FormError[] => {
   const errors: FormError[] = []
   if (state.current && state.new && state.current === state.new) {
-    errors.push({ name: 'new', message: 'Password baru harus berbeda dengan password saat ini' })
+    errors.push({ name: 'new', message: t('settings.security.error_must_be_different') })
   }
   return errors
 }
@@ -40,8 +41,8 @@ async function onSubmit(event: FormSubmitEvent<PasswordSchema>) {
     })
     
     toast.add({
-      title: 'Berhasil',
-      description: 'Password Anda telah diperbarui.',
+      title: t('common.success'),
+      description: t('settings.security.success'),
       icon: 'i-lucide-check',
       color: 'success'
     })
@@ -51,8 +52,8 @@ async function onSubmit(event: FormSubmitEvent<PasswordSchema>) {
     password.new = ''
   } catch (error: any) {
     toast.add({
-      title: 'Gagal',
-      description: error.data?.message || 'Gagal memperbarui password.',
+      title: t('common.error'),
+      description: error.data?.message || t('settings.security.failed'),
       icon: 'i-lucide-x',
       color: 'error'
     })
@@ -64,8 +65,8 @@ async function onSubmit(event: FormSubmitEvent<PasswordSchema>) {
 
 <template>
   <UPageCard
-    title="Keamanan & Password"
-    description="Konfirmasi password lama Anda sebelum mengatur password baru."
+    :title="$t('settings.security.title')"
+    :description="$t('settings.security.desc')"
     variant="subtle"
   >
     <UForm
@@ -75,26 +76,26 @@ async function onSubmit(event: FormSubmitEvent<PasswordSchema>) {
       class="flex flex-col gap-4 max-w-sm"
       @submit="onSubmit"
     >
-      <UFormField name="current" label="Password Saat Ini">
+      <UFormField name="current" :label="$t('settings.security.current_password_label')">
         <UInput
           v-model="password.current"
           type="password"
-          placeholder="Masukkan password lama"
+          :placeholder="$t('settings.security.current_password_placeholder')"
           class="w-full"
         />
       </UFormField>
 
-      <UFormField name="new" label="Password Baru">
+      <UFormField name="new" :label="$t('settings.security.new_password_label')">
         <UInput
           v-model="password.new"
           type="password"
-          placeholder="Masukkan password baru"
+          :placeholder="$t('settings.security.new_password_placeholder')"
           class="w-full"
         />
       </UFormField>
 
       <UButton 
-        label="Perbarui Password" 
+        :label="$t('settings.security.update_button')" 
         class="w-fit font-bold" 
         type="submit" 
         :loading="isLoading"
@@ -103,12 +104,12 @@ async function onSubmit(event: FormSubmitEvent<PasswordSchema>) {
   </UPageCard>
 
   <UPageCard
-    title="Akun"
-    description="Sudah tidak ingin menggunakan layanan kami? Anda dapat menghapus akun Anda. Tindakan ini tidak dapat dibatalkan. Semua data terkait akun ini akan dihapus secara permanen."
+    :title="$t('settings.security.delete_account_title')"
+    :description="$t('settings.security.delete_account_desc')"
     class="bg-gradient-to-tl from-error/10 from-5% to-default"
   >
     <template #footer>
-      <UButton label="Hapus Akun" color="error" variant="ghost" />
+      <UButton :label="$t('settings.security.delete_account_button')" color="error" variant="ghost" />
     </template>
   </UPageCard>
 </template>

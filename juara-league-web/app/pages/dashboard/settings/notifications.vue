@@ -11,35 +11,37 @@ const state = reactive<{ [key: string]: boolean }>({
   important_updates: true
 })
 
-const sections = [{
-  title: 'Notification channels',
-  description: 'Where can we notify you?',
+const { t } = useI18n()
+
+const sections = computed(() => [{
+  title: t('settings.notifications.channels_title'),
+  description: t('settings.notifications.channels_desc'),
   fields: [{
     name: 'email',
-    label: 'Email',
-    description: 'Receive a daily email digest.'
+    label: t('settings.notifications.email_label'),
+    description: t('settings.notifications.email_desc')
   }, {
     name: 'desktop',
-    label: 'Desktop',
-    description: 'Receive desktop notifications.'
+    label: t('settings.notifications.desktop_label'),
+    description: t('settings.notifications.desktop_desc')
   }]
 }, {
-  title: 'Account updates',
-  description: 'Receive updates about Nuxt UI.',
+  title: t('settings.notifications.account_updates_title'),
+  description: t('settings.notifications.account_updates_desc'),
   fields: [{
     name: 'weekly_digest',
-    label: 'Weekly digest',
-    description: 'Receive a weekly digest of news.'
+    label: t('settings.notifications.weekly_digest_label'),
+    description: t('settings.notifications.weekly_digest_desc')
   }, {
     name: 'product_updates',
-    label: 'Product updates',
-    description: 'Receive a monthly email with all new features and updates.'
+    label: t('settings.notifications.product_updates_label'),
+    description: t('settings.notifications.product_updates_desc')
   }, {
     name: 'important_updates',
-    label: 'Important updates',
-    description: 'Receive emails about important updates like security fixes, maintenance, etc.'
+    label: t('settings.notifications.important_updates_label'),
+    description: t('settings.notifications.important_updates_desc')
   }]
-}]
+}])
 
 async function onChange() {
   // Do something with data

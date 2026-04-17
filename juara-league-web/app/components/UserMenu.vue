@@ -8,15 +8,16 @@ defineProps<{
 const colorMode = useColorMode()
 const appConfig = useAppConfig()
 const { user: authUser, logout } = useAuth()
+const { t } = useI18n()
 
 const colors = ['red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose']
 const neutrals = ['slate', 'gray', 'zinc', 'neutral', 'stone']
 
 const user = computed(() => ({
-  name: authUser.value?.name || 'User Juara',
+  name: authUser.value?.name || t('usermenu.fallback_name'),
   avatar: {
     src: authUser.value?.avatar || `https://i.pravatar.cc/150?u=${authUser.value?.email || 'juara'}`,
-    alt: authUser.value?.name || 'User Juara'
+    alt: authUser.value?.name || t('usermenu.fallback_name')
   }
 }))
 
@@ -28,17 +29,17 @@ const items = computed<DropdownMenuItem[][]>(() => {
     label: user.value.name,
     avatar: user.value.avatar
   }], [{
-    label: 'Profil',
+    label: t('usermenu.profile'),
     icon: 'i-lucide-user'
   }, {
-    label: 'Pengaturan',
+    label: t('usermenu.settings'),
     icon: 'i-lucide-settings',
     to: '/dashboard/settings'
   }]] as DropdownMenuItem[][]
 
   if (isAdmin.value) {
     baseItems[1].push({
-      label: 'Admin Panel',
+      label: t('usermenu.admin_panel'),
       icon: 'i-lucide-shield-check',
       to: '/admin/dashboard',
       class: 'text-indigo-500 font-bold'
@@ -46,7 +47,7 @@ const items = computed<DropdownMenuItem[][]>(() => {
   }
 
   baseItems.push([{
-    label: 'Theme',
+    label: t('usermenu.theme'),
     icon: 'i-lucide-palette',
     children: [{
       label: 'Primary',
@@ -90,10 +91,10 @@ const items = computed<DropdownMenuItem[][]>(() => {
       }))
     }]
   }, {
-    label: 'Appearance',
+    label: t('usermenu.appearance'),
     icon: 'i-lucide-sun-moon',
     children: [{
-      label: 'Light',
+      label: t('usermenu.light'),
       icon: 'i-lucide-sun',
       type: 'checkbox',
       checked: colorMode.value === 'light',
@@ -103,7 +104,7 @@ const items = computed<DropdownMenuItem[][]>(() => {
         colorMode.preference = 'light'
       }
     }, {
-      label: 'Dark',
+      label: t('usermenu.dark'),
       icon: 'i-lucide-moon',
       type: 'checkbox',
       checked: colorMode.value === 'dark',
@@ -117,7 +118,7 @@ const items = computed<DropdownMenuItem[][]>(() => {
       }
     }]
   }], [{
-    label: 'Keluar',
+    label: t('usermenu.logout'),
     icon: 'i-lucide-log-out',
     onSelect: async () => {
       await logout()

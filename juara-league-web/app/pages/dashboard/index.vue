@@ -9,15 +9,17 @@ import type { Period, Range } from '~/types'
 
 const { isNotificationsSlideoverOpen } = useDashboard()
 
-const items = [[{
-  label: 'Daftar Undangan Tim',
+const { t } = useI18n()
+
+const items = computed(() => [[{
+  label: t('home.team_invites'),
   icon: 'i-lucide-mail-search',
   to: '/dashboard/invitations'
 }, {
-  label: 'Buat Turnamen',
+  label: t('home.create_tournament'),
   icon: 'i-lucide-plus',
   to: '/dashboard/tournaments/create'
-}]] satisfies DropdownMenuItem[][]
+}]] satisfies DropdownMenuItem[][])
 
 const range = shallowRef<Range>({
   start: sub(new Date(), { days: 14 }),
@@ -29,13 +31,13 @@ const period = ref<Period>('daily')
 <template>
   <UDashboardPanel id="home">
     <template #header>
-      <UDashboardNavbar title="Ringkasan" :ui="{ right: 'gap-3' }">
+      <UDashboardNavbar :title="$t('home.summary')" :ui="{ right: 'gap-3' }">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
 
         <template #right>
-          <UTooltip text="Notifications" :shortcuts="['N']">
+          <UTooltip :text="$t('home.notifications')" :shortcuts="['N']">
             <UButton
               color="neutral"
               variant="ghost"
@@ -65,6 +67,7 @@ const period = ref<Period>('daily')
     </template>
 
     <template #body>
+      <HomeMatches class="mb-8" />
       <HomeStats :period="period" :range="range" />
       <HomeChart :period="period" :range="range" />
       <HomeSales :period="period" :range="range" />

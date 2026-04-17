@@ -5,16 +5,17 @@ definePageMeta({
 })
 
 const teamStore = useTeamStore()
+const { t } = useI18n()
 
-const items = [{
-  label: 'Undangan Pending',
+const items = computed(() => [{
+  label: t('invitations.tabs.pending'),
   icon: 'i-lucide-mail',
   slot: 'pending'
 }, {
-  label: 'Riwayat',
+  label: t('invitations.tabs.history'),
   icon: 'i-lucide-history',
   slot: 'history'
-}]
+}])
 
 onMounted(async () => {
   await Promise.all([
@@ -34,7 +35,7 @@ async function refreshData() {
 <template>
   <UDashboardPanel id="invitations">
     <template #header>
-      <UDashboardNavbar title="Undangan Tim">
+      <UDashboardNavbar :title="$t('invitations.title')">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
@@ -53,9 +54,9 @@ async function refreshData() {
     <template #body>
       <div class="max-w-4xl mx-auto w-full space-y-6">
         <div>
-          <h1 class="text-2xl font-bold text-highlighted">Semua Undangan</h1>
+          <h1 class="text-2xl font-bold text-highlighted">{{ $t('invitations.all_invitations') }}</h1>
           <p class="text-sm text-muted mt-1">
-            Kelola undangan bergabung ke tim di sini. Lihat daftar pending atau cek riwayat undangan sebelumnya.
+            {{ $t('invitations.desc') }}
           </p>
         </div>
 
@@ -68,9 +69,9 @@ async function refreshData() {
                   <UIcon name="i-lucide-mail-open" class="size-8 text-muted" />
                 </div>
                 <div>
-                  <p class="font-semibold text-highlighted">Tidak ada undangan pending</p>
+                  <p class="font-semibold text-highlighted">{{ $t('invitations.no_pending') }}</p>
                   <p class="text-sm text-muted mt-1">
-                    Saat ini Anda tidak memiliki undangan bergabung ke tim mana pun.
+                    {{ $t('invitations.no_pending_desc') }}
                   </p>
                 </div>
               </div>

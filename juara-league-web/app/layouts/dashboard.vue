@@ -9,17 +9,19 @@ const open = ref(false)
 const { user: authUser } = useAuth()
 const isAdmin = computed(() => authUser.value?.roles?.some(role => ['admin', 'super_admin'].includes(role)))
 
+const { t } = useI18n()
+
 const links = computed(() => {
   const allLinks: NavigationMenuItem[][] = []
 
   // 1. Admin Section (Exclusive Indigo Style)
   if (isAdmin.value) {
     allLinks.push([{
-      label: 'Manajemen Platform',
+      label: t('sidebar.admin_section'),
       type: 'label',
       class: 'text-[10px] uppercase tracking-[2px] font-black text-indigo-500/70 mb-2 px-2'
     }, {
-      label: 'Dashboard Admin',
+      label: t('sidebar.admin_dashboard'),
       icon: 'i-lucide-shield-check',
       to: '/admin/dashboard',
       color: 'indigo',
@@ -27,7 +29,7 @@ const links = computed(() => {
         open.value = false
       }
     }, {
-      label: 'Moderasi Turnamen',
+      label: t('sidebar.tournament_moderation'),
       icon: 'i-lucide-list-checks',
       to: '/admin/tournaments',
       color: 'indigo',
@@ -35,7 +37,7 @@ const links = computed(() => {
         open.value = false
       }
     }, {
-      label: 'Manajemen User',
+      label: t('sidebar.user_management'),
       icon: 'i-lucide-users',
       to: '/admin/users',
       color: 'indigo',
@@ -43,7 +45,7 @@ const links = computed(() => {
         open.value = false
       }
     }, {
-      label: 'Cabor',
+      label: t('sidebar.sports'),
       icon: 'i-lucide-gamepad-2',
       to: '/admin/sports',
       color: 'indigo',
@@ -55,11 +57,11 @@ const links = computed(() => {
 
   // 2. User Section (Friendly Emerald Style)
   allLinks.push([{
-    label: 'Menu Utama',
+    label: t('sidebar.main_menu'),
     type: 'label',
     class: 'text-[10px] uppercase tracking-[2px] font-black text-neutral-500/70 mb-2 px-2'
   }, {
-    label: 'Ringkasan',
+    label: t('sidebar.summary'),
     icon: 'i-lucide-layout-dashboard',
     to: '/dashboard',
     color: 'primary',
@@ -67,7 +69,7 @@ const links = computed(() => {
       open.value = false
     }
   }, {
-    label: 'Turnamen Saya',
+    label: t('sidebar.my_tournaments'),
     icon: 'i-lucide-trophy',
     to: '/dashboard/tournaments',
     color: 'primary',
@@ -75,7 +77,7 @@ const links = computed(() => {
       open.value = false
     }
   }, {
-    label: 'Riwayat Ikut Serta',
+    label: t('sidebar.participation_history'),
     icon: 'i-lucide-history',
     to: '/dashboard/participations',
     color: 'primary',
@@ -83,7 +85,7 @@ const links = computed(() => {
       open.value = false
     }
   }, {
-    label: 'Tim Saya',
+    label: t('sidebar.my_teams'),
     icon: 'i-lucide-users-round',
     to: '/dashboard/teams',
     color: 'primary',
@@ -91,7 +93,7 @@ const links = computed(() => {
       open.value = false
     }
   }, {
-    label: 'Notifikasi',
+    label: t('sidebar.notifications'),
     icon: 'i-lucide-bell',
     to: '/dashboard/inbox',
     badge: '4',
@@ -100,7 +102,7 @@ const links = computed(() => {
       open.value = false
     }
   }, {
-    label: 'Undangan Tim',
+    label: t('sidebar.team_invitations'),
     icon: 'i-lucide-mail-search',
     to: '/dashboard/invitations',
     color: 'primary',
@@ -108,27 +110,27 @@ const links = computed(() => {
       open.value = false
     }
   }, {
-    label: 'Pengaturan',
+    label: t('sidebar.settings'),
     to: '/dashboard/settings',
     icon: 'i-lucide-settings',
     color: 'primary',
     defaultOpen: false,
     type: 'trigger',
     children: [{
-      label: 'Profil',
+      label: t('sidebar.profile'),
       to: '/dashboard/settings',
       exact: true,
       onSelect: () => {
         open.value = false
       }
     }, {
-      label: 'Anggota',
+      label: t('sidebar.members'),
       to: '/dashboard/settings/members',
       onSelect: () => {
         open.value = false
       }
     }, {
-      label: 'Keamanan',
+      label: t('sidebar.security'),
       to: '/dashboard/settings/security',
       onSelect: () => {
         open.value = false
@@ -138,11 +140,11 @@ const links = computed(() => {
 
   // 3. Additional Section (Landing Page)
   allLinks.push([{
-    label: 'Platform',
+    label: t('sidebar.platform'),
     type: 'label',
     class: 'text-[10px] uppercase tracking-[2px] font-black text-neutral-500/70 mb-2 px-2'
   }, {
-    label: 'Halaman Utama',
+    label: t('sidebar.homepage'),
     icon: 'i-lucide-external-link',
     to: '/',
     color: 'neutral',
@@ -183,7 +185,7 @@ const groups = computed(() => {
 
   return [{
     id: 'links',
-    label: 'Cari navigasi',
+    label: t('sidebar.search_placeholder'),
     items: searchItems
   }]
 })
@@ -195,18 +197,18 @@ onMounted(async () => {
   }
 
   toast.add({
-    title: 'We use first-party cookies to enhance your experience on our website.',
+    title: t('sidebar.cookie.title'),
     duration: 0,
     close: false,
     actions: [{
-      label: 'Accept',
+      label: t('sidebar.cookie.accept'),
       color: 'neutral',
       variant: 'outline',
       onClick: () => {
         cookie.value = 'accepted'
       }
     }, {
-      label: 'Opt out',
+      label: t('sidebar.cookie.opt_out'),
       color: 'neutral',
       variant: 'ghost'
     }]

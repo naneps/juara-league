@@ -2,6 +2,8 @@
 import { useTournamentStore } from '~/stores/tournamentStore';
 import type { Stage } from '~/types/tournament';
 
+const { t } = useI18n()
+
 const props = defineProps<{
   tournamentSlug: string
   initialStages?: Stage[]
@@ -24,12 +26,12 @@ const newStage = ref({
   participants_per_group: null as number | null,
 })
 
-const stageTemplates = [
-  { id: 'single_elim', title: 'Playoff Klasik', description: 'Sistem gugur klasik. Kalah sekali langsung tereliminasi.', icon: 'i-lucide-skull', type: 'single_elim', defaultName: 'Playoff', color: 'error' },
-  { id: 'double_elim', title: 'Double Chance', description: 'Upper & Lower Bracket. Memberi kesempatan kedua.', icon: 'i-lucide-refresh-ccw', type: 'double_elim', defaultName: 'Final Playoff', color: 'primary' },
-  { id: 'round_robin', title: 'Liga / Fase Grup', description: 'Semua peserta saling bertanding.', icon: 'i-lucide-grid-3x3', type: 'round_robin', defaultName: 'Group Stage', color: 'amber' },
-  { id: 'swiss', title: 'Elite Swiss', description: 'Bertanding melawan lawan seimbang.', icon: 'i-lucide-git-merge', type: 'swiss', defaultName: 'Swiss Stage', color: 'emerald' },
-]
+const stageTemplates = computed(() => [
+  { id: 'single_elim', title: t('managers.stages.templates.single_elim.title'), description: t('managers.stages.templates.single_elim.desc'), icon: 'i-lucide-skull', type: 'single_elim', defaultName: t('managers.stages.templates.single_elim.default'), color: 'error' },
+  { id: 'double_elim', title: t('managers.stages.templates.double_elim.title'), description: t('managers.stages.templates.double_elim.desc'), icon: 'i-lucide-refresh-ccw', type: 'double_elim', defaultName: t('managers.stages.templates.double_elim.default'), color: 'primary' },
+  { id: 'round_robin', title: t('managers.stages.templates.round_robin.title'), description: t('managers.stages.templates.round_robin.desc'), icon: 'i-lucide-grid-3x3', type: 'round_robin', defaultName: t('managers.stages.templates.round_robin.default'), color: 'amber' },
+  { id: 'swiss', title: t('managers.stages.templates.swiss.title'), description: t('managers.stages.templates.swiss.desc'), icon: 'i-lucide-git-merge', type: 'swiss', defaultName: t('managers.stages.templates.swiss.default'), color: 'emerald' },
+])
 
 const boFormats = [
   { label: 'Best of 1', value: 'bo1' },
@@ -40,9 +42,9 @@ const boFormats = [
 
 const stageTypeInfo = (type: string) => {
   const map: Record<string, { label: string; icon: string; color: string }> = {
-    single_elim: { label: 'Single Elimination', icon: 'i-lucide-skull', color: 'error' },
-    double_elim: { label: 'Double Elimination', icon: 'i-lucide-refresh-ccw', color: 'primary' },
-    round_robin: { label: 'Round Robin', icon: 'i-lucide-grid-3x3', color: 'amber' },
+    single_elim: { label: t('tournament_card.bracket_types.single'), icon: 'i-lucide-skull', color: 'error' },
+    double_elim: { label: t('tournament_card.bracket_types.double'), icon: 'i-lucide-refresh-ccw', color: 'primary' },
+    round_robin: { label: t('tournament_card.bracket_types.round_robin'), icon: 'i-lucide-grid-3x3', color: 'amber' },
     swiss: { label: 'Swiss', icon: 'i-lucide-git-merge', color: 'emerald' },
   }
   return map[type] || { label: type, icon: 'i-lucide-layers', color: 'neutral' }
@@ -50,16 +52,16 @@ const stageTypeInfo = (type: string) => {
 
 const stageStatusInfo = (status: string) => {
   const map: Record<string, { label: string; color: string; icon: string }> = {
-    pending: { label: 'Belum Mulai', color: 'neutral', icon: 'i-lucide-clock' },
-    ongoing: { label: 'Berlangsung', color: 'primary', icon: 'i-lucide-play' },
-    completed: { label: 'Selesai', color: 'success', icon: 'i-lucide-check-circle' },
+    pending: { label: t('managers.stages.statuses.pending'), color: 'neutral', icon: 'i-lucide-clock' },
+    ongoing: { label: t('managers.stages.statuses.ongoing'), color: 'primary', icon: 'i-lucide-play' },
+    completed: { label: t('managers.stages.statuses.completed'), color: 'success', icon: 'i-lucide-check-circle' },
   }
   return map[status] || { label: status, color: 'neutral', icon: 'i-lucide-circle' }
 }
 
 const isSelectingTemplate = ref(true)
 
-const applyTemplate = (template: typeof stageTemplates[0]) => {
+const applyTemplate = (template: any) => {
   newStage.value.name = template.defaultName
   newStage.value.type = template.type
   isSelectingTemplate.value = false
@@ -87,36 +89,36 @@ const addStage = async () => {
     await tournamentStore.createStage(props.tournamentSlug, newStage.value)
     await fetchStages()
     resetAddState()
-    useToast().add({ title: 'Berhasil', description: 'Babak berhasil ditambahkan.', color: 'success' })
+    useToast().add({ title: t('common.success'), description: t('managers.stages.toast.add_success'), color: 'success' })
   } catch (e: any) {
-    useToast().add({ title: 'Gagal', description: e.data?.message || 'Gagal menambah babak', color: 'error' })
+    useToast().add({ title: t('common.error'), description: e.data?.message || t('managers.stages.toast.add_failed'), color: 'error' })
   } finally {
     isSubmitting.value = false
   }
 }
 
 const removeStage = async (stage: Stage) => {
-  if (!confirm('Hapus tahapan ini? Semua bracket di babak ini akan hilang.')) return
+  if (!confirm(t('managers.stages.confirm.delete'))) return
   try {
     await tournamentStore.deleteStage(props.tournamentSlug, stage.id)
     await fetchStages()
-    useToast().add({ title: 'Dihapus', description: 'Babak berhasil dihapus.', color: 'success' })
+    useToast().add({ title: t('common.success'), description: t('managers.stages.toast.delete_success'), color: 'success' })
   } catch (e: any) {
-    useToast().add({ title: 'Gagal', description: e.data?.message || 'Gagal menghapus babak', color: 'error' })
+    useToast().add({ title: t('common.error'), description: e.data?.message || t('managers.stages.toast.delete_failed'), color: 'error' })
   }
 }
 
 const isStarting = ref(false)
 const startStage = async (stage: Stage) => {
-  if (!confirm(`Mulai babak "${stage.name}"? Bracket akan digenerate dan tidak bisa diubah.`)) return
+  if (!confirm(t('managers.stages.confirm.start', { name: stage.name }))) return
   isStarting.value = true
   try {
     const result = await tournamentStore.startStage(props.tournamentSlug, stage.id)
     await fetchStages()
-    useToast().add({ title: 'Stage Dimulai!', description: `${result.matches_generated} match telah digenerate.`, color: 'success' })
+    useToast().add({ title: t('managers.stages.toast.start_success'), description: t('managers.stages.toast.matches_gen', { count: result.matches_generated }), color: 'success' })
     emit('stage-started', stage.id)
   } catch (e: any) {
-    useToast().add({ title: 'Gagal', description: e.data?.message || 'Gagal memulai stage', color: 'error' })
+    useToast().add({ title: t('common.error'), description: e.data?.message || t('managers.stages.toast.start_failed'), color: 'error' })
   } finally {
     isStarting.value = false
   }
@@ -138,15 +140,15 @@ onMounted(() => { fetchStages() })
         <div>
           <h2 class="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
             <UIcon name="i-lucide-workflow" class="size-5 text-primary-500" />
-            Kelola Babak / Tahapan
+            {{ $t('managers.stages_title') }}
           </h2>
           <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            Atur alur pertandingan mulai dari kualifikasi hingga babak final.
+            {{ $t('managers.stages_desc') }}
           </p>
         </div>
         <div class="flex items-center gap-2">
           <UButton v-if="!isAdding" size="sm" color="primary" icon="i-lucide-plus" @click="isAdding = true; isSelectingTemplate = true">
-            Tambah Babak
+            {{ $t('managers.add_stage') }}
           </UButton>
           <UButton v-if="!isAdding" size="sm" color="neutral" variant="ghost" icon="i-lucide-refresh-cw" @click="fetchStages" />
         </div>
@@ -164,8 +166,8 @@ onMounted(() => { fetchStages() })
           <!-- Step 1: Template Selection -->
           <div v-if="isSelectingTemplate">
             <div class="mb-8">
-              <h3 class="text-base font-bold text-neutral-900 dark:text-white mb-1">Pilih Template Babak</h3>
-              <p class="text-xs text-neutral-500">Gunakan template untuk setup cepat.</p>
+              <h3 class="text-base font-bold text-neutral-900 dark:text-white mb-1">{{ t('managers.stages.config.select_template') }}</h3>
+              <p class="text-xs text-neutral-500">{{ t('managers.stages.config.select_template_desc') }}</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -182,14 +184,14 @@ onMounted(() => { fetchStages() })
                 <p class="text-sm font-bold text-neutral-900 dark:text-white mb-1">{{ template.title }}</p>
                 <p class="text-[11px] text-neutral-400 dark:text-neutral-500 leading-relaxed">{{ template.description }}</p>
                 <div class="mt-4 flex items-center gap-1.5 text-[10px] font-bold text-primary-500 opacity-0 group-hover:opacity-100 transition-all">
-                  Gunakan Template
+                  {{ t('managers.stages.config.use_template') }}
                   <UIcon name="i-lucide-arrow-right" class="size-3" />
                 </div>
               </button>
             </div>
 
             <div class="mt-10 flex justify-center">
-              <UButton variant="ghost" color="neutral" size="sm" @click="resetAddState">Batal</UButton>
+              <UButton variant="ghost" color="neutral" size="sm" @click="resetAddState">{{ t('common.cancel') }}</UButton>
             </div>
           </div>
 
@@ -198,19 +200,19 @@ onMounted(() => { fetchStages() })
             <div class="flex items-center gap-4 mb-10">
               <UButton variant="ghost" color="neutral" icon="i-lucide-arrow-left" size="sm" class="-ml-2" @click="isSelectingTemplate = true" />
               <div>
-                <h3 class="text-sm font-bold text-neutral-900 dark:text-white leading-none mb-1">Konfigurasi Babak</h3>
-                <p class="text-[10px] text-neutral-500">Sesuaikan detail babak.</p>
+                <h3 class="text-sm font-bold text-neutral-900 dark:text-white leading-none mb-1">{{ t('managers.stages.config.title') }}</h3>
+                <p class="text-[10px] text-neutral-500">{{ t('managers.stages.config.subtitle') }}</p>
               </div>
             </div>
 
             <div class="space-y-6">
               <div>
-                <label class="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-2">Nama Babak</label>
-                <UInput v-model="newStage.name" placeholder="Masukkan nama babak..." icon="i-lucide-edit-3" size="xl" class="w-full" />
+                <label class="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-2">{{ t('managers.stages.config.name_label') }}</label>
+                <UInput v-model="newStage.name" :placeholder="t('managers.stages.config.name_placeholder')" icon="i-lucide-edit-3" size="xl" class="w-full" />
               </div>
 
               <div>
-                <label class="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-2">Format BO</label>
+                <label class="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-2">{{ t('managers.stages.config.bo_label') }}</label>
                 <div class="grid grid-cols-4 gap-2">
                   <button
                     v-for="bo in boFormats"
@@ -229,24 +231,24 @@ onMounted(() => { fetchStages() })
               </div>
 
               <div>
-                <label class="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-2">Peserta Advance</label>
+                <label class="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-2">{{ t('managers.stages.config.advance_label') }}</label>
                 <UInput v-model.number="newStage.participants_advance" type="number" placeholder="4" icon="i-lucide-arrow-up-right" size="lg" class="w-full" />
               </div>
 
               <div v-if="newStage.type === 'round_robin'" class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-2">Jumlah Grup</label>
+                  <label class="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-2">{{ t('managers.stages.config.groups_label') }}</label>
                   <UInput v-model.number="newStage.groups_count" type="number" placeholder="2" size="lg" class="w-full" />
                 </div>
                 <div>
-                  <label class="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-2">Peserta / Grup</label>
+                  <label class="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-2">{{ t('managers.stages.config.per_group_label') }}</label>
                   <UInput v-model.number="newStage.participants_per_group" type="number" placeholder="4" size="lg" class="w-full" />
                 </div>
               </div>
 
               <div class="flex items-center justify-end gap-4 pt-8 mt-8 border-t border-neutral-100 dark:border-neutral-800">
-                <UButton variant="ghost" color="neutral" size="lg" @click="resetAddState">Batal</UButton>
-                <UButton color="primary" size="lg" icon="i-lucide-save" :loading="isSubmitting" @click="addStage">Simpan Babak</UButton>
+                <UButton variant="ghost" color="neutral" size="lg" @click="resetAddState">{{ t('common.cancel') }}</UButton>
+                <UButton color="primary" size="lg" icon="i-lucide-save" :loading="isSubmitting" @click="addStage">{{ t('managers.stages.config.submit') }}</UButton>
               </div>
             </div>
           </div>
@@ -281,7 +283,7 @@ onMounted(() => { fetchStages() })
                     </UBadge>
                   </div>
                   <p class="text-[11px] text-neutral-400 dark:text-neutral-500">
-                    {{ stage.bo_format?.toUpperCase() }} · {{ stage.participants_advance }} peserta advance
+                    {{ stage.bo_format?.toUpperCase() }} · {{ stage.participants_advance }} {{ t('managers.stages.config.advance_label').toLowerCase() }}
                   </p>
                 </div>
               </div>
@@ -309,7 +311,7 @@ onMounted(() => { fetchStages() })
                   :loading="isStarting"
                   @click.stop="startStage(stage)"
                 >
-                  Mulai Babak
+                  {{ t('managers.stages.actions.start') }}
                 </UButton>
 
                 <!-- View Bracket (when ongoing/completed) -->
@@ -321,7 +323,7 @@ onMounted(() => { fetchStages() })
                   icon="i-lucide-git-branch"
                   @click.stop="emit('stage-started', stage.id)"
                 >
-                  Lihat Bracket
+                  {{ t('managers.stages.actions.view_bracket') }}
                 </UButton>
 
                 <!-- Delete (only pending) -->
@@ -333,7 +335,7 @@ onMounted(() => { fetchStages() })
                   icon="i-lucide-trash-2"
                   @click.stop="removeStage(stage)"
                 >
-                  Hapus
+                  {{ t('common.delete') }}
                 </UButton>
               </div>
             </div>
@@ -345,11 +347,11 @@ onMounted(() => { fetchStages() })
           <div class="size-16 rounded-3xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-4 border border-neutral-200 dark:border-neutral-700">
             <UIcon name="i-lucide-layers" class="size-8 text-neutral-300 dark:text-neutral-600" />
           </div>
-          <p class="text-base font-bold text-neutral-900 dark:text-white mb-1">Belum Ada Babak</p>
+          <p class="text-base font-bold text-neutral-900 dark:text-white mb-1">{{ t('managers.stages.empty.title') }}</p>
           <p class="text-sm text-neutral-400 dark:text-neutral-500 max-w-xs mx-auto mb-6">
-            Klik tombol di atas untuk mulai membuat tahapan turnamen Anda.
+            {{ t('managers.stages.empty.desc') }}
           </p>
-          <UButton color="primary" variant="outline" icon="i-lucide-plus" @click="isAdding = true">Buat Babak Pertama</UButton>
+          <UButton color="primary" variant="outline" icon="i-lucide-plus" @click="isAdding = true">{{ t('managers.stages.empty.create_first') }}</UButton>
         </div>
       </div>
 
@@ -357,19 +359,19 @@ onMounted(() => { fetchStages() })
       <div class="w-full xl:w-80 bg-neutral-50/50 dark:bg-neutral-800/10 p-6">
         <h4 class="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider mb-4 flex items-center gap-2">
           <UIcon name="i-lucide-lightbulb" class="size-4 text-amber-500" />
-          Tips & Contoh Alur
+          {{ t('managers.stages.tips.title') }}
         </h4>
         <div class="space-y-6">
           <div class="p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm">
-            <p class="text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-2">Pola Standard</p>
+            <p class="text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-2">{{ t('managers.stages.tips.pattern') }}</p>
             <div class="space-y-3">
               <div class="flex items-start gap-2">
                 <div class="size-1.5 rounded-full bg-primary-500 mt-1.5 shrink-0" />
-                <p class="text-[11px] text-neutral-500 leading-relaxed"><strong>Group Stage (Round Robin)</strong> untuk menyaring tim terbaik.</p>
+                <p class="text-[11px] text-neutral-500 leading-relaxed">{{ t('managers.stages.tips.p1') }}</p>
               </div>
               <div class="flex items-start gap-2">
                 <div class="size-1.5 rounded-full bg-primary-500 mt-1.5 shrink-0" />
-                <p class="text-[11px] text-neutral-500 leading-relaxed"><strong>Playoff (Single/Double Elim)</strong> sebagai babak final.</p>
+                <p class="text-[11px] text-neutral-500 leading-relaxed">{{ t('managers.stages.tips.p2') }}</p>
               </div>
             </div>
           </div>
@@ -377,10 +379,10 @@ onMounted(() => { fetchStages() })
           <div class="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20">
             <p class="text-[10px] font-bold text-amber-700 dark:text-amber-500 flex items-center gap-1 mb-1">
               <UIcon name="i-lucide-alert-circle" />
-              PENTING
+              {{ t('managers.stages.tips.important') }}
             </p>
             <p class="text-[10px] text-amber-600/80 dark:text-amber-500/70 leading-relaxed">
-              Setelah babak dimulai, format dan konfigurasi tidak bisa diubah. Pastikan semuanya sudah benar sebelum klik "Mulai Babak".
+              {{ t('managers.stages.tips.important_desc') }}
             </p>
           </div>
         </div>

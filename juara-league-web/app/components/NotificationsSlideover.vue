@@ -14,7 +14,7 @@ const { data: notifications } = await useFetch<any[]>('/api/notifications', {
 <template>
   <USlideover
     v-model:open="isNotificationsSlideoverOpen"
-    title="Notifications"
+    :title="$t('sidebar.notifications')"
   >
     <template #body>
       <NuxtLink

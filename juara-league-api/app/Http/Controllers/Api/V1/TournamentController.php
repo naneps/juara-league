@@ -108,4 +108,16 @@ class TournamentController extends Controller
         
         return TournamentResource::collection($tournaments);
     }
+
+    /**
+     * Display a listing of ongoing matches for tournaments owned by the authenticated user.
+     */
+    public function liveMatches(Request $request): JsonResponse
+    {
+        $matches = $this->tournamentService->getUserOngoingMatches($request->user()->id);
+        
+        return response()->json([
+            'data' => $matches
+        ]);
+    }
 }

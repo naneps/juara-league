@@ -7,13 +7,15 @@ import { computed, ref, watch } from 'vue'
 import { breakpointsTailwind } from '@vueuse/core'
 import type { Mail } from '~/types'
 
-const tabItems = [{
-  label: 'All',
+const { t } = useI18n()
+
+const tabItems = computed(() => [{
+  label: t('inbox.tabs.all'),
   value: 'all'
 }, {
-  label: 'Unread',
+  label: t('inbox.tabs.unread'),
   value: 'unread'
-}]
+}])
 const selectedTab = ref('all')
 
 const config = useRuntimeConfig()
@@ -63,7 +65,7 @@ const isMobile = breakpoints.smaller('lg')
     :max-size="30"
     resizable
   >
-    <UDashboardNavbar title="Pesan & Undangan">
+    <UDashboardNavbar :title="$t('inbox.title')">
       <template #leading>
         <UDashboardSidebarCollapse />
       </template>

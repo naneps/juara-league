@@ -17,8 +17,10 @@ const emit = defineEmits<{
 const avatarUrl = (name: string, logo?: string) =>
   logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&size=96&bold=true&color=fff`
 
+const { t } = useI18n()
+
 const statusColor = computed(() => TEAM_STATUS_COLORS[props.team.status])
-const statusLabel = computed(() => TEAM_STATUS_LABELS[props.team.status])
+const statusLabel = computed(() => t(`teams.status.${props.team.status}`))
 
 const glowClass = computed(() => ({
   active: 'group-hover:shadow-[0_8px_24px_-4px_rgba(34,197,94,0.3)]',
@@ -28,11 +30,11 @@ const glowClass = computed(() => ({
 
 const dropdownItems = computed(() => [
   [
-    { label: 'Lihat Detail', icon: 'i-lucide-layout-list', onSelect: () => emit('detail', props.team) },
-    { label: 'Edit Tim', icon: 'i-lucide-pencil', onSelect: () => emit('edit', props.team) }
+    { label: t('common.view_detail'), icon: 'i-lucide-layout-list', onSelect: () => emit('detail', props.team) },
+    { label: t('teams.edit_modal.title'), icon: 'i-lucide-pencil', onSelect: () => emit('edit', props.team) }
   ],
   [
-    { label: 'Hapus Tim', icon: 'i-lucide-trash', color: 'error' as const, onSelect: () => emit('delete', props.team) }
+    { label: t('teams.delete_modal.confirm'), icon: 'i-lucide-trash', color: 'error' as const, onSelect: () => emit('delete', props.team) }
   ]
 ])
 </script>
@@ -115,7 +117,7 @@ const dropdownItems = computed(() => [
             <UIcon name="i-lucide-crown" class="size-4 text-warning" />
           </div>
           <div class="min-w-0">
-            <p class="text-[10px] text-muted leading-none mb-0.5">Kapten</p>
+            <p class="text-[10px] text-muted leading-none mb-0.5">{{ $t('teams.detail.role_owner') }}</p>
             <p class="text-xs font-semibold text-highlighted truncate leading-tight">
               {{ team.captain?.name ?? `#${team.captain_id}` }}
             </p>
@@ -127,7 +129,7 @@ const dropdownItems = computed(() => [
             <UIcon name="i-lucide-users" class="size-4 text-primary" />
           </div>
           <div>
-            <p class="text-[10px] text-muted leading-none mb-0.5">Anggota</p>
+            <p class="text-[10px] text-muted leading-none mb-0.5">{{ $t('teams.detail.members_tab') }}</p>
             <p class="text-xs font-bold text-highlighted leading-tight">
               {{ team.members?.length ?? '0' }}
             </p>
@@ -154,7 +156,7 @@ const dropdownItems = computed(() => [
           />
         </div>
         <UButton
-          label="Lihat Detail"
+          :label="$t('common.view_detail')"
           variant="link"
           size="xs"
           trailing-icon="i-lucide-chevron-right"

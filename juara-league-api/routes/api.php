@@ -61,6 +61,7 @@ Route::prefix('v1')->group(function () {
 
         // Tournament Management
         Route::get('/my-tournaments', [TournamentController::class, 'mine']);
+        Route::get('/my-matches', [TournamentController::class, 'liveMatches']);
         Route::post('/tournaments', [TournamentController::class, 'store']);
         Route::put('/tournaments/{tournament:slug}', [TournamentController::class, 'update']);
         Route::delete('/tournaments/{tournament:slug}', [TournamentController::class, 'destroy']);

@@ -69,23 +69,31 @@ const publish = async () => {
 }
 
 const tabs = computed(() => {
-  const items = [
+  const allTabs = [
     { label: 'Informasi', icon: 'i-lucide-info', slot: 'info' },
+    { 
+      label: 'Laga Berjalan', 
+      icon: 'i-lucide-play-circle', 
+      slot: 'live',
+      show: liveMatches.value.length > 0 || isOwner.value
+    },
+    { 
+      label: 'Manajemen Tahapan', 
+      icon: 'i-lucide-settings-2', 
+      slot: 'management',
+      show: isOwner.value 
+    },
+    { 
+      label: 'Manajemen Staf', 
+      icon: 'i-lucide-shield-check', 
+      slot: 'staff',
+      show: isOwner.value 
+    },
     { label: 'Bracket', icon: 'i-lucide-git-branch', slot: 'bracket' },
     { label: 'Partisipan', icon: 'i-lucide-users', slot: 'participants' }
   ]
 
-  // Add Live tab if there are ongoing matches OR if staff
-  if (liveMatches.value.length > 0 || isOwner.value) {
-    items.splice(1, 0, { label: 'Laga Berjalan', icon: 'i-lucide-play-circle', slot: 'live' })
-  }
-
-  if (isOwner.value) {
-    items.splice(1, 0, { label: 'Manajemen Tahapan', icon: 'i-lucide-settings-2', slot: 'management' })
-    items.splice(2, 0, { label: 'Manajemen Staf', icon: 'i-lucide-shield-check', slot: 'staff' })
-  }
-
-  return items
+  return allTabs.filter(tab => tab.show !== false)
 })
 
 // Format date helper
@@ -298,8 +306,8 @@ watchEffect(() => {
 
             <div v-else-if="liveMatches.length === 0" class="bg-neutral-900/40 border border-white/5 rounded-[2rem] p-20 text-center">
               <UIcon name="i-lucide-play-circle" class="size-16 text-neutral-800 mb-6 mx-auto" />
-              <p class="text-neutral-500 font-bold uppercase tracking-widest">Tidak Ada Laga Aktif</p>
-              <p class="text-neutral-600 text-sm max-w-sm mx-auto mt-2">Mulai pertandingan dari tab Bracket atau Manajemen Tahapan untuk melihatnya di sini.</p>
+              <p class="text-neutral-500 font-bold uppercase tracking-widest">{{ $t('public.no_live_matches') }}</p>
+              <p class="text-neutral-600 text-sm max-w-sm mx-auto mt-2">{{ $t('public.no_live_desc') }}</p>
             </div>
 
             <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -326,7 +334,7 @@ watchEffect(() => {
                   </div>
                   <div class="flex items-center gap-4">
                     <div class="h-px flex-grow bg-white/5"></div>
-                    <span class="text-[10px] font-black text-neutral-700 uppercase tracking-widest italic">versus</span>
+                    <span class="text-[10px] font-black text-neutral-700 uppercase tracking-widest italic">{{ $t('public.versus') }}</span>
                     <div class="h-px flex-grow bg-white/5"></div>
                   </div>
                   <div class="flex items-center justify-between">
@@ -336,7 +344,7 @@ watchEffect(() => {
                 </div>
 
                 <div class="mt-8 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-neutral-600 border-t border-white/5 pt-4">
-                  <span>Klik untuk Update</span>
+                  <span>{{ $t('public.click_update') }}</span>
                   <UIcon name="i-lucide-chevron-right" class="size-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </button>
@@ -531,21 +539,23 @@ watchEffect(() => {
               </div>
             </div>
 
-            <div class="bg-neutral-900/40 p-6 md:p-10 rounded-[2rem] border border-white/5 w-full min-h-[400px] overflow-auto">
+            <div class="bg-white dark:bg-neutral-900/40 rounded-[2rem] border border-neutral-200 dark:border-white/5 w-full h-[600px] relative overflow-hidden">
               <template v-if="selectedStage">
-                <TournamentsBracketVisualizer
-                  ref="bracketRef"
-                  :tournament-slug="tournament!.slug"
-                  :stage="selectedStage"
-                  :is-staff="isOwner"
-                  @match-click="handleMatchClick"
-                />
+                <InteractiveCanvas>
+                  <TournamentsBracketVisualizer
+                    ref="bracketRef"
+                    :tournament-slug="tournament!.slug"
+                    :stage="selectedStage"
+                    :is-staff="isOwner"
+                    @match-click="handleMatchClick"
+                  />
+                </InteractiveCanvas>
               </template>
               <template v-else>
-                <div class="flex flex-col items-center justify-center py-20 text-center">
-                  <UIcon name="i-lucide-git-merge" class="size-16 text-neutral-800 mb-6" />
-                  <p class="text-neutral-600 font-bold uppercase tracking-widest mb-2">Belum Ada Bracket</p>
-                  <p class="text-neutral-700 text-sm max-w-sm">Mulai babak di tab "Manajemen Tahapan" untuk melihat bracket di sini.</p>
+                <div class="flex flex-col items-center justify-center py-20 text-center h-full">
+                  <UIcon name="i-lucide-git-merge" class="size-16 text-neutral-300 dark:text-neutral-800 mb-6" />
+                  <p class="text-neutral-500 dark:text-neutral-600 font-bold uppercase tracking-widest mb-2">{{ $t('public.no_bracket') }}</p>
+                  <p class="text-neutral-400 dark:text-neutral-700 text-sm max-w-sm">{{ $t('public.no_bracket_desc') }}</p>
                 </div>
               </template>
             </div>

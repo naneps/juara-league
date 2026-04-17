@@ -5,12 +5,13 @@ import type { FormSubmitEvent } from '@nuxt/ui'
 const emit = defineEmits(['success'])
 const teamStore = useTeamStore()
 const toast = useToast()
+const { t } = useI18n()
 const open = ref(false)
 
 const schema = z.object({
-  name: z.string().min(3, 'Nama minimal 3 karakter').max(100),
+  name: z.string().min(3, t('teams.add_modal.error_name_min')).max(100),
   description: z.string().max(500).optional(),
-  logo_url: z.string().url('URL logo tidak valid').optional().or(z.literal(''))
+  logo_url: z.string().url(t('teams.add_modal.error_logo_url')).optional().or(z.literal(''))
 })
 
 type Schema = z.output<typeof schema>
@@ -30,8 +31,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     })
 
     toast.add({
-      title: 'Berhasil',
-      description: `Tim "${event.data.name}" berhasil dibuat`,
+      title: t('teams.add_modal.success_title'),
+      description: t('teams.add_modal.success_desc', { name: event.data.name }),
       color: 'success'
     })
 
@@ -40,8 +41,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     Object.assign(state, { name: '', description: '', logo_url: '' })
   } catch (error: any) {
     toast.add({
-      title: 'Gagal membuat tim',
-      description: error.data?.message || 'Terjadi kesalahan',
+      title: t('teams.add_modal.failed_title'),
+      description: error.data?.message || t('common.error'),
       color: 'error'
     })
   }
@@ -51,33 +52,33 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 <template>
   <UModal
     v-model:open="open"
-    title="Tim Baru"
-    description="Tambah tim baru ke dalam kompetisi"
+    :title="$t('teams.add_modal.title')"
+    :description="$t('teams.add_modal.desc')"
   >
-    <UButton label="Tim Baru" icon="i-lucide-plus" />
+    <UButton :label="$t('teams.add_modal.title')" icon="i-lucide-plus" />
 
     <template #body>
       <UForm :schema="schema" :state="state" class="space-y-4" @submit="onSubmit">
-        <UFormField label="Nama Tim" name="name">
-          <UInput v-model="state.name" class="w-full" placeholder="Misal: Garuda Esports" />
+        <UFormField :label="$t('teams.add_modal.name_label')" name="name">
+          <UInput v-model="state.name" class="w-full" :placeholder="$t('teams.add_modal.name_placeholder')" />
         </UFormField>
 
-        <UFormField label="Deskripsi (Opsional)" name="description">
+        <UFormField :label="$t('teams.add_modal.desc_label')" name="description">
           <UTextarea
             v-model="state.description"
             class="w-full"
-            placeholder="Jelaskan sedikit tentang tim Anda"
+            :placeholder="$t('teams.add_modal.desc_placeholder')"
           />
         </UFormField>
 
-        <UFormField label="URL Logo (Opsional)" name="logo_url">
-          <UInput v-model="state.logo_url" class="w-full" placeholder="https://..." />
+        <UFormField :label="$t('teams.add_modal.logo_label')" name="logo_url">
+          <UInput v-model="state.logo_url" class="w-full" :placeholder="$t('teams.add_modal.logo_placeholder')" />
         </UFormField>
 
         <div class="flex justify-end gap-2">
-          <UButton label="Batal" color="neutral" variant="subtle" @click="open = false" />
+          <UButton :label="$t('teams.add_modal.cancel')" color="neutral" variant="subtle" @click="open = false" />
           <UButton
-            label="Buat Tim"
+            :label="$t('teams.add_modal.submit')"
             color="primary"
             variant="solid"
             type="submit"

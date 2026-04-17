@@ -9,8 +9,10 @@ interface Props {
   actionIcon?: string
 }
 
+const { t, locale } = useI18n()
+
 const props = withDefaults(defineProps<Props>(), {
-  actionText: 'Lihat Turnamen',
+  actionText: '', // Will be handled in template if empty
   actionIcon: 'i-lucide-arrow-right'
 })
 
@@ -22,7 +24,7 @@ const status = computed(() => getTournamentStatus(props.tournament.status))
 const formattedDate = computed(() => {
   if (!props.tournament.start_at) return 'TBA'
   try {
-    return new Date(props.tournament.start_at).toLocaleDateString('id-ID', {
+    return new Date(props.tournament.start_at).toLocaleDateString(locale.value === 'id' ? 'id-ID' : 'en-US', {
       day: 'numeric',
       month: 'short',
       year: 'numeric'
@@ -91,7 +93,7 @@ const formattedDate = computed(() => {
       <!-- Stats Grid -->
       <div class="grid grid-cols-2 gap-y-5 gap-x-2 mt-auto">
         <div class="flex flex-col gap-1.5">
-          <span class="text-[9px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">Prize Pool</span>
+          <span class="text-[9px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">{{ $t('tournament_card.prize_pool') }}</span>
           <div class="flex items-center gap-2">
             <div class="p-1 bg-yellow-500/10 rounded-md ring-1 ring-yellow-500/20">
               <UIcon name="i-lucide-trophy" class="text-yellow-500 size-4" />
@@ -100,7 +102,7 @@ const formattedDate = computed(() => {
           </div>
         </div>
         <div class="flex flex-col gap-1.5">
-          <span class="text-[9px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">Slots</span>
+          <span class="text-[9px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">{{ $t('tournament_card.slots') }}</span>
           <div class="flex items-center gap-2">
             <div class="p-1 bg-primary-500/10 rounded-md ring-1 ring-primary-500/20">
               <UIcon name="i-lucide-users-2" class="text-primary-500 dark:text-primary-400 size-4" />
@@ -110,17 +112,17 @@ const formattedDate = computed(() => {
         </div>
 
         <div class="flex flex-col gap-1.5">
-          <span class="text-[9px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">Tipe & Format</span>
+          <span class="text-[9px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">{{ $t('tournament_card.type_format') }}</span>
           <div class="flex items-center gap-1.5 text-xs font-semibold text-neutral-700 dark:text-neutral-300">
             <UIcon :name="tournament.participant_type === 'team' ? 'i-lucide-users' : 'i-lucide-user'" class="size-3.5 text-neutral-400 dark:text-neutral-500" />
-            <span class="truncate">{{ tournament.participant_type === 'team' ? `Tim ` + (tournament.team_size ? `(${tournament.team_size})` : '') : 'Individu' }}</span>
+            <span class="truncate">{{ tournament.participant_type === 'team' ? $t('tournament_form.participants.team') + (tournament.team_size ? ` (${tournament.team_size})` : '') : $t('tournament_form.participants.individual') }}</span>
             <span class="text-neutral-300 dark:text-neutral-700">•</span>
-            <span class="truncate">{{ tournament.bracket_type === 'single' ? 'Single Elim' : tournament.bracket_type === 'double' ? 'Double Elim' : tournament.bracket_type === 'round_robin' ? 'Round Robin' : tournament.bracket_type }}</span>
+            <span class="truncate">{{ $t(`tournament_card.bracket_types.${tournament.bracket_type}`) }}</span>
           </div>
         </div>
         
         <div class="flex flex-col gap-1.5">
-          <span class="text-[9px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">Lokasi & Venue</span>
+          <span class="text-[9px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">{{ $t('tournament_card.location_venue') }}</span>
           <div class="flex items-center gap-1.5 text-xs font-semibold text-neutral-700 dark:text-neutral-300">
             <UIcon :name="tournament.venue?.toLowerCase() === 'online' ? 'i-lucide-globe' : 'i-lucide-map-pin'" class="size-3.5 text-neutral-400 dark:text-neutral-500" />
             <span class="truncate">{{ tournament.venue || 'TBA' }}</span>
@@ -145,13 +147,13 @@ const formattedDate = computed(() => {
             </div>
             <div v-if="tournament.user" class="flex flex-col min-w-0 pr-2">
               <span class="text-xs font-bold text-neutral-800 dark:text-neutral-200 truncate">{{ tournament.user.name }}</span>
-              <span class="text-[9px] font-medium text-neutral-400 dark:text-neutral-500 uppercase tracking-wide">Organizer</span>
+              <span class="text-[9px] font-medium text-neutral-400 dark:text-neutral-500 uppercase tracking-wide">{{ $t('tournament_card.organizer_label') }}</span>
             </div>
           </div>
 
           <div class="text-right shrink-0 bg-neutral-50 dark:bg-neutral-800/50 px-3 py-1.5 rounded-lg border border-neutral-100 dark:border-white/5">
-            <span class="block text-[8px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-0.5">Biaya Daftar</span>
-            <span class="text-xs sm:text-sm font-black text-primary-600 dark:text-primary-400">{{ tournament.entry_fee == 0 ? 'GRATIS' : formatCurrency(tournament.entry_fee) }}</span>
+            <span class="block text-[8px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-0.5">{{ $t('tournament_card.entry_fee_label') }}</span>
+            <span class="text-xs sm:text-sm font-black text-primary-600 dark:text-primary-400">{{ tournament.entry_fee == 0 ? $t('tournament_card.free') : formatCurrency(tournament.entry_fee) }}</span>
           </div>
         </div>
 
@@ -159,7 +161,7 @@ const formattedDate = computed(() => {
         <div class="w-full flex items-center justify-center py-3 bg-neutral-900 dark:bg-white/5 group-hover:bg-primary-500 text-white rounded-xl font-bold text-sm tracking-widest uppercase transition-all duration-300 shadow-md transform group-hover:-translate-y-0.5 relative overflow-hidden group-hover:shadow-[0_4px_20px_-5px_rgba(var(--color-primary-500),0.5)]">
           <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none"></div>
           <span class="flex items-center gap-2 relative z-10 transition-transform duration-300 group-hover:scale-105">
-            {{ actionText }} <UIcon :name="actionIcon" class="size-4" />
+            {{ actionText || $t('tournament_card.view_tournament') }} <UIcon :name="actionIcon" class="size-4" />
           </span>
         </div>
       </div>

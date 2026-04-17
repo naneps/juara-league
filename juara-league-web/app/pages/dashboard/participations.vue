@@ -10,6 +10,7 @@ definePageMeta({
 
 const tournamentStore = useTournamentStore()
 const { myParticipations, isLoading, error } = storeToRefs(tournamentStore)
+const { t, locale } = useI18n()
 
 // Initial fetch
 const { pending } = await useAsyncData('dashboard-my-participations', () => tournamentStore.fetchMyParticipations())
@@ -18,19 +19,19 @@ const refreshParticipations = () => {
   tournamentStore.fetchMyParticipations()
 }
 
-const statusConfig: Record<Participant['status'], { label: string, color: 'primary' | 'success' | 'warning' | 'error' | 'neutral', icon: string }> = {
-  pending: { label: 'Menunggu', color: 'warning', icon: 'i-lucide-clock' },
-  approved: { label: 'Terkonfirmasi', color: 'success', icon: 'i-lucide-check-circle' },
-  rejected: { label: 'Ditolak', color: 'error', icon: 'i-lucide-x-circle' },
-  paid: { label: 'Sudah Bayar', color: 'primary', icon: 'i-lucide-credit-card' }
-}
+const statusConfig = computed(() => ({
+  pending: { label: t('participations.status.pending'), color: 'warning', icon: 'i-lucide-clock' },
+  approved: { label: t('participations.status.approved'), color: 'success', icon: 'i-lucide-check-circle' },
+  rejected: { label: t('participations.status.rejected'), color: 'error', icon: 'i-lucide-x-circle' },
+  paid: { label: t('participations.status.paid'), color: 'primary', icon: 'i-lucide-credit-card' }
+}))
 
 const getStatus = (status: Participant['status']) => {
-  return statusConfig[status]
+  return statusConfig.value[status]
 }
 
 const formatDate = (date: string) => {
-  return new Date(date).toLocaleDateString('id-ID', {
+  return new Date(date).toLocaleDateString(locale.value === 'id' ? 'id-ID' : 'en-US', {
     day: 'numeric',
     month: 'long',
     year: 'numeric'
@@ -41,7 +42,7 @@ const formatDate = (date: string) => {
 <template>
   <UDashboardPanel id="participations" grow>
     <template #header>
-      <UDashboardNavbar title="Riwayat Ikut Serta">
+      <UDashboardNavbar :title="$t('participations.title')">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
@@ -97,7 +98,7 @@ const formatDate = (date: string) => {
                   {{ participation.tournament?.title }}
                 </h3>
                 <div class="text-sm text-neutral-500 font-medium">
-                  Terdaftar pada {{ formatDate(participation.created_at) }}
+                  {{ $t('participations.registered_on', { date: formatDate(participation.created_at) }) }}
                 </div>
               </div>
             </div>
@@ -115,11 +116,11 @@ const formatDate = (date: string) => {
                 </UBadge>
                 <div v-if="participation.team" class="text-[10px] font-bold text-neutral-500 uppercase flex items-center gap-1">
                   <UIcon name="i-lucide-users" class="size-3" />
-                  Tim: {{ participation.team.name }}
+                  {{ $t('participations.type.team', { name: participation.team.name }) }}
                 </div>
                 <div v-else class="text-[10px] font-bold text-neutral-500 uppercase flex items-center gap-1">
                   <UIcon name="i-lucide-user" class="size-3" />
-                  Individu
+                  {{ $t('participations.type.individual') }}
                 </div>
               </div>
               
@@ -142,16 +143,16 @@ const formatDate = (date: string) => {
            <UIcon name="i-lucide-swords" class="size-20 text-neutral-800 group-hover:text-primary-500 transition-colors" />
         </div>
         <h3 class="text-2xl font-black text-white mb-2 uppercase tracking-tight">
-          Belum Bergabung
+          {{ $t('participations.no_participations') }}
         </h3>
         <p class="text-neutral-500 font-medium max-w-sm mb-8">
-          Anda belum mendaftar di turnamen manapun. Cari turnamen menarik dan mulai berkompetisi!
+          {{ $t('participations.no_participations_desc') }}
         </p>
         <UButton 
           to="/tournaments" 
           icon="i-lucide-search" 
           color="primary" 
-          label="Cari Turnamen"
+          :label="$t('participations.find_tournament')"
           class="font-black rounded-2xl px-8 py-3 uppercase tracking-widest shadow-xl shadow-primary-500/20"
         />
       </div>

@@ -11,24 +11,17 @@ const emit = defineEmits<{
   success: []
   'update:open': [value: boolean]
 }>()
-
+const props = defineProps<{ team: Team }>()
+const emit = defineEmits(['success'])
 const teamStore = useTeamStore()
 const toast = useToast()
-
-// Bisa dipakai via v-model:open (dari parent) atau internal (via slot trigger)
-const internalOpen = ref(false)
-const open = computed({
-  get: () => props.open ?? internalOpen.value,
-  set: (v) => {
-    internalOpen.value = v
-    emit('update:open', v)
-  }
-})
+const { t } = useI18n()
+const open = ref(false)
 
 const schema = z.object({
-  name: z.string().min(3, 'Nama minimal 3 karakter').max(100),
+  name: z.string().min(3, t('teams.add_modal.error_name_min')).max(100),
   description: z.string().max(500).optional(),
-  logo_url: z.string().url('URL logo tidak valid').optional().or(z.literal(''))
+  logo_url: z.string().url(t('teams.add_modal.error_logo_url')).optional().or(z.literal(''))
 })
 
 type Schema = z.output<typeof schema>
@@ -57,8 +50,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     })
 
     toast.add({
-      title: 'Berhasil',
-      description: 'Informasi tim berhasil diperbarui',
+      title: t('teams.edit_modal.success_title'),
+      description: t('teams.edit_modal.success_desc'),
       color: 'success'
     })
 
@@ -66,8 +59,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     open.value = false
   } catch (error: any) {
     toast.add({
-      title: 'Gagal memperbarui',
-      description: error.data?.message || 'Terjadi kesalahan',
+      title: t('teams.edit_modal.failed_title'),
+      description: error.data?.message || t('common.error'),
       color: 'error'
     })
   }
@@ -77,30 +70,41 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 <template>
   <UModal
     v-model:open="open"
-    title="Edit Tim"
-    description="Perbarui informasi tim Anda"
+    :title="$t('teams.edit_modal.title')"
+    :description="$t('teams.edit_modal.desc')"
   >
-    <slot />
+    <UButton
+      variant="ghost"
+      color="neutral"
+      icon="i-lucide-pencil"
+      size="xs"
+      square
+    />
 
     <template #body>
       <UForm :schema="schema" :state="state" class="space-y-4" @submit="onSubmit">
-        <UFormField label="Nama Tim" name="name">
+        <UFormField :label="$t('teams.add_modal.name_label')" name="name">
           <UInput v-model="state.name" class="w-full" />
         </UFormField>
 
-        <UFormField label="Deskripsi (Opsional)" name="description">
-          <UTextarea v-model="state.description" class="w-full" />
+        <UFormField :label="$t('teams.add_modal.desc_label')" name="description">
+          <UTextarea
+            v-model="state.description"
+            class="w-full"
+            :placeholder="$t('teams.add_modal.desc_placeholder')"
+          />
         </UFormField>
 
-        <UFormField label="URL Logo (Opsional)" name="logo_url">
-          <UInput v-model="state.logo_url" class="w-full" placeholder="https://..." />
+        <UFormField :label="$t('teams.add_modal.logo_label')" name="logo_url">
+          <UInput v-model="state.logo_url" class="w-full" :placeholder="$t('teams.add_modal.logo_placeholder')" />
         </UFormField>
 
         <div class="flex justify-end gap-2">
-          <UButton label="Batal" color="neutral" variant="subtle" @click="open = false" />
+          <UButton :label="$t('teams.add_modal.cancel')" color="neutral" variant="subtle" @click="open = false" />
           <UButton
-            label="Simpan"
+            :label="$t('teams.edit_modal.submit')"
             color="primary"
+            variant="solid"
             type="submit"
             :loading="teamStore.isLoading"
           />

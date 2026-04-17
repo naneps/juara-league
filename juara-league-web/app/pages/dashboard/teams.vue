@@ -9,6 +9,7 @@ import type { Team } from '~/types/team.types'
 // ─── Store & Utils ────────────────────────────────────────────────────────────
 const teamStore = useTeamStore()
 const toast = useToast()
+const { t } = useI18n()
 const detailSlideover = useTemplateRef('detailSlideover')
 
 // ─── State ────────────────────────────────────────────────────────────────────
@@ -97,14 +98,14 @@ async function handleBulkDelete() {
   try {
     await Promise.all(ids.map(id => teamStore.deleteTeam(id)))
     toast.add({
-      title: `${ids.length} tim dihapus`,
+      title: t('teams.deleted_success', { count: ids.length }),
       color: 'success'
     })
     selectedIds.value = new Set()
   } catch (e: any) {
     toast.add({
-      title: 'Gagal menghapus',
-      description: e.data?.message || 'Pastikan Anda adalah kapten tim',
+      title: t('teams.delete_failed'),
+      description: e.data?.message || t('teams.delete_captain_only'),
       color: 'error'
     })
   }
@@ -114,13 +115,13 @@ async function handleDeleteOne() {
   if (!deletingTeam.value) return
   try {
     await teamStore.deleteTeam(deletingTeam.value.id)
-    toast.add({ title: `Tim "${deletingTeam.value.name}" dihapus`, color: 'success' })
+    toast.add({ title: t('teams.team_deleted', { name: deletingTeam.value.name }), color: 'success' })
     deleteModalOpen.value = false
     deletingTeam.value = null
   } catch (e: any) {
     toast.add({
-      title: 'Gagal menghapus',
-      description: e.data?.message || 'Pastikan Anda adalah kapten tim',
+      title: t('teams.delete_failed'),
+      description: e.data?.message || t('teams.delete_captain_only'),
       color: 'error'
     })
   }
@@ -139,7 +140,7 @@ async function onAddSuccess() {
 <template>
   <UDashboardPanel id="teams">
     <template #header>
-      <UDashboardNavbar title="Manajemen Tim">
+      <UDashboardNavbar :title="$t('teams.title')">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
@@ -158,14 +159,14 @@ async function onAddSuccess() {
           v-model="searchQuery"
           class="max-w-xs"
           icon="i-lucide-search"
-          placeholder="Cari nama atau slug tim..."
+          :placeholder="$t('teams.search_placeholder')"
         />
 
         <div class="flex flex-wrap items-center gap-2">
           <!-- Select all toggle (hanya tampil kalau ada data) -->
           <UButton
             v-if="data.length"
-            :label="isAllSelected ? 'Batalkan Semua' : 'Pilih Semua'"
+            :label="isAllSelected ? $t('teams.cancel_all') : $t('teams.select_all')"
             :icon="isAllSelected ? 'i-lucide-square-minus' : 'i-lucide-check-square'"
             color="neutral"
             variant="ghost"
@@ -176,7 +177,7 @@ async function onAddSuccess() {
           <!-- Bulk delete (tampil saat ada yang dipilih) -->
           <UButton
             v-if="selectedCount"
-            :label="`Hapus (${selectedCount})`"
+            :label="$t('teams.delete_count', { count: selectedCount })"
             icon="i-lucide-trash"
             color="error"
             variant="subtle"
@@ -189,12 +190,12 @@ async function onAddSuccess() {
           <USelect
             v-model="statusFilter"
             :items="[
-              { label: 'Semua Status', value: 'all' },
-              { label: 'Aktif', value: 'active' },
-              { label: 'Tertunda', value: 'pending' },
-              { label: 'Diskualifikasi', value: 'disqualified' }
+              { label: $t('teams.all_status'), value: 'all' },
+              { label: $t('teams.active'), value: 'active' },
+              { label: $t('teams.pending'), value: 'pending' },
+              { label: $t('teams.disqualified'), value: 'disqualified' }
             ]"
-            placeholder="Filter status"
+            :placeholder="$t('teams.filter_status')"
             class="min-w-36"
             size="sm"
           />
@@ -207,10 +208,10 @@ async function onAddSuccess() {
       <!-- ── Stats summary ── -->
       <div class="flex items-center gap-2 text-sm text-muted mb-4">
         <span>
-          Menampilkan <strong class="text-default">{{ data.length }}</strong> tim
+          {{ $t('teams.showing_teams', { count: data.length }) }}
         </span>
         <span v-if="selectedCount" class="text-primary font-medium">
-          · {{ selectedCount }} dipilih
+          · {{ $t('teams.selected_count', { count: selectedCount }) }}
         </span>
       </div>
 
@@ -251,13 +252,13 @@ async function onAddSuccess() {
           <UIcon name="i-lucide-users" class="size-8 text-muted" />
         </div>
         <div>
-          <p class="font-semibold text-highlighted">Belum ada tim</p>
+          <p class="font-semibold text-highlighted">{{ $t('teams.no_teams') }}</p>
           <p class="text-sm text-muted mt-1">
-            {{ searchQuery || statusFilter !== 'all' ? 'Tidak ada tim yang cocok dengan filter.' : 'Mulai dengan membuat tim pertama Anda.' }}
+            {{ searchQuery || statusFilter !== 'all' ? $t('teams.no_matches') : $t('teams.start_creating') }}
           </p>
         </div>
         <TeamsAddModal v-if="!searchQuery && statusFilter === 'all'" @success="onAddSuccess">
-          <UButton label="Buat Tim Baru" icon="i-lucide-plus" />
+          <UButton :label="$t('teams.create_new_team')" icon="i-lucide-plus" />
         </TeamsAddModal>
       </div>
 
@@ -304,22 +305,22 @@ async function onAddSuccess() {
   <!-- ── Single Delete Confirm Modal ── -->
   <UModal
     v-model:open="deleteModalOpen"
-    :title="`Hapus Tim`"
-    :description="deletingTeam ? `Apakah Anda yakin ingin menghapus tim &quot;${deletingTeam.name}&quot;?` : ''"
+    :title="$t('teams.delete_team')"
+    :description="deletingTeam ? $t('teams.delete_confirm', { name: deletingTeam.name }) : ''"
   >
     <template #body>
       <p class="text-sm text-muted mb-4">
-        Tindakan ini tidak dapat dibatalkan. Hanya kapten yang dapat menghapus tim.
+        {{ $t('teams.delete_undone') }}
       </p>
       <div class="flex justify-end gap-2">
         <UButton
-          label="Batal"
+          :label="$t('teams.cancel')"
           color="neutral"
           variant="subtle"
           @click="deleteModalOpen = false"
         />
         <UButton
-          label="Hapus"
+          :label="$t('teams.delete')"
           color="error"
           variant="solid"
           :loading="teamStore.isLoading"

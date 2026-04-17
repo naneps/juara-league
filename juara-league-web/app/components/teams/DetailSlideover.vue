@@ -6,6 +6,7 @@ const emit = defineEmits(['closed', 'updated'])
 
 const teamStore = useTeamStore()
 const toast = useToast()
+const { t } = useI18n()
 const open = ref(false)
 const isLoadingDetail = ref(false)
 const detail = ref<Team | null>(null)
@@ -17,7 +18,7 @@ async function openFor(team: Team) {
   try {
     detail.value = await teamStore.fetchTeam(team.id)
   } catch {
-    toast.add({ title: 'Gagal memuat detail tim', color: 'error' })
+    toast.add({ title: t('teams.detail_slideover.failed_load'), color: 'error' })
   } finally {
     isLoadingDetail.value = false
   }
@@ -39,8 +40,8 @@ async function handleRemoveMember(member: TeamMember) {
       detail.value.members = detail.value.members.filter(m => m.id !== member.id)
     }
     toast.add({
-      title: 'Anggota dikeluarkan',
-      description: `${member.name} telah dikeluarkan dari tim`,
+      title: t('teams.detail_slideover.member_removed_title'),
+      description: t('teams.detail_slideover.member_removed_desc', { name: member.name }),
       color: 'success'
     })
   } catch (error: any) {
@@ -54,8 +55,8 @@ async function handleRemoveMember(member: TeamMember) {
 
 function onInviteSuccess() {
   toast.add({
-    title: 'Undangan terkirim',
-    description: 'Anggota akan menerima email undangan',
+    title: t('teams.invite_modal.success_title'),
+    description: t('teams.invite_modal.success_desc_simple'),
     color: 'success'
   })
 }
@@ -115,10 +116,10 @@ const avatarUrl = (name: string, logo?: string) =>
           <p v-if="detail.description" class="text-sm text-muted">
             {{ detail.description }}
           </p>
-          <p v-else class="text-sm text-muted italic">Tidak ada deskripsi</p>
+          <p v-else class="text-sm text-muted italic">{{ $t('common.no_description') }}</p>
 
           <div class="text-sm text-muted">
-            <span class="font-medium text-default">Kapten:</span>
+            <span class="font-medium text-default">{{ $t('teams.detail.role_owner') }}:</span>
             {{ detail.captain?.name ?? `User #${detail.captain_id}` }}
           </div>
         </div>
@@ -127,7 +128,7 @@ const avatarUrl = (name: string, logo?: string) =>
         <div class="flex gap-2 py-4 border-b border-default">
           <TeamsEditModal :team="detail" @success="onEditSuccess">
             <UButton
-              label="Edit Tim"
+              :label="$t('teams.edit_modal.title')"
               icon="i-lucide-pencil"
               color="neutral"
               variant="outline"
@@ -135,9 +136,9 @@ const avatarUrl = (name: string, logo?: string) =>
             />
           </TeamsEditModal>
 
-          <TeamsInviteModal :team-id="detail.id" @success="onInviteSuccess">
+          <TeamsInviteModal :team="detail" @success="onInviteSuccess">
             <UButton
-              label="Undang Anggota"
+              :label="$t('teams.invite_modal.title')"
               icon="i-lucide-user-plus"
               color="primary"
               variant="outline"
@@ -149,11 +150,11 @@ const avatarUrl = (name: string, logo?: string) =>
         <!-- Daftar Anggota -->
         <div class="py-4">
           <p class="text-sm font-semibold text-highlighted mb-3">
-            Anggota ({{ detail.members?.length ?? 0 }})
+            {{ $t('teams.detail.members_tab') }} ({{ detail.members?.length ?? 0 }})
           </p>
 
           <div v-if="!detail.members?.length" class="text-sm text-muted italic">
-            Belum ada anggota
+            {{ $t('teams.detail.no_members') }}
           </div>
 
           <ul v-else class="space-y-2">
@@ -173,7 +174,7 @@ const avatarUrl = (name: string, logo?: string) =>
                     {{ member.name }}
                     <UBadge
                       v-if="member.id === detail.captain_id"
-                      label="Kapten"
+                      :label="$t('teams.detail.role_owner')"
                       color="warning"
                       variant="subtle"
                       size="xs"

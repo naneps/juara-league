@@ -11,6 +11,7 @@ const emit = defineEmits(['update:modelValue', 'success'])
 
 const teamStore = useTeamStore()
 const toast = useToast()
+const { t } = useI18n()
 const { myTeams, isLoading: teamsLoading } = storeToRefs(teamStore)
 
 const isOpen = computed({
@@ -46,8 +47,8 @@ const handleSubmit = async () => {
     })
     
     toast.add({
-      title: 'Registrasi Berhasil!',
-      description: 'Pendaftaran Anda sedang menunggu moderasi.',
+      title: t('tournament_join.success_title'),
+      description: t('tournament_join.success_desc'),
       color: 'success'
     })
     
@@ -55,8 +56,8 @@ const handleSubmit = async () => {
     isOpen.value = false
   } catch (e: any) {
     toast.add({
-      title: 'Registrasi Gagal',
-      description: e.data?.message || 'Gagal mengirim pendaftaran',
+      title: t('tournament_join.failed_title'),
+      description: e.data?.message || t('tournament_join.failed_desc'),
       color: 'error'
     })
   } finally {
@@ -88,13 +89,13 @@ onMounted(async () => {
                 <UIcon :name="tournament.participant_type === 'team' ? 'i-lucide-users' : 'i-lucide-user'" class="text-primary-500 size-6" />
              </div>
              <UBadge :color="tournament.participant_type === 'team' ? 'primary' : 'neutral'" variant="subtle" class="rounded-full uppercase font-black tracking-widest text-[10px] px-3">
-                {{ tournament.participant_type === 'team' ? 'Team Registration' : 'Individual Registration' }}
+                {{ tournament.participant_type === 'team' ? $t('tournament_join.team_registration') : $t('tournament_join.individual_registration') }}
              </UBadge>
           </div>
           <h2 class="text-xl font-black text-neutral-900 dark:text-white uppercase tracking-tight leading-none mb-1">
-            Join {{ tournament.title }}
+            {{ $t('tournament_join.title_prefix') }} {{ tournament.title }}
           </h2>
-          <p class="text-neutral-500 font-medium text-xs">Silakan lengkapi konfirmasi pendaftaran di bawah ini.</p>
+          <p class="text-neutral-500 font-medium text-xs">{{ $t('tournament_join.desc_instruction') }}</p>
         </header>
 
         <!-- Team Selector Slot -->
@@ -104,19 +105,19 @@ onMounted(async () => {
                 <UIcon name="i-lucide-users-2" class="text-primary-400 size-5" />
              </div>
              <div>
-                <p class="text-[10px] font-black text-neutral-500 uppercase tracking-widest leading-none mb-1">Team Size Limit</p>
-                <p class="text-sm font-black text-white uppercase">{{ tournament.team_size || 'Unlimited' }} Anggota / Tim</p>
+                <p class="text-[10px] font-black text-neutral-500 uppercase tracking-widest leading-none mb-1">{{ $t('tournament_join.team_size_limit') }}</p>
+                <p class="text-sm font-black text-white uppercase">{{ tournament.team_size || $t('tournament_join.unlimited') }} {{ $t('tournament_join.members_per_team') }}</p>
              </div>
           </div>
 
           <div class="space-y-2">
-            <label class="text-[10px] font-black text-neutral-500 uppercase tracking-widest px-1">Pilih Tim Pendaftar</label>
+            <label class="text-[10px] font-black text-neutral-500 uppercase tracking-widest px-1">{{ $t('tournament_join.select_team_label') }}</label>
             <USelectMenu
               v-model="state.team_id"
               :items="myTeams"
               value-key="id"
               label-key="name"
-              placeholder="Pilih Tim Anda..."
+              :placeholder="$t('tournament_join.select_team_placeholder')"
               size="xl"
               class="w-full"
               :ui="{ base: 'rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border-neutral-200 dark:border-white/5' }"
@@ -128,7 +129,7 @@ onMounted(async () => {
             <div v-if="!myTeams.length && !teamsLoading" class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-3">
                 <UIcon name="i-lucide-alert-circle" class="text-amber-500 size-4 shrink-0 mt-0.5" />
                 <p class="text-[10px] text-amber-600 dark:text-amber-400 font-bold leading-normal">
-                    Anda belum memiliki tim yang aktif. Silakan buat tim di Dashboard sebelum mendaftar.
+                    {{ $t('tournament_join.no_teams_warning') }}
                 </p>
             </div>
           </div>
@@ -141,16 +142,16 @@ onMounted(async () => {
                 <UIcon name="i-lucide-user-check" class="text-primary-500 size-5" />
             </div>
             <p class="text-xs text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed">
-              Anda akan mendaftar sebagai **Individu**. Pastikan nama akun Anda sesuai dengan identitas asli.
+              {{ $t('tournament_join.individual_info') }}
             </p>
           </div>
         </div>
 
         <div class="space-y-2">
-          <label class="text-[10px] font-black text-neutral-500 uppercase tracking-widest px-1">Catatan Tambahan (Opsional)</label>
+          <label class="text-[10px] font-black text-neutral-500 uppercase tracking-widest px-1">{{ $t('tournament_join.notes_label') }}</label>
           <UTextarea
             v-model="state.notes"
-            placeholder="Tambahkan catatan jika ada..."
+            :placeholder="$t('tournament_join.notes_placeholder')"
             size="xl"
             class="w-full"
             :rows="3"
@@ -171,7 +172,7 @@ onMounted(async () => {
           :disabled="!canSubmit"
           @click="handleSubmit"
         >
-          Kirim Pendaftaran
+          {{ $t('tournament_join.submit_button') }}
         </UButton>
         <UButton
           color="neutral"
@@ -181,7 +182,7 @@ onMounted(async () => {
           class="rounded-2xl font-bold uppercase tracking-widest text-[10px] py-2"
           @click="isOpen = false"
         >
-          Batal
+          {{ $t('common.cancel') }}
         </UButton>
       </div>
     </template>

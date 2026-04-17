@@ -1,0 +1,631 @@
+{
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save Changes",
+    "refresh": "Refresh",
+    "loading": "Loading...",
+    "success": "Success",
+    "error": "Error",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "status": "Status",
+    "actions": "Actions",
+    "view_detail": "View Detail",
+    "no_description": "No description",
+    "logout": "Logout",
+    "profile": "Profile",
+    "fullscreen": "Fullscreen",
+    "confirm": "Confirm"
+  },
+  "dashboard": {
+    "overview": "Overview",
+    "participants": "Participants",
+    "stages": "Stages",
+    "matches": "Matches",
+    "bracket": "Bracket",
+    "staff": "Staff",
+    "title_matches": "Match List",
+    "subtitle_matches": "Manage and input match scores directly via this list.",
+    "select_stage": "Select Stage",
+    "refresh": "Refresh",
+    "select_stage_first": "Please select a stage first.",
+    "no_matches": "No matches in this stage.",
+    "start_stage_prompt": "Start the stage in the 'Stages' menu to generate schedule.",
+    "title_bracket": "Tournament Bracket",
+    "subtitle_bracket": "Visual representation and direct score management.",
+    "no_active_stage": "No active stages available."
+  },
+  "match": {
+    "round": "Round",
+    "manage": "Manage Match",
+    "live": "LIVE",
+    "upcoming": "UPCOMING",
+    "completed": "COMPLETED",
+    "bye": "BYE",
+    "first_to": "First to",
+    "match_champion": "Match Champion",
+    "pro_judge_info": "PRO-JUDGE INFO",
+    "pro_judge_desc": "Start the match to enable score inputs. Inputs are done per-game. The system automatically advances the winner once the win condition is met.",
+    "start_live": "Start Live Match",
+    "determine_winner": "Determine Winner for Game",
+    "pick": "Pick",
+    "submit_results": "Submit Game Results",
+    "close_monitor": "Close Monitor",
+    "score_p1": "Score P1",
+    "score_p2": "Score P2",
+    "match_progress": "Match Progress",
+    "bracket": {
+      "winners": "Winners Bracket",
+      "main": "Main Bracket",
+      "grand_final": "GRAND CHAMPIONSHIP",
+      "empty": "No matches in this stage yet",
+      "round": "Round",
+      "final": "Final",
+      "semi_final": "Semi Final",
+      "qualifiers": "Qualifiers",
+      "tbd": "TBD"
+    },
+    "toast": {
+      "start_success": "🔥 Match started!",
+      "start_success_desc": "Please input scores per game.",
+      "failed": "Failed",
+      "load_failed": "Failed to load matches"
+    },
+    "no_match_selected": "No match selected.",
+    "team_a": "TEAM A",
+    "team_b": "TEAM B",
+    "game_win": "Game Win",
+    "system_footer": "© Juara League Pro Judge v1.0",
+    "manage": "Manage",
+    "live": "LIVE"
+  },
+  "public": {
+    "live_matches": "Live Matches",
+    "no_live_matches": "No Live Matches",
+    "no_live_desc": "Start matches from the Organizer Dashboard to see them here.",
+    "versus": "versus",
+    "click_update": "Click to View",
+    "no_bracket": "No Bracket Yet",
+    "no_bracket_desc": "Bracket will be visible once the organizer starts the tournament stages."
+  },
+  "managers": {
+    "add_staff": "Invite Staff",
+    "waiting": "waiting",
+    "stages": {
+      "templates": {
+        "single_elim": {
+          "title": "Classic Playoff",
+          "desc": "Classic elimination system. Lose once and you're out.",
+          "default": "Playoff"
+        },
+        "double_elim": {
+          "title": "Double Chance",
+          "desc": "Upper & Lower Bracket. Gives a second chance.",
+          "default": "Final Playoff"
+        },
+        "round_robin": {
+          "title": "League / Group Phase",
+          "desc": "All participants play against each other.",
+          "default": "Group Stage"
+        },
+        "swiss": {
+          "title": "Elite Swiss",
+          "desc": "Play against opponents with similar records.",
+          "default": "Swiss Stage"
+        }
+      },
+      "statuses": {
+        "pending": "Not Started",
+        "ongoing": "Ongoing",
+        "completed": "Completed"
+      },
+      "config": {
+        "title": "Stage Configuration",
+        "subtitle": "Adjust stage details.",
+        "name_label": "Stage Name",
+        "name_placeholder": "Enter stage name...",
+        "bo_label": "BO Format",
+        "advance_label": "Advance Participants",
+        "groups_label": "Groups Count",
+        "per_group_label": "Participants / Group",
+        "submit": "Save Stage",
+        "select_template": "Select Stage Template",
+        "select_template_desc": "Use a template for quick setup.",
+        "use_template": "Use Template"
+      },
+      "toast": {
+        "add_success": "Stage successfully added.",
+        "add_failed": "Failed to add stage",
+        "delete_success": "Stage successfully deleted.",
+        "delete_failed": "Failed to delete stage",
+        "start_success": "Stage Started!",
+        "start_failed": "Failed to start stage",
+        "matches_gen": "{count} matches have been generated."
+      },
+      "confirm": {
+        "delete": "Delete this stage? All brackets in this stage will be lost.",
+        "start": "Start stage \"{name}\"? Bracket will be generated and cannot be changed."
+      },
+      "empty": {
+        "title": "No Stages Yet",
+        "desc": "Click the button above to start creating your tournament stages.",
+        "create_first": "Create First Stage"
+      },
+      "tips": {
+        "title": "Tips & Flow Examples",
+        "pattern": "Standard Pattern",
+        "p1": "Group Stage (Round Robin) to filter best teams.",
+        "p2": "Playoff (Single/Double Elim) as final round.",
+        "important": "IMPORTANT",
+        "important_desc": "Once the stage starts, the format and configuration cannot be changed. Make sure everything is correct before clicking \"Start Stage\"."
+      },
+      "actions": {
+        "start": "Start Stage",
+        "view_bracket": "View Bracket"
+      }
+    },
+    "roles": {
+      "co_organizer": "Co-Organizer",
+      "referee": "Referee"
+    },
+    "toast": {
+      "add_success_desc": "New staff has been added.",
+      "add_failed_desc": "Failed to add staff",
+      "remove_confirm": "Are you sure you want to remove this staff?",
+      "remove_success_desc": "Staff has been removed.",
+      "remove_failed_desc": "Failed to remove staff"
+    },
+    "staff_placeholder": "User Email",
+    "empty_staff": "No Staff Yet",
+    "empty_staff_desc": "You are currently alone in managing this tournament.",
+    "participant": "Participant",
+    "type": "Type",
+    "registered": "Registered",
+    "captain_prefix": "Capt:",
+    "no_contact_data": "No Contact Data",
+    "types": {
+      "team": "Team",
+      "individual": "Individual"
+    },
+    "statuses": {
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "paid": "Paid",
+      "pending": "Pending"
+    },
+    "tooltips": {
+      "disqualify": "Disqualify / Reject",
+      "restore": "Restore (Approve)"
+    },
+    "empty_participants": "No participants yet",
+    "empty_participants_desc": "Registered participants will appear here after the tournament is published.",
+    "manual_modal": {
+      "title": "Add Participant",
+      "subtitle": "Auto-create data via dashboard organizer.",
+      "team_name": "Team Name",
+      "team_name_desc": "Required for team-based tournaments.",
+      "captain_name": "Captain Name",
+      "full_name": "Full Name",
+      "name_desc": "Required to be displayed in the bracket.",
+      "email_desc": "Optional if phone number is filled.",
+      "phone_label": "Phone Number",
+      "phone_desc": "Optional if email is filled.",
+      "submit": "Add Participant",
+      "toast_missing_title": "Data Missing",
+      "toast_missing_desc": "Email or Phone Number is required.",
+      "toast_success_desc": "Manual participant successfully added.",
+      "toast_failed_desc": "Failed to register manual participant"
+    }
+  },
+  "home": {
+    "summary": "Overview",
+    "team_invites": "Team Invitations",
+    "create_tournament": "Create Tournament",
+    "notifications": "Notifications",
+    "stats": {
+      "total_teams": "Total Teams",
+      "registrations": "Registrations",
+      "prize_pool": "Total Prize Pool",
+      "matches": "Matches"
+    },
+    "matches_title": "Active Matches",
+    "no_matches": "No matches are currently running"
+  },
+  "sidebar": {
+    "admin_section": "Platform Management",
+    "admin_dashboard": "Admin Dashboard",
+    "tournament_moderation": "Tournament Moderation",
+    "user_management": "User Management",
+    "sports": "Sports",
+    "main_menu": "Main Menu",
+    "summary": "Overview",
+    "my_tournaments": "My Tournaments",
+    "participation_history": "Participation History",
+    "my_teams": "My Teams",
+    "notifications": "Notifications",
+    "team_invitations": "Team Invitations",
+    "settings": "Settings",
+    "profile": "Profile",
+    "members": "Members",
+    "security": "Security",
+    "platform": "Platform",
+    "homepage": "Homepage",
+    "search_placeholder": "Search navigation",
+    "cookie": {
+      "title": "We use first-party cookies to enhance your experience on our website.",
+      "accept": "Accept",
+      "opt_out": "Opt out"
+    }
+  },
+  "teams": {
+    "title": "Team Management",
+    "search_placeholder": "Search team name or slug...",
+    "cancel_all": "Cancel All",
+    "select_all": "Select All",
+    "delete_count": "Delete ({count})",
+    "filter_status": "Filter status",
+    "all_status": "All Status",
+    "active": "Active",
+    "pending": "Pending",
+    "disqualified": "Disqualified",
+    "status": {
+      "active": "Active",
+      "pending": "Pending",
+      "disqualified": "Disqualified"
+    },
+    "showing_teams": "Showing {count} teams",
+    "selected_count": "{count} selected",
+    "no_teams": "No teams yet",
+    "no_matches": "No teams match the filter.",
+    "start_creating": "Start by creating your first team.",
+    "create_new_team": "Create New Team",
+    "delete_team": "Delete Team",
+    "delete_confirm": "Are you sure you want to delete team \"{name}\"?",
+    "delete_undone": "This action cannot be undone. Only the captain can delete the team.",
+    "deleted_success": "{count} teams deleted",
+    "delete_failed": "Failed to delete",
+    "delete_captain_only": "Make sure you are the team captain",
+    "team_deleted": "Team \"{name}\" deleted",
+    "menu": {
+      "create": "Create team",
+      "manage": "Manage teams"
+    },
+    "detail": {
+      "role_owner": "Captain",
+      "members_tab": "Members",
+      "no_members": "No members yet",
+      "no_desc": "No description yet"
+    },
+    "detail_slideover": {
+      "failed_load": "Failed to load team details",
+      "member_removed_title": "Member Removed",
+      "member_removed_desc": "{name} was removed from the team"
+    },
+    "invite_modal": {
+      "title": "Invite Member",
+      "desc": "Invite a user to join your team by searching their name or email.",
+      "search_placeholder": "Search user by name or email...",
+      "submit": "Send Invite",
+      "success_title": "Invite Sent",
+      "success_desc": "{name} has been invited to join the team.",
+      "success_desc_simple": "User has been invited successfully.",
+      "failed_title": "Invite Failed"
+    },
+    "add_modal": {
+      "title": "Create New Team",
+      "cancel": "Cancel",
+      "submit": "Create Team"
+    },
+    "edit_modal": {
+      "title": "Edit Team"
+    }
+  },
+  "participations": {
+    "title": "Participation History",
+    "registered_on": "Registered on {date}",
+    "status": {
+      "pending": "Waiting",
+      "approved": "Confirmed",
+      "rejected": "Rejected",
+      "paid": "Paid"
+    },
+    "type": {
+      "team": "Team: {name}",
+      "individual": "Individual"
+    },
+    "no_participations": "Not Joined Yet",
+    "no_participations_desc": "You haven't registered for any tournaments yet. Find an interesting tournament and start competing!",
+    "find_tournament": "Find Tournaments"
+  },
+  "invitations": {
+    "title": "Team Invitations",
+    "all_invitations": "All Invitations",
+    "desc": "Manage invitations to join teams here. View pending list or check previous history.",
+    "tabs": {
+      "pending": "Pending Invitations",
+      "history": "History"
+    },
+    "no_pending": "No pending invitations",
+    "no_pending_desc": "You currently have no invitations to join any team."
+  },
+  "inbox": {
+    "title": "Messages & Invitations",
+    "tabs": {
+      "all": "All",
+      "unread": "Unread"
+    },
+    "mail": {
+      "mark_unread": "Mark as unread",
+      "mark_important": "Mark as important",
+      "star_thread": "Star thread",
+      "mute_thread": "Mute thread",
+      "toast_sent_title": "Email sent",
+      "toast_sent_desc": "Your email has been sent successfully",
+      "archive": "Archive",
+      "reply": "Reply",
+      "reply_to": "Reply to {name}",
+      "placeholder": "Write your reply...",
+      "attach": "Attach file",
+      "save_draft": "Save draft",
+      "send": "Send"
+    }
+  },
+  "settings": {
+    "profile": {
+      "title": "Profile",
+      "desc": "These informations will be displayed publicly.",
+      "name_label": "Name",
+      "name_desc": "Will appear on receipts, invoices, and other communication.",
+      "email_label": "Email",
+      "email_desc": "Used to sign in, for email receipts and product updates.",
+      "username_label": "Username",
+      "username_desc": "Your unique username for logging in and your profile URL.",
+      "avatar_label": "Avatar",
+      "avatar_desc": "JPG, GIF or PNG. 1MB Max.",
+      "bio_label": "Bio",
+      "bio_desc": "Brief description for your profile. URLs are hyperlinked.",
+      "phone_label": "Phone Number",
+      "phone_desc": "WhatsApp/Phone number for tournament coordination.",
+      "phone_placeholder": "Example: 08123456789",
+      "success": "Your profile has been updated.",
+      "failed": "Failed to update profile."
+    },
+    "members": {
+      "title": "Members",
+      "desc": "Invite new members by email address.",
+      "invite_button": "Invite people",
+      "search_placeholder": "Search members"
+    },
+    "notifications": {
+      "channels_title": "Notification channels",
+      "channels_desc": "Where can we notify you?",
+      "email_label": "Email",
+      "email_desc": "Receive a daily email digest.",
+      "desktop_label": "Desktop",
+      "desktop_desc": "Receive desktop notifications.",
+      "account_updates_title": "Account updates",
+      "account_updates_desc": "Receive updates about our platform.",
+      "weekly_digest_label": "Weekly digest",
+      "weekly_digest_desc": "Receive a weekly digest of news.",
+      "product_updates_label": "Product updates",
+      "product_updates_desc": "Receive a monthly email with all new features and updates.",
+      "important_updates_label": "Important updates",
+      "important_updates_desc": "Receive emails about important updates like security fixes, maintenance, etc."
+    },
+    "security": {
+      "title": "Security & Password",
+      "desc": "Confirm your current password before setting a new one.",
+      "current_password_label": "Current Password",
+      "current_password_placeholder": "Enter current password",
+      "new_password_label": "New Password",
+      "new_password_placeholder": "Enter new password",
+      "update_button": "Update Password",
+      "success": "Your password has been updated.",
+      "failed": "Failed to update password.",
+      "error_min_length": "Minimum 8 characters",
+      "error_must_be_different": "New password must be different from current password",
+      "delete_account_title": "Account",
+      "delete_account_desc": "No longer want to use our service? You can delete your account. This action cannot be undone. All data associated with this account will be permanently deleted.",
+      "delete_account_button": "Delete Account"
+    }
+  },
+  "tournament_manager": {
+    "title": "Tournament Management",
+    "create_button": "Create Tournament",
+    "search_placeholder": "Search tournaments...",
+    "filter_all": "All Status",
+    "filter_finished": "Finished",
+    "status": {
+      "draft": "Draft",
+      "open": "Open",
+      "ongoing": "Ongoing",
+      "finished": "Finished"
+    },
+    "manage_action": "Manage Tournament",
+    "delete_action": "Delete Tournament",
+    "no_results": "No Results",
+    "no_tournaments": "No Tournaments Yet",
+    "no_results_desc": "Try searching with other keywords.",
+    "no_tournaments_desc": "Start your competition adventure today.",
+    "create_first": "Create First Tournament"
+  },
+  "tournament_form": {
+    "edit_mode": "Edit Mode",
+    "draft_mode": "Draft Mode",
+    "edit_title": "Edit Tournament",
+    "create_title": "Create Tournament",
+    "new_tournament": "New Tournament",
+    "edit_info": "Change Information",
+    "config_title": "Tournament",
+    "config_subtitle": "Configuration",
+    "all_saved": "All changes saved permanently",
+    "auto_saved": "Data saved automatically as draft",
+    "section_identity": "Tournament Identity",
+    "section_schedule": "Execution Schedule",
+    "section_rules": "Rules & Logistics",
+    "field_title": "Tournament Title",
+    "field_title_placeholder": "Example: Juara Cup 2026",
+    "field_sport": "Sport",
+    "field_sport_placeholder": "Select Sport",
+    "field_sport_search": "Search sport...",
+    "field_category": "Category",
+    "field_category_placeholder": "Pro, Amateur, U-17...",
+    "field_enrollment": "Enrollment Mode",
+    "field_venue_type": "Location Type",
+    "field_participant_type": "Participant Type",
+    "field_team_size": "Players Per Team",
+    "field_description": "Description",
+    "field_description_placeholder": "Explain tournament details, participant requirements, and match rules...",
+    "field_banner": "Banner Link",
+    "field_reg_period": "Registration Period",
+    "field_reg_start": "Starts",
+    "field_reg_end": "Ends",
+    "field_start_at": "Tournament Starts",
+    "field_bracket": "Bracket Format",
+    "field_max_participants": "Max. Participants",
+    "field_prize": "Total Prize (IDR)",
+    "field_entry_fee": "Entry Fee (IDR)",
+    "field_entry_fee_free": "Free",
+    "field_prize_desc": "Prize Distribution Details",
+    "field_prize_desc_placeholder": "1st Place: Rp 1,000,000\n2nd Place: Rp 500,000...",
+    "field_venue": "Location / Venue",
+    "field_venue_placeholder": "Building name, street, city...",
+    "modes": {
+      "open": "Open",
+      "open_desc": "Anyone can register.",
+      "invite": "Invitation",
+      "invite_desc": "Only participants with invitations."
+    },
+    "venues": {
+      "online": "Online / Remote",
+      "offline": "Offline / On-site"
+    },
+    "participants": {
+      "individual": "Individual",
+      "team": "Team / Group"
+    },
+    "submit_save": "Save Changes",
+    "submit_publish": "Publish as Draft",
+    "submit_desc_save": "Changes will be applied immediately to this tournament.",
+    "submit_desc_publish": "Tournament will be saved as draft — you can edit before publishing.",
+    "preview_title": "Participant Preview",
+    "checklist_title": "Form Completion",
+    "checklist": {
+      "title": "Tournament title",
+      "sport": "Sport",
+      "start_at": "Start date",
+      "description": "Description"
+    },
+    "tips_title": "Tips",
+    "tips": [
+      "Use high-quality banners to increase participant appeal.",
+      "Allow at least 3 days between registration closing and the event date.",
+      "Clear descriptions reduce incoming questions from participants."
+    ],
+    "toast": {
+      "sport_required": "Sport must be selected",
+      "success_title": "Success!",
+      "update_success": "Tournament changes have been saved.",
+      "create_success": "Your tournament has been successfully created.",
+      "update_failed": "Failed to Update Tournament",
+      "create_failed": "Failed to Create Tournament",
+      "system_error": "A system error occurred."
+    }
+  },
+  "tournament_card": {
+    "view_tournament": "View Tournament",
+    "prize_pool": "Prize Pool",
+    "slots": "Slots",
+    "type_format": "Type & Format",
+    "location_venue": "Location & Venue",
+    "organizer_label": "Organizer",
+    "entry_fee_label": "Entry Fee",
+    "free": "FREE",
+    "bracket_types": {
+      "single": "Single Elimination",
+      "double": "Double Elimination",
+      "round_robin": "Round Robin"
+    }
+  },
+  "tournament_join": {
+    "title_prefix": "Join",
+    "desc_instruction": "Please complete the registration confirmation below.",
+    "team_registration": "Team Registration",
+    "individual_registration": "Individual Registration",
+    "team_size_limit": "Team Size Limit",
+    "unlimited": "Unlimited",
+    "members_per_team": "Members / Team",
+    "select_team_label": "Select Registering Team",
+    "select_team_placeholder": "Select your team...",
+    "no_teams_warning": "You don't have an active team yet. Please create a team in the Dashboard before registering.",
+    "individual_info": "You are registering as an **Individual**. Make sure your account name matches your real identity.",
+    "notes_label": "Additional Notes (Optional)",
+    "notes_placeholder": "Add notes if any...",
+    "submit_button": "Submit Registration",
+    "success_title": "Registration Successful!",
+    "success_desc": "Your registration is waiting for moderation.",
+    "failed_title": "Registration Failed",
+    "failed_desc": "Failed to send registration"
+  },
+  "usermenu": {
+    "profile": "Profile",
+    "settings": "Settings",
+    "admin_panel": "Admin Panel",
+    "theme": "Theme",
+    "appearance": "Appearance",
+    "light": "Light",
+    "dark": "Dark",
+    "logout": "Logout",
+    "fallback_name": "Juara User"
+  },
+  "tournament_detail": {
+    "notices": {
+      "under_review": "Under Review",
+      "under_review_desc": "This tournament requires manual review by the Juara League team. You can continue preparing stages and other details, but the Publish feature will be available once approved.",
+      "rejected": "Tournament Rejected",
+      "rejected_desc": "Sorry, your tournament was not approved by the platform. Please contact support or re-check your tournament description."
+    },
+    "publish_modal": {
+      "title": "Confirm Publish",
+      "subtitle": "Are you sure you want to publish this tournament?",
+      "after_publish": "After publishing:",
+      "item1": "Visible to everyone publicly.",
+      "item2": "Participants can start registering.",
+      "item3": "Some settings cannot be changed anymore.",
+      "confirm": "Yes, Publish"
+    },
+    "stats": {
+      "participants": "Participants",
+      "prize": "Total Prize",
+      "fee": "Entry Fee",
+      "reg_close": "Reg. Closing",
+      "kickoff": "Kickoff",
+      "from": "from",
+      "prize_pool_sub": "Prize pool",
+      "per_participant": "Per participant",
+      "reg_deadline": "Registration deadline",
+      "first_day": "First day of competition",
+      "free": "Free"
+    },
+    "sections": {
+      "rules": "Description & Rules",
+      "prizes": "Prize Breakdown"
+    },
+    "empty": {
+      "desc": "No description yet.",
+      "prizes": "No prize details yet.",
+      "not_found": "Tournament not found."
+    },
+    "toast": {
+      "reviewing": "Awaiting Review",
+      "reviewing_desc": "Your tournament is waiting for review from our team.",
+      "rejected": "Tournament Rejected",
+      "rejected_desc": "Sorry, this tournament has been rejected.",
+      "publish_success": "Successfully published!",
+      "publish_success_desc": "Tournament is now open for registration.",
+      "publish_failed": "Failed to publish"
+    },
+    "live_subtitle": "Update scores & monitor active matches"
+  }
+}

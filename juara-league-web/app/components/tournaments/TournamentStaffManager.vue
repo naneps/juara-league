@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useTournamentStore } from '~/stores/tournamentStore'
 
+const { t } = useI18n()
+
 const props = defineProps<{
   tournamentSlug: string
   initialStaff?: any[]
@@ -15,13 +17,13 @@ const newStaff = ref({
   role: 'referee'
 })
 
-const roles = [
-  { label: 'Co-Organizer', value: 'co_organizer' },
-  { label: 'Referee', value: 'referee' }
-]
+const roles = computed(() => [
+  { label: t('managers.roles.co_organizer'), value: 'co_organizer' },
+  { label: t('managers.roles.referee'), value: 'referee' }
+])
 
 const selectedRole = computed({
-  get: () => roles.find(r => r.value === newStaff.value.role) || roles[0],
+  get: () => roles.value.find(r => r.value === newStaff.value.role) || roles.value[0],
   set: (val: any) => { if (val) newStaff.value.role = val.value }
 })
 
@@ -40,30 +42,30 @@ const addStaff = async () => {
   isSubmitting.value = true
   try {
     await tournamentStore.addStaff(props.tournamentSlug, newStaff.value)
-    useToast().add({ title: 'Berhasil', description: 'Staf baru telah ditambahkan.', color: 'success' })
+    useToast().add({ title: t('common.success'), description: t('managers.toast.add_success_desc'), color: 'success' })
     newStaff.value.email = ''
     await fetchStaff()
   } catch (e: any) {
-    useToast().add({ title: 'Gagal', description: e.data?.message || 'Gagal menambahkan staf', color: 'error' })
+    useToast().add({ title: t('common.error'), description: e.data?.message || t('managers.toast.add_failed_desc'), color: 'error' })
   } finally {
     isSubmitting.value = false
   }
 }
 
 const removeStaff = async (userId: number) => {
-  if (!confirm('Apakah Anda yakin ingin menghapus staf ini?')) return
+  if (!confirm(t('managers.toast.remove_confirm'))) return
   
   try {
     await tournamentStore.removeStaff(props.tournamentSlug, userId)
-    useToast().add({ title: 'Berhasil', description: 'Staf telah dihapus.', color: 'success' })
+    useToast().add({ title: t('common.success'), description: t('managers.toast.remove_success_desc'), color: 'success' })
     await fetchStaff()
   } catch (e: any) {
-    useToast().add({ title: 'Gagal', description: e.data?.message || 'Gagal menghapus staf', color: 'error' })
+    useToast().add({ title: t('common.error'), description: e.data?.message || t('managers.toast.remove_failed_desc'), color: 'error' })
   }
 }
 
 const getRoleLabel = (role: string) => {
-  return roles.find(r => r.value === role)?.label || role
+  return roles.value.find(r => r.value === role)?.label || role
 }
 </script>
 
@@ -71,14 +73,14 @@ const getRoleLabel = (role: string) => {
   <div class="space-y-12">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div>
-        <h2 class="text-2xl font-black text-white uppercase tracking-tight mb-2">Manajemen Staf</h2>
-        <p class="text-neutral-500 font-medium text-sm">Kelola tim yang membantu Anda menyelenggarakan turnamen ini.</p>
+        <h2 class="text-2xl font-black text-white uppercase tracking-tight mb-2">{{ $t('managers.staff_title') }}</h2>
+        <p class="text-neutral-500 font-medium text-sm">{{ $t('managers.staff_desc') }}</p>
       </div>
       
       <div class="flex items-center gap-2 bg-neutral-900/50 p-2 rounded-2xl ring-1 ring-white/5">
         <UInput 
           v-model="newStaff.email" 
-          placeholder="Email Pengguna" 
+          :placeholder="$t('managers.staff_placeholder')" 
           variant="none"
           class="min-w-[250px]"
           :disabled="isSubmitting"
@@ -86,7 +88,7 @@ const getRoleLabel = (role: string) => {
         <USelectMenu 
           v-model="selectedRole" 
           :items="roles" 
-          class="w-40"
+          class="w-48"
           variant="none"
         />
         <UButton 
@@ -96,7 +98,7 @@ const getRoleLabel = (role: string) => {
           :loading="isSubmitting"
           @click="addStaff"
         >
-          Tambah
+          {{ $t('managers.add_staff') }}
         </UButton>
       </div>
     </div>
@@ -142,8 +144,8 @@ const getRoleLabel = (role: string) => {
       <div class="bg-neutral-900/50 p-10 rounded-full mb-8 ring-1 ring-white/5 inline-block mx-auto">
         <UIcon name="i-lucide-users-2" class="size-16 text-neutral-800" />
       </div>
-      <h3 class="text-xl font-black text-white mb-2 uppercase tracking-tight">Belum Ada Staf</h3>
-      <p class="text-neutral-600 font-bold uppercase tracking-widest text-[10px]">Anda masih sendirian dalam mengelola turnamen ini.</p>
+      <h3 class="text-xl font-black text-white mb-2 uppercase tracking-tight">{{ $t('managers.empty_staff') }}</h3>
+      <p class="text-neutral-600 font-bold uppercase tracking-widest text-[10px]">{{ $t('managers.empty_staff_desc') }}</p>
     </div>
   </div>
 </template>
