@@ -20,9 +20,63 @@ export interface Stage {
   id: string;
   tournament_id: string;
   name: string;
-  type: string;
+  type: 'single_elim' | 'double_elim' | 'round_robin' | 'swiss';
+  status: 'pending' | 'ongoing' | 'completed';
+  bo_format: 'bo1' | 'bo3' | 'bo5' | 'bo7';
+  participants_advance?: number;
+  groups_count?: number;
+  participants_per_group?: number;
   order: number;
   settings?: any;
+  groups?: Group[];
+  matches?: TournamentMatch[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Group {
+  id: string;
+  stage_id: string;
+  name: string;
+  order: number;
+  matches?: TournamentMatch[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TournamentMatch {
+  id: string;
+  stage_id: string;
+  group_id?: string;
+  round: number;
+  match_number: number;
+  participant_1?: Participant;
+  participant_2?: Participant;
+  winner?: Participant;
+  participant_1_id?: string;
+  participant_2_id?: string;
+  winner_id?: string;
+  status: 'upcoming' | 'ongoing' | 'completed' | 'bye';
+  bracket_side?: 'upper' | 'lower' | 'grand_final';
+  next_match_winner_id?: string;
+  next_match_loser_id?: string;
+  scores?: { participant_1: number; participant_2: number };
+  games?: Game[];
+  scheduled_at?: string;
+  completed_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Game {
+  id: string;
+  match_id: string;
+  game_number: number;
+  winner?: Participant;
+  winner_id?: string;
+  score_p1?: number;
+  score_p2?: number;
+  status: 'created' | 'corrected';
   created_at: string;
   updated_at: string;
 }

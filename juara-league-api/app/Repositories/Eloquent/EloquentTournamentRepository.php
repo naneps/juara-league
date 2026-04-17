@@ -18,9 +18,12 @@ class EloquentTournamentRepository implements TournamentRepositoryInterface
         return Tournament::find($id);
     }
 
-    public function findBySlug(string $slug): ?Tournament
+    public function findBySlug(string $slug, array $includes = []): ?Tournament
     {
-        return Tournament::with(['user', 'sport'])->where('slug', $slug)->first();
+        $defaultIncludes = ['user', 'sport'];
+        $relations = array_unique(array_merge($defaultIncludes, $includes));
+        
+        return Tournament::with($relations)->where('slug', $slug)->first();
     }
 
     public function findByUserId(string $userId, int $perPage = 15): LengthAwarePaginator

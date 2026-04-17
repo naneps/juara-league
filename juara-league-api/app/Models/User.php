@@ -66,7 +66,8 @@ class User extends Authenticatable implements MustVerifyEmail
     public function teams(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Team::class, 'team_members')
-            ->withPivot('joined_at')
+            ->using(TeamMember::class)
+            ->withPivot('id', 'joined_at')
             ->withTimestamps();
     }
 

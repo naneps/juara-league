@@ -43,9 +43,10 @@ class TournamentController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $slug): TournamentResource
+    public function show(Request $request, string $slug): TournamentResource
     {
-        $tournament = $this->tournamentService->getTournamentBySlug($slug);
+        $includes = $request->has('include') ? explode(',', $request->query('include')) : [];
+        $tournament = $this->tournamentService->getTournamentBySlug($slug, $includes);
         
         if (!$tournament) {
              throw new \App\Exceptions\TournamentException('Turnamen tidak ditemukan.', 'TOURNAMENT_NOT_FOUND', 404);

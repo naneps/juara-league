@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useAuth } from '~/composables/useAuth'
 import { useTournamentStore } from '~/stores/tournamentStore'
-import type { Tournament } from '~/types/tournament'
+import type { Tournament, Stage, TournamentMatch } from '~/types/tournament'
 import { getTournamentStatus } from '~/utils/tournamentStatus'
 
 const route = useRoute()
@@ -16,6 +16,13 @@ const tournamentStatus = computed(() => getTournamentStatus(tournament.value?.st
 const { data, refresh } = await useAsyncData(`tournament-${route.params.slug}`, () => 
   tournamentStore.getBySlug(route.params.slug as string)
 )
+
+// Keep tournament ref in sync with async data
+watch(data, (newData) => {
+  if (newData) {
+    tournament.value = newData as Tournament
+  }
+}, { immediate: true })
 
 if (data.value) {
   tournament.value = data.value as Tournament
@@ -44,9 +51,6 @@ const userParticipation = computed(() => {
 
 const handleJoinSuccess = async () => {
   await refresh()
-  if (data.value) {
-    tournament.value = data.value as any
-  }
 }
 
 const publish = async () => {
@@ -55,9 +59,6 @@ const publish = async () => {
   try {
     await tournamentStore.publishTournament(tournament.value.slug)
     await refresh()
-    if (data.value) {
-      tournament.value = data.value as Tournament
-    }
     isPublishModalOpen.value = false
     useToast().add({ title: 'Berhasil!', description: 'Turnamen telah dipublikasikan ke publik.', color: 'success' })
   } catch (e: any) {
@@ -70,9 +71,14 @@ const publish = async () => {
 const tabs = computed(() => {
   const items = [
     { label: 'Informasi', icon: 'i-lucide-info', slot: 'info' },
-    { label: 'Braket (Demo)', icon: 'i-lucide-git-branch', slot: 'bracket' },
+    { label: 'Bracket', icon: 'i-lucide-git-branch', slot: 'bracket' },
     { label: 'Partisipan', icon: 'i-lucide-users', slot: 'participants' }
   ]
+
+  // Add Live tab if there are ongoing matches OR if staff
+  if (liveMatches.value.length > 0 || isOwner.value) {
+    items.splice(1, 0, { label: 'Laga Berjalan', icon: 'i-lucide-play-circle', slot: 'live' })
+  }
 
   if (isOwner.value) {
     items.splice(1, 0, { label: 'Manajemen Tahapan', icon: 'i-lucide-settings-2', slot: 'management' })
@@ -94,12 +100,73 @@ const formatDate = (dateString?: string) => {
   })
 }
 
-// Dummy Bracket Data (since Modul 3 is not yet implemented)
-const dummyBracket = [
-  { id: 1, teamA: 'Team Alpha', teamB: 'Team Beta', scoreA: 2, scoreB: 1, status: 'finished' },
-  { id: 2, teamA: 'Team Gamma', teamB: 'Team Delta', scoreA: 0, scoreB: 2, status: 'finished' },
-  { id: 3, teamA: 'Team Alpha', teamB: 'Team Delta', scoreA: null, scoreB: null, status: 'upcoming' }
-]
+// Bracket state
+const selectedStageId = ref<string | null>(null)
+const selectedStage = computed(() =>
+  tournament.value?.stages?.find((s: Stage) => s.id === selectedStageId.value) || null
+)
+const ongoingStages = computed(() =>
+  (tournament.value?.stages || []).filter((s: Stage) => s.status === 'ongoing' || s.status === 'completed')
+)
+const activeTabIndex = ref(0)
+const liveMatches = ref<TournamentMatch[]>([])
+const isLoadingLiveMatches = ref(false)
+
+const fetchLiveMatches = async () => {
+  if (!tournament.value) return
+  isLoadingLiveMatches.value = true
+  try {
+    // We'll fetch matches for all ongoing stages
+    const results = await Promise.all(
+      ongoingStages.value
+        .filter(s => s.status === 'ongoing')
+        .map(s => tournamentStore.fetchMatches(tournament.value!.slug, s.id, { status: 'ongoing' }))
+    )
+    liveMatches.value = results.flat()
+  } catch (e) {
+    console.error('Failed to fetch live matches', e)
+  } finally {
+    isLoadingLiveMatches.value = false
+  }
+}
+
+// Watch for stage status changes to refresh live matches
+watch([() => tournament.value?.stages, () => activeTabIndex.value], () => {
+  const liveTabIndex = tabs.value.findIndex(t => t.slot === 'live')
+  if (activeTabIndex.value === liveTabIndex) {
+    fetchLiveMatches()
+  }
+}, { deep: true })
+const isMatchModalOpen = ref(false)
+const matchModalRef = ref<any>(null)
+const bracketRef = ref<any>(null)
+
+const handleMatchClick = (match: TournamentMatch) => {
+  matchModalRef.value?.open(match)
+}
+
+const handleStageStarted = async (stageId: string) => {
+  selectedStageId.value = stageId
+  await refresh()
+  
+  // Switch to Bracket tab
+  const bracketTabIndex = tabs.value.findIndex(t => t.slot === 'bracket')
+  if (bracketTabIndex !== -1) {
+    activeTabIndex.value = bracketTabIndex
+  }
+}
+
+const handleMatchUpdated = () => {
+  bracketRef.value?.fetchMatches()
+  fetchLiveMatches()
+}
+
+// Auto-select first ongoing stage
+watchEffect(() => {
+  if (!selectedStageId.value && ongoingStages.value.length > 0) {
+    selectedStageId.value = ongoingStages.value[0].id
+  }
+})
 </script>
 
 <template>
@@ -204,9 +271,79 @@ const dummyBracket = [
 
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 mt-20">
-      <UTabs :items="tabs" :ui="{ 
+      <UTabs v-model="activeTabIndex" :items="tabs" :ui="{ 
         list: 'bg-neutral-900/50 p-2 rounded-2xl ring-1 ring-white/5 inline-flex mb-12'
       }">
+        <template #live>
+          <div class="py-8 space-y-8">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-2xl font-black text-white uppercase tracking-tight">Pertandingan Berlangsung</h2>
+                <p class="text-neutral-500 text-sm font-medium mt-1">Pantau dan update skor pertandingan yang sedang berjalan.</p>
+              </div>
+              <UButton 
+                variant="ghost" 
+                color="neutral" 
+                icon="i-lucide-refresh-cw" 
+                :loading="isLoadingLiveMatches"
+                @click="fetchLiveMatches"
+              >
+                Refresh
+              </UButton>
+            </div>
+
+            <div v-if="isLoadingLiveMatches" class="py-20 flex justify-center">
+              <UIcon name="i-lucide-loader-2" class="size-10 text-primary-500 animate-spin" />
+            </div>
+
+            <div v-else-if="liveMatches.length === 0" class="bg-neutral-900/40 border border-white/5 rounded-[2rem] p-20 text-center">
+              <UIcon name="i-lucide-play-circle" class="size-16 text-neutral-800 mb-6 mx-auto" />
+              <p class="text-neutral-500 font-bold uppercase tracking-widest">Tidak Ada Laga Aktif</p>
+              <p class="text-neutral-600 text-sm max-w-sm mx-auto mt-2">Mulai pertandingan dari tab Bracket atau Manajemen Tahapan untuk melihatnya di sini.</p>
+            </div>
+
+            <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <button
+                v-for="match in liveMatches"
+                :key="match.id"
+                @click="handleMatchClick(match)"
+                class="group relative bg-neutral-900 border border-white/5 rounded-[1.5rem] p-6 text-left hover:border-primary-500/30 transition-all overflow-hidden"
+              >
+                <!-- Decorative background pulse -->
+                <div class="absolute -right-10 -top-10 size-40 bg-primary-500/5 blur-3xl group-hover:bg-primary-500/10 transition-all"></div>
+                
+                <div class="flex items-center justify-between mb-6 relative">
+                  <UBadge color="primary" variant="subtle" class="animate-pulse px-3 py-1 text-[10px] font-black uppercase tracking-widest">
+                    LIVE NOW
+                  </UBadge>
+                  <span class="text-[10px] font-black text-neutral-500 uppercase tracking-widest">M{{ match.match_number }} · Round {{ match.round }}</span>
+                </div>
+
+                <div class="space-y-4 relative">
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm font-black text-white truncate max-w-[150px]">{{ match.participant_1?.team?.name || match.participant_1?.user?.name || 'TBD' }}</span>
+                    <span class="text-2xl font-black text-primary-400">{{ match.scores?.participant_1 ?? 0 }}</span>
+                  </div>
+                  <div class="flex items-center gap-4">
+                    <div class="h-px flex-grow bg-white/5"></div>
+                    <span class="text-[10px] font-black text-neutral-700 uppercase tracking-widest italic">versus</span>
+                    <div class="h-px flex-grow bg-white/5"></div>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm font-black text-white truncate max-w-[150px]">{{ match.participant_2?.team?.name || match.participant_2?.user?.name || 'TBD' }}</span>
+                    <span class="text-2xl font-black text-primary-400">{{ match.scores?.participant_2 ?? 0 }}</span>
+                  </div>
+                </div>
+
+                <div class="mt-8 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-neutral-600 border-t border-white/5 pt-4">
+                  <span>Klik untuk Update</span>
+                  <UIcon name="i-lucide-chevron-right" class="size-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </button>
+            </div>
+          </div>
+        </template>
+
         <template #info>
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 pt-4">
             <!-- Left: Description -->
@@ -354,7 +491,8 @@ const dummyBracket = [
           <div class="pt-8">
             <TournamentsTournamentStageManager 
               :tournament-slug="tournament!.slug" 
-              :initial-stages="tournament!.stages" 
+              :initial-stages="tournament!.stages"
+              @stage-started="handleStageStarted"
             />
           </div>
         </template>
@@ -369,16 +507,60 @@ const dummyBracket = [
         </template>
 
         <template #bracket>
-          <div class="py-12 flex flex-col items-center">
-            <h2 class="text-2xl font-black text-white uppercase tracking-tight mb-4">Bracket Visualizer</h2>
-            <p class="text-neutral-500 mb-12">Visualisasi struktur turnamen saat ini.</p>
-            <div class="bg-neutral-900/40 p-12 rounded-[3rem] border border-white/5 w-full min-h-[500px] flex items-center justify-center overflow-auto">
-              <!-- Placeholder for Interactive Bracket -->
-              <div class="text-center">
-                <UIcon name="i-lucide-git-merge" class="size-20 text-neutral-800 mb-6" />
-                <p class="text-neutral-600 font-bold uppercase tracking-widest">Integrasi Modul 3 & 4 Segera Hadir</p>
+          <div class="py-8">
+            <div class="flex items-center justify-between mb-8">
+              <div>
+                <h2 class="text-2xl font-black text-white uppercase tracking-tight">Bracket</h2>
+                <p class="text-neutral-500 text-sm mt-1">Visualisasi struktur turnamen saat ini.</p>
+              </div>
+              <!-- Stage Selector -->
+              <div v-if="ongoingStages.length > 1" class="flex items-center gap-2">
+                <button
+                  v-for="s in ongoingStages"
+                  :key="s.id"
+                  @click="selectedStageId = s.id"
+                  :class="[
+                    'px-4 py-2 rounded-xl text-xs font-bold border transition-all',
+                    selectedStageId === s.id
+                      ? 'border-primary-500 bg-primary-500/10 text-primary-400'
+                      : 'border-neutral-700 text-neutral-500 hover:border-primary-500/50'
+                  ]"
+                >
+                  {{ s.name }}
+                </button>
               </div>
             </div>
+
+            <div class="bg-neutral-900/40 p-6 md:p-10 rounded-[2rem] border border-white/5 w-full min-h-[400px] overflow-auto">
+              <template v-if="selectedStage">
+                <TournamentsBracketVisualizer
+                  ref="bracketRef"
+                  :tournament-slug="tournament!.slug"
+                  :stage="selectedStage"
+                  :is-staff="isOwner"
+                  @match-click="handleMatchClick"
+                />
+              </template>
+              <template v-else>
+                <div class="flex flex-col items-center justify-center py-20 text-center">
+                  <UIcon name="i-lucide-git-merge" class="size-16 text-neutral-800 mb-6" />
+                  <p class="text-neutral-600 font-bold uppercase tracking-widest mb-2">Belum Ada Bracket</p>
+                  <p class="text-neutral-700 text-sm max-w-sm">Mulai babak di tab "Manajemen Tahapan" untuk melihat bracket di sini.</p>
+                </div>
+              </template>
+            </div>
+
+            <!-- Match Detail Modal -->
+            <TournamentsMatchDetailModal
+              ref="matchModalRef"
+              v-model="isMatchModalOpen"
+              :tournament-slug="tournament!.slug"
+              :stage-id="selectedStage?.id || ''"
+              :bo-format="selectedStage?.bo_format || 'bo1'"
+              :is-staff="isOwner"
+              :is-owner="isOwner"
+              @updated="handleMatchUpdated"
+            />
           </div>
         </template>
 

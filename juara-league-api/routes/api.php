@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\TournamentController;
 use App\Http\Controllers\Api\V1\TournamentStaffController;
 use App\Http\Controllers\Api\V1\StageController;
+use App\Http\Controllers\Api\V1\MatchController;
 use App\Http\Controllers\Api\V1\ParticipantController;
 use App\Http\Controllers\Api\V1\VerificationController;
 use App\Http\Controllers\Api\V1\FileController;
@@ -31,6 +32,9 @@ Route::prefix('v1')->group(function () {
     Route::get('/tournaments', [TournamentController::class, 'index']);
     Route::get('/tournaments/{slug}', [TournamentController::class, 'show']);
     Route::get('/tournaments/{tournament:slug}/stages', [StageController::class, 'index']);
+    Route::get('/tournaments/{tournament:slug}/stages/{stage}', [StageController::class, 'show']);
+    Route::get('/tournaments/{tournament:slug}/stages/{stage}/matches', [MatchController::class, 'index']);
+    Route::get('/tournaments/{tournament:slug}/stages/{stage}/matches/{match}', [MatchController::class, 'show']);
     Route::get('/tournaments/{tournament:slug}/participants', [ParticipantController::class, 'index']);
 
     Route::get('/sports', [\App\Http\Controllers\Api\V1\SportController::class, 'index']);
@@ -69,8 +73,16 @@ Route::prefix('v1')->group(function () {
 
         // Stage Management
         Route::post('/tournaments/{tournament:slug}/stages', [StageController::class, 'store']);
-        Route::put('/stages/{stage}', [StageController::class, 'update']);
-        Route::delete('/stages/{stage}', [StageController::class, 'destroy']);
+        Route::put('/tournaments/{tournament:slug}/stages/{stage}', [StageController::class, 'update']);
+        Route::delete('/tournaments/{tournament:slug}/stages/{stage}', [StageController::class, 'destroy']);
+        Route::post('/tournaments/{tournament:slug}/stages/{stage}/seed', [StageController::class, 'seed']);
+        Route::post('/tournaments/{tournament:slug}/stages/{stage}/start', [StageController::class, 'start']);
+        Route::post('/tournaments/{tournament:slug}/stages/{stage}/advance', [StageController::class, 'advance']);
+
+        // Match & Game Management
+        Route::patch('/tournaments/{tournament:slug}/stages/{stage}/matches/{match}', [MatchController::class, 'update']);
+        Route::post('/tournaments/{tournament:slug}/stages/{stage}/matches/{match}/games', [MatchController::class, 'storeGame']);
+        Route::put('/tournaments/{tournament:slug}/stages/{stage}/matches/{match}/games/{game}', [MatchController::class, 'updateGame']);
 
         // Participant Management
         Route::get('/my-participations', [ParticipantController::class, 'mine']);

@@ -11,7 +11,7 @@ interface TournamentRepositoryInterface
 
     public function findById(string $id): ?Tournament;
 
-    public function findBySlug(string $slug): ?Tournament;
+    public function findBySlug(string $slug, array $includes = []): ?Tournament;
 
     public function findByUserId(string $userId, int $perPage = 15): LengthAwarePaginator;
 

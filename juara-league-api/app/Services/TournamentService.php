@@ -21,9 +21,9 @@ class TournamentService
         return $this->tournamentRepository->all($perPage);
     }
 
-    public function getTournamentBySlug(string $slug): ?Tournament
+    public function getTournamentBySlug(string $slug, array $includes = []): ?Tournament
     {
-        return $this->tournamentRepository->findBySlug($slug);
+        return $this->tournamentRepository->findBySlug($slug, $includes);
     }
 
     public function getUserTournaments(string $userId, int $perPage = 15): LengthAwarePaginator
