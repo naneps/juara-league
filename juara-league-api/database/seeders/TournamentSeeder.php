@@ -11,24 +11,23 @@ use Illuminate\Database\Seeder;
 
 class TournamentSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         $organizer = User::where('email', 'organizer@juara-league.id')->first();
         $sports = Sport::all();
         $players = User::where('id', '!=', $organizer->id)->get();
 
-        // SCENARIO 1: Draft Tournaments (2)
-        Tournament::factory()->count(2)->create([
+        $this->command->info('🏆 Seeding realistic tournaments...');
+
+        // SCENARIO 1: Draft Tournaments (3)
+        Tournament::factory()->count(3)->create([
             'user_id' => $organizer->id,
             'status' => 'draft',
             'sport_id' => $sports->random()->id,
         ]);
 
-        // SCENARIO 2: Registration Open (5)
-        $registrations = Tournament::factory()->count(5)->create([
+        // SCENARIO 2: Registration Open (8)
+        $registrations = Tournament::factory()->count(8)->create([
             'user_id' => $organizer->id,
             'status' => 'registration',
             'sport_id' => $sports->random()->id,
@@ -38,55 +37,109 @@ class TournamentSeeder extends Seeder
             $this->seedParticipants($tournament, $players);
         }
 
-        // SCENARIO 3: Ongoing (3)
-        $ongoing = Tournament::factory()->count(3)->create([
+        // SCENARIO 3: Ongoing (5)
+        $ongoing = Tournament::factory()->count(5)->create([
             'user_id' => $organizer->id,
             'status' => 'ongoing',
             'sport_id' => $sports->random()->id,
         ]);
 
         foreach ($ongoing as $tournament) {
-            $this->seedParticipants($tournament, $players, true); // More likely to be approved
+            $participants = $this->seedParticipants($tournament, $players, true);
+            $this->seedStagesAndMatches($tournament, $participants, 'ongoing');
         }
 
-        // SCENARIO 4: Completed (2)
-        $completed = Tournament::factory()->count(2)->create([
+        // SCENARIO 4: Completed (4)
+        $completed = Tournament::factory()->count(4)->create([
             'user_id' => $organizer->id,
             'status' => 'completed',
             'sport_id' => $sports->random()->id,
         ]);
 
         foreach ($completed as $tournament) {
-            $this->seedParticipants($tournament, $players, true);
+            $participants = $this->seedParticipants($tournament, $players, true);
+            $this->seedStagesAndMatches($tournament, $participants, 'completed');
         }
 
-        // SCENARIO 5: Other People's Tournaments (5)
-        Tournament::factory()->count(5)->create();
+        // SCENARIO 5: Other People's Tournaments (10)
+        Tournament::factory()->count(10)->create();
     }
 
-    private function seedParticipants($tournament, $players, $mostlyApproved = false): void
+    private function seedParticipants($tournament, $players, $mostlyApproved = false): \Illuminate\Support\Collection
     {
-        $count = rand(4, 12);
-        $shuffledPlayers = $players->shuffle()->take($count);
+        $targetCount = $tournament->max_participants;
+        $shuffledPlayers = $players->shuffle()->take($targetCount);
+        $participants = collect();
 
         foreach ($shuffledPlayers as $player) {
-            $status = $mostlyApproved ? 'approved' : collect(['pending', 'approved', 'rejected'])->random();
+            $status = $mostlyApproved ? 'approved' : collect(['pending', 'approved', 'approved', 'rejected'])->random();
             
             if ($tournament->participant_type === 'team') {
                 $team = Team::factory()->create(['captain_id' => $player->id]);
-                Participant::factory()->create([
+                $participant = Participant::factory()->create([
                     'tournament_id' => $tournament->id,
                     'user_id' => $player->id,
                     'team_id' => $team->id,
                     'status' => $status,
                 ]);
             } else {
-                Participant::factory()->create([
+                $participant = Participant::factory()->create([
                     'tournament_id' => $tournament->id,
                     'user_id' => $player->id,
                     'status' => $status,
                 ]);
             }
+            
+            if ($status === 'approved') {
+                $participants->push($participant);
+            }
+        }
+        
+        return $participants;
+    }
+
+    private function seedStagesAndMatches($tournament, $participants, $status): void
+    {
+        if ($participants->count() < 2) return;
+
+        $stage = \App\Models\Stage::factory()->create([
+            'tournament_id' => $tournament->id,
+            'name' => 'Main Bracket',
+            'type' => $tournament->bracket_type,
+            'status' => $status === 'completed' ? 'completed' : 'ongoing',
+        ]);
+
+        $approvedParticipants = $participants->values();
+        $matchLimit = min(16, floor($approvedParticipants->count() / 2));
+
+        for ($i = 0; $i < $matchLimit; $i++) {
+            $p1 = $approvedParticipants[$i * 2];
+            $p2 = $approvedParticipants[$i * 2 + 1];
+
+            $matchStatus = $status === 'completed' ? 'completed' : collect(['pending', 'ongoing', 'completed'])->random();
+            
+            $matchData = [
+                'stage_id' => $stage->id,
+                'round' => 1,
+                'match_number' => $i + 1,
+                'participant_1_id' => $p1->id,
+                'participant_2_id' => $p2->id,
+                'status' => $matchStatus,
+                'scheduled_at' => now()->subDays(rand(1, 5)),
+                'bracket_side' => 'winners',
+            ];
+
+            if ($matchStatus === 'completed') {
+                $winner = rand(0, 1) === 0 ? $p1 : $p2;
+                $matchData['winner_id'] = $winner->id;
+                $matchData['completed_at'] = now()->subDays(rand(1, 2));
+                $matchData['scores'] = [
+                    'p1' => [rand(10, 16), rand(10, 16)],
+                    'p2' => [rand(5, 12), rand(5, 12)],
+                ];
+            }
+
+            \App\Models\TournamentMatch::create($matchData);
         }
     }
 }

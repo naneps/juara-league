@@ -38,6 +38,6 @@ class UserSeeder extends Seeder
         ]);
 
         // 4. Random Users
-        User::factory()->count(20)->create();
+        User::factory()->count(150)->create();
     }
 }
