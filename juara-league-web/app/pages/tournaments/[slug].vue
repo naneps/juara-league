@@ -580,6 +580,7 @@ watchEffect(() => {
                <TournamentsTournamentParticipantManager 
                  :tournament-slug="tournament!.slug" 
                  :initial-participants="tournament!.participants" 
+                 :participant-type="tournament!.participant_type"
                />
              </template>
              <template v-else>

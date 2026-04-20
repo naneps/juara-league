@@ -14,6 +14,7 @@ const { data: tournament } = await useAsyncData(`tournament-participants-${slug}
     <TournamentParticipantManager 
       :tournament-slug="slug" 
       :initial-participants="tournament.participants"
+      :participant-type="tournament.participant_type"
     />
   </div>
 </template>

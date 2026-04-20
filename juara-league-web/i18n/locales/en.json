@@ -29,6 +29,7 @@
     "subtitle_matches": "Manage and input match scores directly via this list.",
     "select_stage": "Select Stage",
     "refresh": "Refresh",
+    "auto_schedule": "Auto Schedule",
     "select_stage_first": "Please select a stage first.",
     "no_matches": "No matches in this stage.",
     "start_stage_prompt": "Start the stage in the 'Stages' menu to generate schedule.",
@@ -69,8 +70,9 @@
     "toast": {
       "start_success": "🔥 Match started!",
       "start_success_desc": "Please input scores per game.",
-      "failed": "Failed",
-      "load_failed": "Failed to load matches"
+      "load_failed": "Failed to load matches",
+      "auto_schedule_success": "🔥 Schedules generated successfully!",
+      "auto_schedule_failed": "Failed to generate schedules"
     },
     "no_match_selected": "No match selected.",
     "team_a": "TEAM A",
@@ -90,6 +92,15 @@
     "no_bracket_desc": "Bracket will be visible once the organizer starts the tournament stages."
   },
   "managers": {
+    "participants_title": "Participant Management",
+    "participants_desc": "Manage and verify your tournament participants.",
+    "add_participant": "Add Participant",
+    "search_participants": "Search participants...",
+    "stages_title": "Stage Management",
+    "stages_desc": "Configure the format and flow of your tournament.",
+    "add_stage": "Add New Stage",
+    "staff_title": "Staff & Moderators",
+    "staff_desc": "Manage access and permissions for your tournament staff.",
     "add_staff": "Invite Staff",
     "waiting": "waiting",
     "stages": {
@@ -435,6 +446,9 @@
     "create_button": "Create Tournament",
     "search_placeholder": "Search tournaments...",
     "filter_all": "All Status",
+    "filter_draft": "Draft",
+    "filter_open": "Open",
+    "filter_ongoing": "Ongoing",
     "filter_finished": "Finished",
     "status": {
       "draft": "Draft",

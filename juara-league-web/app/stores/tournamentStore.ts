@@ -170,6 +170,18 @@ export const useTournamentStore = defineStore('tournament', () => {
     }
   }
 
+  const autoScheduleMatches = async (slug: string, stageId: string, settings?: { start_at?: string; interval_minutes?: number; matches_per_day?: number }) => {
+    try {
+      const response = await useApi<{ message: string }>(`/api/v1/tournaments/${slug}/stages/${stageId}/auto-schedule`, {
+        method: 'POST',
+        body: settings || {}
+      })
+      return response
+    } catch (e: any) {
+      throw e
+    }
+  }
+
   // ── Match & Game Management ──
 
   const fetchMatches = async (slug: string, stageId: string, filters?: { status?: string; round?: number; participant_id?: string }) => {
@@ -349,7 +361,7 @@ export const useTournamentStore = defineStore('tournament', () => {
     createTournament, updateTournament, getBySlug, getById, publishTournament,
     // Stage
     fetchStages, fetchStageDetail, createStage, updateStage, deleteStage,
-    seedParticipants, startStage, advanceParticipants,
+    seedParticipants, startStage, advanceParticipants, autoScheduleMatches,
     // Match & Game
     fetchMatches, fetchMatchDetail, updateMatch, inputGame, correctGame,
     // Other

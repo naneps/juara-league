@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useTournamentStore } from '~/stores/tournamentStore'
-import type { TournamentMatch, Stage } from '~/types/tournament'
+import type { Stage, TournamentMatch } from '~/types/tournament'
 
 const route = useRoute()
 const slug = route.params.slug as string
@@ -29,6 +29,19 @@ const matchStatusColor = (status: string) => {
   return map[status] || 'neutral'
 }
 
+const formatMatchDate = (dateString?: string) => {
+  if (!dateString) return null
+  const date = new Date(dateString)
+  return new Intl.DateTimeFormat('id-ID', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  }).format(date).replace(',', ' |')
+}
+
 const fetchMatches = async () => {
   if (!selectedStageId.value) return
   isLoadingMatches.value = true
@@ -55,6 +68,21 @@ const openMatchDetail = (match: TournamentMatch) => {
   matchDetailModalRef.value?.open(match)
 }
 
+const isAutoScheduling = ref(false)
+const handleAutoSchedule = async () => {
+  if (!selectedStageId.value) return
+  isAutoScheduling.value = true
+  try {
+    const res = await tournamentStore.autoScheduleMatches(slug, selectedStageId.value)
+    toast.add({ title: t('match.toast.auto_schedule_success'), color: 'success' })
+    await fetchMatches()
+  } catch (e: any) {
+    toast.add({ title: t('match.toast.auto_schedule_failed'), description: e.data?.message || e.message, color: 'error' })
+  } finally {
+    isAutoScheduling.value = false
+  }
+}
+
 // Modal Props
 const modalBoFormat = computed(() => selectedStage.value?.config?.bo_format || 'bo1')
 </script>
@@ -68,22 +96,66 @@ const modalBoFormat = computed(() => selectedStage.value?.config?.bo_format || '
       </div>
 
       <div class="flex items-center gap-4">
-        <USelect
+        <USelectMenu
           v-if="tournament.stages && tournament.stages.length > 0"
           v-model="selectedStageId"
-          :options="tournament.stages.map((s: any) => ({ value: s.id, label: s.name }))"
-          value-attribute="value"
-          option-attribute="label"
-          :placeholder="$t('dashboard.select_stage')"
-          class="w-56"
-          :ui="{ rounded: 'rounded-xl' }"
-        />
+          :items="tournament.stages"
+          value-key="id"
+          label-key="name"
+          variant="none"
+          trailing-icon=""
+          class="w-64"
+          :ui="{ 
+            content: 'rounded-[1.5rem] bg-white dark:bg-neutral-900 border-neutral-200 dark:border-white/5 shadow-2xl overflow-hidden p-1',
+          }"
+        >
+          <template #default="{ open }">
+            <UButton 
+              color="neutral" 
+              variant="ghost" 
+              class="w-full justify-between rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-white/5 py-2 px-4 shadow-none"
+            >
+              <div class="flex items-center gap-2">
+                <UIcon name="i-lucide-layers" class="size-3.5 text-indigo-500" />
+                <span class="font-black uppercase text-[10px] tracking-widest text-neutral-700 dark:text-neutral-200">
+                  {{ tournament.stages.find(s => s.id === selectedStageId)?.name || $t('dashboard.select_stage') }}
+                </span>
+              </div>
+              <UIcon 
+                name="i-lucide-chevron-down" 
+                class="size-4 text-neutral-400 transition-transform duration-200"
+                :class="{ 'rotate-180': open }"
+              />
+            </UButton>
+          </template>
+          
+          <template #item="{ item }">
+             <div class="flex items-center gap-2 py-0.5">
+                <UIcon :name="item.status === 'ongoing' ? 'i-lucide-play-circle' : 'i-lucide-layers'" class="size-3.5" :class="item.status === 'ongoing' ? 'text-primary-500' : 'text-neutral-400'" />
+                <span class="font-black uppercase text-[10px] tracking-widest">{{ item.name }}</span>
+                <UBadge v-if="item.status === 'ongoing'" color="primary" variant="subtle" size="xs" class="ml-auto text-[8px] font-black uppercase">LIVE</UBadge>
+             </div>
+          </template>
+        </USelectMenu>
+        
+        <UButton
+          color="neutral"
+          variant="outline"
+          icon="i-lucide-calendar-clock"
+          @click="handleAutoSchedule"
+          :loading="isAutoScheduling"
+          class="rounded-2xl shrink-0"
+        >
+          Auto Schedule
+        </UButton>
+
         <UButton
           color="neutral"
           variant="outline"
           icon="i-lucide-refresh-cw"
           @click="fetchMatches"
           :loading="isLoadingMatches"
+          class="rounded-2xl"
         >
           {{ $t('dashboard.refresh') }}
         </UButton>
@@ -124,6 +196,14 @@ const modalBoFormat = computed(() => selectedStage.value?.config?.bo_format || '
             </span>
             <span v-else class="uppercase">{{ match.status }}</span>
           </UBadge>
+        </div>
+
+        <!-- Schedule Info -->
+        <div v-if="match.scheduled_at" class="mb-4 flex items-center gap-1.5">
+           <UIcon name="i-lucide-calendar" class="size-3 text-neutral-400" />
+           <span class="text-[9px] font-bold text-neutral-500 uppercase tracking-wider">
+              {{ formatMatchDate(match.scheduled_at) }}
+           </span>
         </div>
 
         <!-- Participants & Scores -->
