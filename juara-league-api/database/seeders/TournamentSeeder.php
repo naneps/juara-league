@@ -48,7 +48,10 @@ class TournamentSeeder extends Seeder
         // 4. SCENARIO: Valorant Community Cup (Double Elimination)
         $this->seedValorant($organizer, $players);
 
-        // 5. Some Draft & Random Tournaments
+        // 5. SCENARIO: Finished Bracket Examples
+        $this->seedFinishedTournaments($organizer, $players);
+
+        // 6. Some Draft & Random Tournaments
         $this->seedRandom($organizer, $players);
     }
 
@@ -317,6 +320,101 @@ class TournamentSeeder extends Seeder
         $this->command->info('    - Generated & Scheduled Valorant bracket');
 
         $this->command->info('  ✓ Seeded Valorant Community Cup (Double Elim)');
+    }
+
+    private function seedFinishedTournaments($organizer, $players): void
+    {
+        $sport = Sport::first();
+        if (!$sport) return;
+
+        // 1. Finished Single Elimination
+        $t1 = Tournament::create([
+            'user_id' => $organizer->id,
+            'sport_id' => $sport->id,
+            'title' => 'Juara League: The Last Stand (Single Elim)',
+            'slug' => 'jl-finished-single-' . Str::random(4),
+            'status' => 'ongoing',
+            'mode' => 'open',
+            'bracket_type' => 'single',
+            'participant_type' => 'individual',
+            'max_participants' => 8,
+            'start_at' => now()->subDays(30),
+        ]);
+
+        $this->command->info("    - Created Finished Tournament: {$t1->title}");
+
+        $shuffled1 = $players->shuffle()->take(8);
+        foreach ($shuffled1 as $player) {
+            Participant::create(['tournament_id' => $t1->id, 'user_id' => $player->id, 'status' => 'approved']);
+        }
+
+        $s1 = Stage::create(['tournament_id' => $t1->id, 'name' => 'Main Bracket', 'type' => 'single_elim', 'status' => 'pending', 'order' => 1, 'bo_format' => 'bo1']);
+        $this->stageService->startStage($s1);
+        $this->matchService->autoScheduleMatches($s1, ['start_at' => $t1->start_at->copy()]);
+        $this->simulateCompletedMatches($s1);
+        $t1->update(['status' => 'completed']);
+
+        // 2. Finished Double Elimination
+        $t2 = Tournament::create([
+            'user_id' => $organizer->id,
+            'sport_id' => $sport->id,
+            'title' => 'Juara League: Rebirth (Double Elim)',
+            'slug' => 'jl-finished-double-' . Str::random(4),
+            'status' => 'ongoing',
+            'mode' => 'open',
+            'bracket_type' => 'double',
+            'participant_type' => 'individual',
+            'max_participants' => 8,
+            'start_at' => now()->subDays(30),
+        ]);
+
+        $this->command->info("    - Created Finished Tournament: {$t2->title}");
+
+        $shuffled2 = $players->shuffle()->take(8);
+        foreach ($shuffled2 as $player) {
+            Participant::create(['tournament_id' => $t2->id, 'user_id' => $player->id, 'status' => 'approved']);
+        }
+
+        $s2 = Stage::create(['tournament_id' => $t2->id, 'name' => 'Main Event', 'type' => 'double_elim', 'status' => 'pending', 'order' => 1, 'bo_format' => 'bo1']);
+        $this->stageService->startStage($s2);
+        $this->matchService->autoScheduleMatches($s2, ['start_at' => $t2->start_at->copy()]);
+        $this->simulateCompletedMatches($s2);
+        $t2->update(['status' => 'completed']);
+
+        $this->command->info('  ✓ Seeded Finished Tournaments (Single & Double Elim)');
+    }
+
+    private function simulateCompletedMatches(Stage $stage): void
+    {
+        $whileSafe = 50; 
+        while ($whileSafe > 0) {
+            // Find matches that are ready to be played (upcoming and have both participants)
+            $playableMatches = $stage->matches()
+                ->where('status', 'upcoming')
+                ->whereNotNull('participant_1_id')
+                ->whereNotNull('participant_2_id')
+                ->get();
+
+            if ($playableMatches->isEmpty()) {
+                break; // all matches resolved
+            }
+
+            foreach ($playableMatches as $match) {
+                // start match
+                $this->matchService->updateMatch($match, ['status' => 'ongoing']);
+                
+                // randomly pick winner logic
+                $winnerId = rand(0, 1) === 0 ? $match->participant_1_id : $match->participant_2_id;
+                
+                $this->matchService->inputGameResult($match, [
+                    'game_number' => 1,
+                    'winner_id' => $winnerId,
+                    'score_p1' => $winnerId === $match->participant_1_id ? 13 : rand(1,10),
+                    'score_p2' => $winnerId === $match->participant_2_id ? 13 : rand(1,10),
+                ]);
+            }
+            $whileSafe--;
+        }
     }
 
     private function seedRandom($organizer, $players): void

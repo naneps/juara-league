@@ -80,7 +80,23 @@
     "game_win": "Kemenangan Game",
     "system_footer": "© Juara League Pro Judge v1.0",
     "manage": "Kelola",
-    "live": "LIVE"
+    "live": "LIVE",
+    "schedule": {
+      "title": "Jadwalkan Laga",
+      "subtitle": "Atur waktu kick-off untuk Match #{match}. Peserta akan otomatis diberitahu melalui sistem.",
+      "date_label": "Pilih Tanggal Pertandingan",
+      "time_label": "Waktu Kick-off (WIB)",
+      "date_helper": "Pilih tanggal pelaksanaan laga.",
+      "time_helper": "Gunakan format 24 jam untuk akurasi.",
+      "quick_today": "Hari Ini",
+      "quick_tomorrow": "Besok",
+      "timezone": "Zona Waktu (WIB)",
+      "submit": "Simpan & Publikasikan Jadwal",
+      "toast_success": "Jadwal pertandingan diperbarui!",
+      "conflict_error": "Jadwal Bentrok!",
+      "conflict_desc": "Sudah ada pertandingan M#{match} di jam yang sama.",
+      "conflict_warning": "Pertandingan M#{match} sudah dijadwalkan pada jam yang sama. Silakan pilih waktu lain."
+    }
   },
   "public": {
     "live_matches": "Laga Sedang Berjalan",

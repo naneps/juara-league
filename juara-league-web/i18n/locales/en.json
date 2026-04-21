@@ -80,7 +80,23 @@
     "game_win": "Game Win",
     "system_footer": "© Juara League Pro Judge v1.0",
     "manage": "Manage",
-    "live": "LIVE"
+    "live": "LIVE",
+    "schedule": {
+      "title": "Schedule Match",
+      "subtitle": "Set the kick-off time for Match #{match}. Participants will be notified automatically.",
+      "date_label": "Select Match Date",
+      "time_label": "Kick-off Time (WIB)",
+      "date_helper": "Choose the date for this match.",
+      "time_helper": "Use 24-hour format for accuracy.",
+      "quick_today": "Today",
+      "quick_tomorrow": "Tomorrow",
+      "timezone": "Timezone (WIB)",
+      "submit": "Save & Publish Schedule",
+      "toast_success": "Match schedule updated!",
+      "conflict_error": "Schedule Conflict!",
+      "conflict_desc": "Match M#{match} is already scheduled at this time.",
+      "conflict_warning": "Match M#{match} is already scheduled at the same time. Please choose another slot."
+    }
   },
   "public": {
     "live_matches": "Live Matches",
