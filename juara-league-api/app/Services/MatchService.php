@@ -7,12 +7,56 @@ use App\Models\Participant;
 use App\Models\Stage;
 use App\Models\TournamentMatch;
 use App\Services\BracketGenerators\SwissGenerator;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class MatchService
 {
+    /**
+     * Auto-schedule matches for a stage based on settings.
+     *
+     * @param Stage $stage
+     * @param array $settings [start_at, interval_minutes, matches_per_day]
+     * @return int Number of matches scheduled
+     */
+    public function autoScheduleMatches(Stage $stage, array $settings): int
+    {
+        $startAt = isset($settings['start_at']) ? Carbon::parse($settings['start_at']) : $stage->tournament->start_at;
+        $intervalMinutes = $settings['interval_minutes'] ?? 120; // Default 2 hours
+        $matchesPerDay = $settings['matches_per_day'] ?? 8;
+        
+        $matches = $stage->matches()
+            ->where('status', '!=', 'bye')
+            ->orderBy('round')
+            ->orderBy('match_number')
+            ->get();
+
+        $scheduledCount = 0;
+        $currentDateTime = $startAt->copy();
+        $dailyMatchCount = 0;
+
+        foreach ($matches as $match) {
+            // Apply scheduling
+            $match->update(['scheduled_at' => $currentDateTime]);
+            $scheduledCount++;
+
+            // Increment for next match
+            $dailyMatchCount++;
+            
+            if ($dailyMatchCount >= $matchesPerDay) {
+                // Next day, reset clock to startAt time
+                $currentDateTime->addDay()->setTime($startAt->hour, $startAt->minute);
+                $dailyMatchCount = 0;
+            } else {
+                $currentDateTime->addMinutes($intervalMinutes);
+            }
+        }
+
+        return $scheduledCount;
+    }
+
     /**
      * Get all matches for a stage with optional filters.
      */

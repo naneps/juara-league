@@ -30,27 +30,27 @@
         </mask>
 
         <linearGradient :id="`grad-${id}`" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" :stop-color="glowColor" stop-opacity="0.2" />
-          <stop offset="50%" :stop-color="glowColor" stop-opacity="1" />
-          <stop offset="100%" :stop-color="glowColor" stop-opacity="0.2" />
+          <stop offset="0%" :stop-color="effectiveGlowColor" stop-opacity="0.2" />
+          <stop offset="50%" :stop-color="effectiveGlowColor" stop-opacity="1" />
+          <stop offset="100%" :stop-color="effectiveGlowColor" stop-opacity="0.2" />
         </linearGradient>
       </defs>
 
-      <!-- Base static path (Very dim) -->
-      <path :d="path1" class="stroke-white/5" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" fill="none" />
-      <path :d="path2" class="stroke-white/5" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" fill="none" />
+      <!-- Base static path (Adaptive dimming) -->
+      <path :d="path1" class="stroke-neutral-200 dark:stroke-white/5" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" fill="none" />
+      <path :d="path2" class="stroke-neutral-200 dark:stroke-white/5" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" fill="none" />
 
       <!-- Subtle pulse path (Entire line) -->
-      <g class="opacity-10 animate-pulse-slow">
-        <path :d="path1" :stroke="glowColor" stroke-width="2" stroke-linejoin="round" fill="none" />
-        <path :d="path2" :stroke="glowColor" stroke-width="2" stroke-linejoin="round" fill="none" />
+      <g class="opacity-30 dark:opacity-10 animate-pulse-slow">
+        <path :d="path1" :stroke="effectiveGlowColor" stroke-width="2" stroke-linejoin="round" fill="none" />
+        <path :d="path2" :stroke="effectiveGlowColor" stroke-width="2" stroke-linejoin="round" fill="none" />
       </g>
 
       <!-- Flowing Liquid "Comet" -->
       <g :filter="`url(#glow-bloom-${id})`">
         <path 
           :d="path1" 
-          :stroke="glowColor" 
+          :stroke="effectiveGlowColor" 
           stroke-width="2.5" 
           stroke-dasharray="80 320"
           stroke-linecap="round"
@@ -59,7 +59,7 @@
         />
         <path 
           :d="path2" 
-          :stroke="glowColor" 
+          :stroke="effectiveGlowColor" 
           stroke-width="2.5" 
           stroke-dasharray="80 320"
           stroke-linecap="round"
@@ -67,36 +67,24 @@
           class="animate-liquid-delayed"
         />
       </g>
-
-      <!-- Top sharp highlight -->
-      <path 
-        :d="path1" 
-        stroke="white" 
-        stroke-width="1"
-        stroke-dasharray="20 380"
-        stroke-linecap="round"
-        fill="none"
-        class="animate-liquid opacity-50"
-      />
-      <path 
-        :d="path2" 
-        stroke="white" 
-        stroke-width="1"
-        stroke-dasharray="20 380"
-        stroke-linecap="round"
-        fill="none"
-        class="animate-liquid-delayed opacity-50"
-      />
     </svg>
   </div>
 </template>
 
 <script setup lang="ts">
+const colorMode = useColorMode()
+
 const props = withDefaults(defineProps<{
   height: number
   glowColor?: string
 }>(), {
-  glowColor: '#60a5fa' // blue-400 for a more "neon" look
+  glowColor: '#60a5fa' 
+})
+
+const effectiveGlowColor = computed(() => {
+  if (colorMode.value === 'dark') return props.glowColor
+  // For light mode, we might want a slightly more saturated/darker blue if the default is too light
+  return props.glowColor === '#60a5fa' ? '#3b82f6' : props.glowColor
 })
 
 const id = Math.random().toString(36).substring(2, 9)

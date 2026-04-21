@@ -78,6 +78,7 @@ Route::prefix('v1')->group(function () {
         Route::delete('/tournaments/{tournament:slug}/stages/{stage}', [StageController::class, 'destroy']);
         Route::post('/tournaments/{tournament:slug}/stages/{stage}/seed', [StageController::class, 'seed']);
         Route::post('/tournaments/{tournament:slug}/stages/{stage}/start', [StageController::class, 'start']);
+        Route::post('/tournaments/{tournament:slug}/stages/{stage}/auto-schedule', [StageController::class, 'autoSchedule']);
         Route::post('/tournaments/{tournament:slug}/stages/{stage}/advance', [StageController::class, 'advance']);
 
         // Match & Game Management

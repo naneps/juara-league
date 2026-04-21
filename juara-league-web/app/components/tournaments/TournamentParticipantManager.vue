@@ -251,42 +251,108 @@ onMounted(() => {
   </div>
 
   <!-- Manual Registration Modal -->
-  <UModal v-model:open="isManualModalOpen" :ui="{ content: 'sm:max-w-md' }">
+  <UModal 
+    v-model:open="isManualModalOpen" 
+    :ui="{ content: 'rounded-[2.5rem] bg-white dark:bg-neutral-900 border-none' }"
+    class="sm:max-w-md"
+  >
     <template #content>
-      <div class="flex items-center gap-4 p-6 border-b border-white/5 bg-neutral-900/50">
-        <div class="size-12 rounded-xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 shadow-inner">
-          <UIcon name="i-lucide-user-plus" class="text-indigo-400 size-6" />
-        </div>
-        <div>
-          <h3 class="text-lg font-black text-white uppercase tracking-widest leading-tight">{{ $t('managers.manual_modal.title') }}</h3>
-          <p class="text-xs text-neutral-400 mt-1">{{ $t('managers.manual_modal.subtitle') }}</p>
-        </div>
-      </div>
+      <div class="p-8 space-y-8 relative overflow-hidden">
+        <!-- Decoration -->
+        <div class="absolute -top-24 -right-24 size-48 bg-indigo-500/10 blur-[80px] rounded-full pointer-events-none"></div>
 
-      <div class="p-6 bg-neutral-900">
-        <UForm :state="manualForm" @submit="handleManualSubmit" class="space-y-5">
-          <UFormField v-if="props.participantType === 'team'" :label="$t('managers.manual_modal.team_name')" name="team_name" :description="$t('managers.manual_modal.team_name_desc')">
-            <UInput v-model="manualForm.team_name" placeholder="Misal: Evos Legends" size="lg" autofocus class="w-full" />
-          </UFormField>
+        <header class="relative z-10">
+          <div class="flex items-center justify-between mb-4">
+            <div class="size-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 shadow-inner">
+              <UIcon name="i-lucide-user-plus" class="text-indigo-400 size-6" />
+            </div>
+            <UBadge color="neutral" variant="subtle" class="rounded-full uppercase font-black tracking-widest text-[10px] px-3">
+              {{ $t('managers.manual_modal.subtitle') }}
+            </UBadge>
+          </div>
+          <h2 class="text-xl font-black text-neutral-900 dark:text-white uppercase tracking-tight leading-none mb-1">
+            {{ $t('managers.manual_modal.title') }}
+          </h2>
+          <p class="text-neutral-500 font-medium text-xs">{{ props.participantType === 'team' ? $t('managers.manual_modal.team_name_desc') : $t('managers.manual_modal.name_desc') }}</p>
+        </header>
 
-          <UFormField :label="props.participantType === 'team' ? $t('managers.manual_modal.captain_name') : $t('managers.manual_modal.full_name')" name="name" :description="$t('managers.manual_modal.name_desc')">
-            <UInput v-model="manualForm.name" placeholder="Misal: Budi Santoso" size="lg" :autofocus="props.participantType !== 'team'" class="w-full" />
-          </UFormField>
-
-          <div class="flex flex-col sm:flex-row gap-5">
-            <UFormField :label="$t('settings.profile.email_label')" name="email" :description="$t('managers.manual_modal.email_desc')" class="flex-1">
-              <UInput v-model="manualForm.email" type="email" placeholder="contoh@mail.com" size="lg" class="w-full" />
-            </UFormField>
-            
-            <UFormField :label="$t('managers.manual_modal.phone_label')" name="phone" :description="$t('managers.manual_modal.phone_desc')" class="flex-1">
-              <UInput v-model="manualForm.phone" placeholder="08123xxxx" size="lg" class="w-full" />
-            </UFormField>
+        <UForm :state="manualForm" @submit="handleManualSubmit" class="space-y-6 relative z-10">
+          <!-- Team Name (If Team Tournament) -->
+          <div v-if="props.participantType === 'team'" class="space-y-2">
+            <label class="text-[10px] font-black text-neutral-500 uppercase tracking-widest px-1">{{ $t('managers.manual_modal.team_name') }}</label>
+            <UInput 
+              v-model="manualForm.team_name" 
+              placeholder="Misal: Evos Legends" 
+              size="xl" 
+              autofocus 
+              class="w-full"
+              :ui="{ base: 'rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border-neutral-200 dark:border-white/5' }"
+            />
           </div>
 
-          <div class="flex justify-end gap-3 pt-4 border-t border-white/5 mt-4">
-            <UButton color="neutral" variant="ghost" @click="isManualModalOpen = false" :disabled="isManualSubmitting" size="lg">{{ $t('common.cancel') }}</UButton>
-            <UButton type="submit" color="indigo" class="font-bold px-6 tracking-wide" :loading="isManualSubmitting" size="lg">
+          <!-- Full Name / Captain Name -->
+          <div class="space-y-2">
+            <label class="text-[10px] font-black text-neutral-500 uppercase tracking-widest px-1">
+              {{ props.participantType === 'team' ? $t('managers.manual_modal.captain_name') : $t('managers.manual_modal.full_name') }}
+            </label>
+            <UInput 
+              v-model="manualForm.name" 
+              placeholder="Misal: Budi Santoso" 
+              size="xl" 
+              :autofocus="props.participantType !== 'team'" 
+              class="w-full"
+              :ui="{ base: 'rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border-neutral-200 dark:border-white/5' }"
+            />
+          </div>
+
+          <!-- Email & Phone -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <label class="text-[10px] font-black text-neutral-500 uppercase tracking-widest px-1">{{ $t('settings.profile.email_label') }}</label>
+              <UInput 
+                v-model="manualForm.email" 
+                type="email" 
+                placeholder="contoh@mail.com" 
+                size="xl" 
+                class="w-full"
+                :ui="{ base: 'rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border-neutral-200 dark:border-white/5' }"
+              />
+            </div>
+            
+            <div class="space-y-2">
+              <label class="text-[10px] font-black text-neutral-500 uppercase tracking-widest px-1">{{ $t('managers.manual_modal.phone_label') }}</label>
+              <UInput 
+                v-model="manualForm.phone" 
+                placeholder="08123xxxx" 
+                size="xl" 
+                class="w-full"
+                :ui="{ base: 'rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border-neutral-200 dark:border-white/5' }"
+              />
+            </div>
+          </div>
+
+          <!-- Footer Actions -->
+          <div class="flex flex-col gap-3 pt-4 border-t border-neutral-100 dark:border-white/5 mt-6">
+            <UButton 
+              type="submit" 
+              color="indigo" 
+              block
+              size="xl"
+              class="rounded-2xl font-black uppercase tracking-widest py-4 shadow-xl shadow-indigo-500/20"
+              :loading="isManualSubmitting"
+            >
               {{ $t('managers.manual_modal.submit') }}
+            </UButton>
+            <UButton 
+              color="neutral" 
+              variant="ghost" 
+              block
+              size="xl"
+              class="rounded-2xl font-bold uppercase tracking-widest text-[10px] py-2"
+              @click="isManualModalOpen = false" 
+              :disabled="isManualSubmitting"
+            >
+              {{ $t('common.cancel') }}
             </UButton>
           </div>
         </UForm>

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useTournamentStore } from '~/stores/tournamentStore'
 import type { TournamentMatch, Stage } from '~/types/tournament'
+import BracketNode from '~/components/BracketNode.vue'
+import BracketConnector from '~/components/BracketConnector.vue'
 
 const { t } = useI18n()
 
@@ -44,8 +46,14 @@ const rounds = computed(() => {
 const isDoubleElim = computed(() => props.stage.type === 'double_elim')
 
 const upperBracketRounds = computed(() =>
-  rounds.value.filter(r => r.matches.some(m => m.bracket_side === 'upper' || !m.bracket_side))
-    .map(r => ({ ...r, matches: r.matches.filter(m => m.bracket_side === 'upper' || (!m.bracket_side && !m.group_id)) }))
+  rounds.value.filter(r => r.matches.some(m => m.bracket_side === 'upper' || (!m.bracket_side && m.bracket_side !== 'grand_final')))
+    .map(r => ({ ...r, matches: r.matches.filter(m => m.bracket_side === 'upper' || (!m.bracket_side && !m.group_id && m.bracket_side !== 'grand_final')) }))
+    .filter(r => r.matches.length > 0)
+)
+
+const lowerBracketRounds = computed(() =>
+  rounds.value.filter(r => r.matches.some(m => m.bracket_side === 'lower'))
+    .map(r => ({ ...r, matches: r.matches.filter(m => m.bracket_side === 'lower') }))
     .filter(r => r.matches.length > 0)
 )
 
@@ -53,19 +61,18 @@ const grandFinalMatches = computed(() =>
   matches.value.filter(m => m.bracket_side === 'grand_final')
 )
 
-const getParticipantName = (p: any) => {
-  if (!p) return t('match.bracket.tbd')
-  return p.team?.name || p.user?.name || t('match.bracket.tbd')
+const getRoundTitle = (round: any, isLower = false) => {
+  const count = round.matches.length
+  if (isLower) return `L-Round ${round.round}`
+  if (count === 1) return t('match.bracket.final')
+  if (count === 2) return t('match.bracket.semi_final')
+  return t('match.bracket.qualifiers')
 }
 
-const matchStatusColor = (status: string) => {
-  const map: Record<string, string> = { upcoming: 'neutral', ongoing: 'primary', completed: 'success', bye: 'warning' }
-  return map[status] || 'neutral'
+const calculateConnectorHeight = (roundIndex: number, matchIndex: number) => {
+  const baseDistance = 184 
+  return baseDistance * Math.pow(2, roundIndex)
 }
-
-// Connector logic helpers
-const getCardHeight = () => 92 // rough height of match card
-const getRoundGap = () => 300 // gap between columns
 
 watch(() => props.stage.id, () => { fetchMatches() })
 onMounted(() => { fetchMatches() })
@@ -74,8 +81,29 @@ defineExpose({ fetchMatches })
 </script>
 
 <template>
-  <div v-if="isLoading" class="py-20 flex justify-center">
-    <UIcon name="i-lucide-loader-2" class="size-8 text-primary-500 animate-spin" />
+  <!-- Premium Skeleton Loading State -->
+  <div v-if="isLoading" class="p-20 min-w-max min-h-max flex items-start gap-32 relative overflow-hidden">
+    <div v-for="r in (isDoubleElim ? 3 : 2)" :key="r" class="flex flex-col relative animate-pulse-slow">
+       <!-- Round Header Skeleton -->
+       <div class="mb-12 flex flex-col items-center">
+         <div class="w-24 h-6 rounded-full bg-neutral-100 dark:bg-white/5 border border-neutral-200 dark:border-white/10 mb-3 shimmer"></div>
+         <div class="w-32 h-4 rounded bg-neutral-50 dark:bg-white/5 shimmer"></div>
+       </div>
+
+       <!-- Nodes Skeleton -->
+       <div class="flex flex-col gap-12 relative">
+          <div v-for="n in (3 - r + 1)" :key="n" class="relative flex items-center">
+             <div class="w-[300px] h-[140px] rounded-[1.25rem] bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-200 dark:border-white/5 shimmer relative overflow-hidden">
+                <div class="absolute inset-x-5 top-4 h-3 w-20 bg-neutral-200 dark:bg-white/10 rounded"></div>
+                <div class="absolute inset-x-5 top-10 h-px bg-neutral-100 dark:bg-white/5"></div>
+                <div class="absolute inset-x-5 top-14 h-6 w-40 bg-neutral-100 dark:bg-white/5 rounded"></div>
+                <div class="absolute inset-x-5 bottom-4 h-6 w-48 bg-neutral-100 dark:bg-white/5 rounded"></div>
+             </div>
+             <!-- Connector Skeleton -->
+             <div v-if="r < (isDoubleElim ? 3 : 2) && n === 1" class="ml-8 w-16 h-[184px] border-y-2 border-r-2 border-neutral-100 dark:border-white/5 rounded-r-2xl opacity-30"></div>
+          </div>
+       </div>
+    </div>
   </div>
 
   <div v-else-if="matches.length === 0" class="py-20 text-center">
@@ -83,121 +111,183 @@ defineExpose({ fetchMatches })
     <p class="text-neutral-500 font-bold uppercase tracking-widest text-sm">{{ $t('match.bracket.empty') }}</p>
   </div>
 
-  <div v-else class="space-y-32">
-    <!-- Bracket Section -->
-    <div class="relative overflow-x-auto pb-12 scrollbar-hide px-4">
-      <!-- Section Title -->
-      <div class="mb-12 flex items-center gap-3">
-        <div class="h-4 w-1 bg-primary-500 rounded-full"></div>
-        <h3 class="text-xs font-black text-white uppercase tracking-[0.4em]">{{ isDoubleElim ? $t('match.bracket.winners') : $t('match.bracket.main') }}</h3>
-      </div>
-
-      <div class="flex items-start gap-12 relative min-w-max">
-        <!-- SVG Layer for Connectors -->
-        <svg class="absolute inset-0 pointer-events-none" style="width: 100%; height: 100%;">
-          <g v-for="(r, rIndex) in (isDoubleElim ? upperBracketRounds : rounds)" :key="'svg-'+r.round">
-             <template v-if="rIndex < (isDoubleElim ? upperBracketRounds : rounds).length - 1">
-               <path 
-                 v-for="(match, mIndex) in r.matches" 
-                 :key="'path-'+match.id"
-                 :d="`
-                    M ${ (rIndex * 312) + 256 } ${ 100 + (mIndex * (800 / r.matches.length)) + (400 / r.matches.length) }
-                    L ${ (rIndex * 312) + 284 } ${ 100 + (mIndex * (800 / r.matches.length)) + (400 / r.matches.length) }
-                    L ${ (rIndex * 312) + 284 } ${ 100 + (Math.floor(mIndex/2) * (800 / upperBracketRounds[rIndex+1]?.matches.length || 1)) + (400 / upperBracketRounds[rIndex+1]?.matches.length || 1) }
-                    L ${ (rIndex * 312) + 312 } ${ 100 + (Math.floor(mIndex/2) * (800 / upperBracketRounds[rIndex+1]?.matches.length || 1)) + (400 / upperBracketRounds[rIndex+1]?.matches.length || 1) }
-                 `"
-                 fill="none"
-                 stroke="#262626"
-                 stroke-width="2"
-               />
-             </template>
-          </g>
-        </svg>
-
-        <!-- Round Columns -->
-        <div 
-          v-for="(r, rIndex) in (isDoubleElim ? upperBracketRounds : rounds)" 
-          :key="r.round"
-          class="flex flex-col gap-0 w-64 z-10"
-        >
+  <div v-else class="p-20 min-w-max min-h-max flex items-center gap-32 relative">
+    
+    <!-- Left Side: Upper and Lower Brackets -->
+    <div class="flex flex-col gap-32">
+      <!-- Upper Bracket Area -->
+      <div class="flex items-start gap-32 relative">
+        <TransitionGroup name="bracket-round" appear>
+          <div 
+            v-for="(r, rIndex) in (isDoubleElim ? upperBracketRounds : rounds)" 
+            :key="'upper-'+r.round"
+            class="flex flex-col relative"
+            :style="{ transitionDelay: `${rIndex * 150}ms` }"
+          >
           <!-- Round Header -->
-          <div class="text-center mb-10 h-10 flex flex-col justify-center">
-            <span class="text-[9px] font-black text-neutral-600 uppercase tracking-widest">{{ $t('match.bracket.round') }} {{ rIndex + 1 }}</span>
-            <span class="text-[11px] font-black text-neutral-900 dark:text-white uppercase tracking-widest">{{ r.matches.length === 1 ? $t('match.bracket.final') : r.matches.length === 2 ? $t('match.bracket.semi_final') : $t('match.bracket.qualifiers') }}</span>
+          <div class="mb-12 flex flex-col items-center">
+            <div class="px-4 py-1.5 rounded-full bg-primary-500/10 border border-primary-500/20 mb-3 block">
+              <span class="text-[10px] font-black text-primary-500 uppercase tracking-[0.2em]">{{ $t('match.bracket.round') }} {{ rIndex + 1 }}</span>
+            </div>
+            <h3 class="text-xs font-black text-neutral-400 dark:text-white/40 uppercase tracking-[0.3em]">{{ getRoundTitle(r) }}</h3>
+            <span v-if="isDoubleElim" class="text-[9px] text-primary-500 font-bold uppercase mt-1 tracking-widest">Upper Bracket</span>
           </div>
 
-          <!-- Matches -->
-          <div class="flex flex-col justify-around h-[800px]">
+          <!-- Matches in Round -->
+          <div class="flex flex-col gap-12 relative">
             <div 
-              v-for="match in r.matches" 
+              v-for="(match, mIndex) in r.matches" 
               :key="match.id"
-              class="relative"
+              class="relative flex items-center"
             >
-              <button
+              <BracketNode 
+                :match="match" 
+                :bo-format="props.stage.config?.bo_format"
                 @click="emit('match-click', match)"
-                class="w-64 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-white/5 shadow-sm dark:shadow-none rounded-xl transition-all hover:border-primary-500/50 hover:shadow-[0_0_30px_rgba(34,197,94,0.1)] group relative overflow-hidden"
+              />
+
+              <!-- Connector to Next Round (if not final) -->
+              <div 
+                v-if="rIndex < (isDoubleElim ? upperBracketRounds : rounds).length - 1 && mIndex % 2 === 0"
+                class="absolute left-full top-1/2 -translate-y-1/2"
               >
-                <!-- VS Indicator -->
-                <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 size-5 rounded-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-white/5 flex items-center justify-center z-10">
-                   <span class="text-[7px] font-black text-neutral-400 dark:text-neutral-700">VS</span>
-                </div>
-
-                <div class="flex flex-col">
-                  <!-- P1 -->
-                  <div class="flex items-center justify-between px-3 py-3 border-b border-neutral-100 dark:border-white/5" :class="match.winner_id === match.participant_1_id ? 'bg-primary-500/10' : ''">
-                    <span class="text-[11px] font-black truncate" :class="match.winner_id === match.participant_1_id ? 'text-neutral-900 dark:text-white' : 'text-neutral-400 dark:text-neutral-500'">{{ getParticipantName(match.participant_1) }}</span>
-                    <span class="text-xs font-black text-primary-500">{{ match.scores?.participant_1 ?? 0 }}</span>
-                  </div>
-                  <!-- P2 -->
-                  <div class="flex items-center justify-between px-3 py-3" :class="match.winner_id === match.participant_2_id ? 'bg-primary-500/10' : ''">
-                    <span class="text-[11px] font-black truncate" :class="match.winner_id === match.participant_2_id ? 'text-neutral-900 dark:text-white' : 'text-neutral-400 dark:text-neutral-500'">{{ getParticipantName(match.participant_2) }}</span>
-                    <span class="text-xs font-black text-primary-500">{{ match.scores?.participant_2 ?? 0 }}</span>
-                  </div>
-                </div>
-
-                <!-- Status Badge -->
-                <div v-if="match.status !== 'upcoming'" class="absolute right-0 top-0 translate-x-1/2 -translate-y-1/2">
-                   <div class="size-2 rounded-full bg-primary-500 shadow-[0_0_10px_rgba(34,197,94,0.5)] animate-pulse"></div>
-                </div>
-              </button>
+                 <BracketConnector 
+                   :height="calculateConnectorHeight(rIndex, mIndex)" 
+                   class="ml-8"
+                 />
+              </div>
             </div>
           </div>
         </div>
+        </TransitionGroup>
+      </div>
+
+      <!-- Lower Bracket Area -->
+      <div v-if="isDoubleElim && lowerBracketRounds.length > 0" class="flex items-start gap-32 relative pt-24 border-t-2 border-dashed border-neutral-300 dark:border-white/10">
+        <div class="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-white/10 rounded-full font-black text-[10px] uppercase tracking-widest text-neutral-500">
+          Lower Bracket 
+        </div>
+
+        <TransitionGroup name="bracket-round" appear>
+          <div 
+            v-for="(r, rIndex) in lowerBracketRounds" 
+            :key="'lower-'+r.round"
+            class="flex flex-col relative"
+            :style="{ transitionDelay: `${rIndex * 150}ms` }"
+          >
+          <!-- Round Header (Lower) -->
+          <div class="mb-12 flex flex-col items-center">
+            <div class="px-4 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/20 mb-3 block">
+              <span class="text-[10px] font-black text-rose-500 uppercase tracking-[0.2em]">{{ getRoundTitle(r, true) }}</span>
+            </div>
+            <h3 class="text-xs font-black text-neutral-400 dark:text-white/40 uppercase tracking-[0.3em]">{{ r.matches.length }} Laga</h3>
+            <span class="text-[9px] text-rose-500 font-bold uppercase mt-1 tracking-widest">Elimination</span>
+          </div>
+
+          <!-- Matches in Lower Round -->
+          <div class="flex flex-col gap-8 relative justify-center flex-1">
+            <div 
+              v-for="match in r.matches" 
+              :key="match.id"
+              class="relative flex items-center"
+            >
+              <BracketNode 
+                :match="match" 
+                :bo-format="props.stage.config?.bo_format"
+                class="!border-rose-500/20 hover:!border-rose-500/50 hover:!bg-rose-500/5"
+                @click="emit('match-click', match)"
+              />
+              <!-- Connectors in lower brackets are often complex to draw properly (as matches drop down). For this premium V1 we will omit rendering SVG lines in lower bracket to keep it cleanly readable. -->
+            </div>
+          </div>
+        </div>
+        </TransitionGroup>
       </div>
     </div>
 
-    <!-- Grand Final Section -->
-    <div v-if="grandFinalMatches.length > 0" class="flex flex-col items-center pb-20">
-      <div class="h-24 w-px bg-gradient-to-b from-neutral-800 to-yellow-500/50 mb-12"></div>
-      <div class="text-center mb-10">
-        <UIcon name="i-lucide-trophy" class="size-10 text-yellow-500 mb-2" />
+    <!-- Grand Final Special Section -->
+    <div v-if="grandFinalMatches.length > 0" class="flex flex-col items-center ml-12">
+      <div class="mb-12 flex flex-col items-center">
+        <div class="size-12 rounded-2xl bg-yellow-500/20 border border-yellow-500/30 flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(234,179,8,0.2)]">
+          <UIcon name="i-lucide-trophy" class="size-6 text-yellow-500" />
+        </div>
         <h3 class="text-sm font-black text-yellow-500 uppercase tracking-[0.5em]">{{ $t('match.bracket.grand_final') }}</h3>
       </div>
 
-      <div class="flex gap-10">
-        <button
-          v-for="match in grandFinalMatches"
+      <div class="flex flex-col gap-8">
+        <div 
+          v-for="match in grandFinalMatches" 
           :key="match.id"
-          @click="emit('match-click', match)"
-          class="w-96 group relative p-1 bg-gradient-to-br from-yellow-500/20 to-transparent rounded-2xl transition-all hover:scale-105"
+          class="relative group"
         >
-          <div class="bg-white dark:bg-neutral-950 rounded-[0.9rem] overflow-hidden border border-yellow-500/20 shadow-xl dark:shadow-none">
-            <div class="flex items-center justify-between px-8 py-6 border-b border-neutral-100 dark:border-white/5" :class="match.winner_id === match.participant_1_id ? 'bg-yellow-500/5' : ''">
-              <span class="text-sm font-black text-neutral-900 dark:text-white uppercase">{{ getParticipantName(match.participant_1) }}</span>
-              <span class="text-3xl font-black text-yellow-500 italic">{{ match.scores?.participant_1 ?? 0 }}</span>
-            </div>
-            <div class="flex items-center justify-between px-8 py-6" :class="match.winner_id === match.participant_2_id ? 'bg-yellow-500/5' : ''">
-              <span class="text-sm font-black text-neutral-900 dark:text-white uppercase">{{ getParticipantName(match.participant_2) }}</span>
-              <span class="text-3xl font-black text-yellow-500 italic">{{ match.scores?.participant_2 ?? 0 }}</span>
-            </div>
-          </div>
-        </button>
+          <!-- Glow behind grand final node -->
+          <div class="absolute -inset-4 bg-yellow-500/10 blur-3xl rounded-full opacity-50 group-hover:opacity-100 transition-opacity"></div>
+          
+          <BracketNode 
+            :match="match" 
+            :bo-format="props.stage.config?.bo_format"
+            class="scale-110 !border-yellow-500/30 bg-white dark:!bg-neutral-900 shadow-[0_0_40px_rgba(234,179,8,0.1)]"
+            @click="emit('match-click', match)"
+          />
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.scrollbar-hide::-webkit-scrollbar { display: none; }
-.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.bracket-round-enter-active {
+  transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.bracket-round-enter-from {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.03),
+    rgba(251, 191, 36, 0.05),
+    rgba(255, 255, 255, 0.03),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+}
+
+.dark .shimmer::after {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.05),
+    rgba(251, 191, 36, 0.08),
+    rgba(255, 255, 255, 0.05),
+    transparent
+  );
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
 </style>

@@ -72,10 +72,15 @@ const tabs = computed(() => {
   const allTabs = [
     { label: 'Informasi', icon: 'i-lucide-info', slot: 'info' },
     { 
-      label: 'Laga Berjalan', 
+      label: 'Live', 
       icon: 'i-lucide-play-circle', 
       slot: 'live',
       show: liveMatches.value.length > 0 || isOwner.value
+    },
+    { 
+      label: 'Laga', 
+      icon: 'i-lucide-calendar', 
+      slot: 'matches'
     },
     { 
       label: 'Manajemen Tahapan', 
@@ -114,7 +119,7 @@ const selectedStage = computed(() =>
   tournament.value?.stages?.find((s: Stage) => s.id === selectedStageId.value) || null
 )
 const ongoingStages = computed(() =>
-  (tournament.value?.stages || []).filter((s: Stage) => s.status === 'ongoing' || s.status === 'completed')
+  (tournament.value?.stages || []).filter((s: Stage) => s.status === 'ongoing' || s.status === 'completed' || (s.matches_count && s.matches_count > 0))
 )
 const activeTabIndex = ref(0)
 const liveMatches = ref<TournamentMatch[]>([])
@@ -141,10 +146,35 @@ const fetchLiveMatches = async () => {
 // Watch for stage status changes to refresh live matches
 watch([() => tournament.value?.stages, () => activeTabIndex.value], () => {
   const liveTabIndex = tabs.value.findIndex(t => t.slot === 'live')
+  const scheduleTabIndex = tabs.value.findIndex(t => t.slot === 'matches')
+  
   if (activeTabIndex.value === liveTabIndex) {
     fetchLiveMatches()
   }
+  if (activeTabIndex.value === scheduleTabIndex) {
+    fetchAllMatches()
+  }
 }, { deep: true })
+
+const allMatches = ref<TournamentMatch[]>([])
+const isLoadingAllMatches = ref(false)
+
+const fetchAllMatches = async () => {
+  if (!tournament.value || !tournament.value.stages) return
+  isLoadingAllMatches.value = true
+  try {
+    const results = await Promise.all(
+      tournament.value.stages.map(s => 
+        tournamentStore.fetchMatches(tournament.value!.slug, s.id)
+      )
+    )
+    allMatches.value = results.flat()
+  } catch (e) {
+    console.error('Failed to fetch all matches', e)
+  } finally {
+    isLoadingAllMatches.value = false
+  }
+}
 const isMatchModalOpen = ref(false)
 const matchModalRef = ref<any>(null)
 const bracketRef = ref<any>(null)
@@ -349,6 +379,33 @@ watchEffect(() => {
                 </div>
               </button>
             </div>
+          </div>
+        </template>
+        
+        <template #matches>
+          <div class="py-8">
+            <div class="flex items-center justify-between mb-8">
+              <div>
+                <h2 class="text-2xl font-black text-white uppercase tracking-tight">Jadwal Pertandingan</h2>
+                <p class="text-neutral-500 text-sm font-medium mt-1">Daftar lengkap pertandingan dalam turnamen ini.</p>
+              </div>
+              <UButton 
+                variant="ghost" 
+                color="neutral" 
+                icon="i-lucide-refresh-cw" 
+                :loading="isLoadingAllMatches"
+                @click="fetchAllMatches"
+              >
+                Refresh
+              </UButton>
+            </div>
+
+            <TournamentsTournamentScheduleViewer 
+              :matches="allMatches" 
+              :is-loading="isLoadingAllMatches"
+              :is-staff="isOwner"
+              @select-match="handleMatchClick"
+            />
           </div>
         </template>
 
@@ -580,6 +637,7 @@ watchEffect(() => {
                <TournamentsTournamentParticipantManager 
                  :tournament-slug="tournament!.slug" 
                  :initial-participants="tournament!.participants" 
+                 :participant-type="tournament!.participant_type"
                />
              </template>
              <template v-else>

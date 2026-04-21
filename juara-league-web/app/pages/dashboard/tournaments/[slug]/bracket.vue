@@ -42,16 +42,47 @@ const selectedMatchBoFormat = computed(() => {
       </div>
 
       <div class="flex items-center gap-4">
-        <USelect
-          v-if="tournament.stages && tournament.stages.length > 1"
+        <USelectMenu
+          v-if="tournament.stages && tournament.stages.length > 0"
           v-model="selectedStageId"
-          :options="tournament.stages.map((s: any) => ({ value: s.id, label: s.name }))"
-          value-attribute="value"
-          option-attribute="label"
-          :placeholder="$t('dashboard.select_stage')"
-          class="w-48"
-          :ui="{ rounded: 'rounded-xl' }"
-        />
+          :items="tournament.stages"
+          value-key="id"
+          label-key="name"
+          variant="none"
+          class="w-64"
+          trailing-icon=""
+          :ui="{ 
+            content: 'rounded-[1.5rem] bg-white dark:bg-neutral-900 border-neutral-200 dark:border-white/5 shadow-2xl overflow-hidden p-1',
+          }"
+        >
+          <template #default="{ open }">
+            <UButton 
+              color="neutral" 
+              variant="ghost" 
+              class="w-full justify-between rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-white/5 py-2 px-4 shadow-none"
+            >
+              <div class="flex items-center gap-2">
+                <UIcon name="i-lucide-layers" class="size-3.5 text-indigo-500" />
+                <span class="font-black uppercase text-[10px] tracking-widest text-neutral-700 dark:text-neutral-200">
+                  {{ tournament.stages.find(s => s.id === selectedStageId)?.name || $t('dashboard.select_stage') }}
+                </span>
+              </div>
+              <UIcon 
+                name="i-lucide-chevron-down" 
+                class="size-4 text-neutral-400 transition-transform duration-200"
+                :class="{ 'rotate-180': open }"
+              />
+            </UButton>
+          </template>
+          
+          <template #item="{ item }">
+             <div class="flex items-center gap-2 py-0.5">
+                <UIcon :name="item.status === 'ongoing' ? 'i-lucide-play-circle' : 'i-lucide-layers'" class="size-3.5" :class="item.status === 'ongoing' ? 'text-primary-500' : 'text-neutral-400'" />
+                <span class="font-black uppercase text-[10px] tracking-widest">{{ item.name }}</span>
+                <UBadge v-if="item.status === 'ongoing'" color="primary" variant="subtle" size="xs" class="ml-auto text-[8px] font-black uppercase">LIVE</UBadge>
+             </div>
+          </template>
+        </USelectMenu>
         
         <UButton 
           color="neutral" 

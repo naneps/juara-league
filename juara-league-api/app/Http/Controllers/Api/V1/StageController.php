@@ -10,13 +10,15 @@ use App\Http\Resources\StageResource;
 use App\Models\Stage;
 use App\Models\Tournament;
 use App\Services\StageService;
+use App\Services\MatchService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class StageController extends Controller
 {
     public function __construct(
-        protected StageService $stageService
+        protected StageService $stageService,
+        protected MatchService $matchService
     ) {}
 
     /**
@@ -182,6 +184,32 @@ class StageController extends Controller
         return response()->json([
             'message' => count($request->validated()['advancing_participants']) . ' peserta berhasil diadvance ke stage berikutnya.',
             'data' => $result,
+        ]);
+    }
+
+    /**
+     * Auto-schedule matches in a stage.
+     */
+    public function autoSchedule(Request $request, Tournament $tournament, Stage $stage): JsonResponse
+    {
+        if (!$this->isStaff($request, $tournament)) {
+            return response()->json(['message' => 'Hanya staff turnamen yang dapat melakukan ini.'], 403);
+        }
+
+        if ($stage->tournament_id !== $tournament->id) {
+            return response()->json(['message' => 'Stage tidak ditemukan di turnamen ini.'], 404);
+        }
+
+        $settings = $request->validate([
+            'start_at' => 'nullable|date',
+            'interval_minutes' => 'nullable|integer|min:15|max:1440',
+            'matches_per_day' => 'nullable|integer|min:1|max:100',
+        ]);
+
+        $count = $this->matchService->autoScheduleMatches($stage, $settings);
+
+        return response()->json([
+            'message' => "{$count} pertandingan berhasil dijadwalkan secara otomatis.",
         ]);
     }
 

@@ -29,6 +29,7 @@
     "subtitle_matches": "Kelola dan input skor pertandingan secara langsung lewat list.",
     "select_stage": "Pilih Babak",
     "refresh": "Refresh",
+    "auto_schedule": "Jadwal Otomatis",
     "select_stage_first": "Pilih babak terlebih dahulu.",
     "no_matches": "Belum ada pertandingan di babak ini.",
     "start_stage_prompt": "Mulai babak di menu 'Babak' untuk generate jadwal.",
@@ -69,8 +70,9 @@
     "toast": {
       "start_success": "🔥 Match dimulai!",
       "start_success_desc": "Silakan input skor per game.",
-      "failed": "Gagal",
-      "load_failed": "Gagal memuat pertandingan"
+      "load_failed": "Gagal memuat pertandingan",
+      "auto_schedule_success": "🔥 Jadwal berhasil dibuat!",
+      "auto_schedule_failed": "Gagal membuat jadwal otomatis"
     },
     "no_match_selected": "Tidak ada pertandingan dipilih.",
     "team_a": "TIM A",
@@ -78,7 +80,23 @@
     "game_win": "Kemenangan Game",
     "system_footer": "© Juara League Pro Judge v1.0",
     "manage": "Kelola",
-    "live": "LIVE"
+    "live": "LIVE",
+    "schedule": {
+      "title": "Jadwalkan Laga",
+      "subtitle": "Atur waktu kick-off untuk Match #{match}. Peserta akan otomatis diberitahu melalui sistem.",
+      "date_label": "Pilih Tanggal Pertandingan",
+      "time_label": "Waktu Kick-off (WIB)",
+      "date_helper": "Pilih tanggal pelaksanaan laga.",
+      "time_helper": "Gunakan format 24 jam untuk akurasi.",
+      "quick_today": "Hari Ini",
+      "quick_tomorrow": "Besok",
+      "timezone": "Zona Waktu (WIB)",
+      "submit": "Simpan & Publikasikan Jadwal",
+      "toast_success": "Jadwal pertandingan diperbarui!",
+      "conflict_error": "Jadwal Bentrok!",
+      "conflict_desc": "Sudah ada pertandingan M#{match} di jam yang sama.",
+      "conflict_warning": "Pertandingan M#{match} sudah dijadwalkan pada jam yang sama. Silakan pilih waktu lain."
+    }
   },
   "public": {
     "live_matches": "Laga Sedang Berjalan",
