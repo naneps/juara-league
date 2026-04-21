@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\MatchController;
 use App\Http\Controllers\Api\V1\ParticipantController;
 use App\Http\Controllers\Api\V1\VerificationController;
 use App\Http\Controllers\Api\V1\FileController;
+use App\Http\Controllers\Api\V1\GroupController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -35,6 +36,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/tournaments/{tournament:slug}/stages/{stage}', [StageController::class, 'show']);
     Route::get('/tournaments/{tournament:slug}/stages/{stage}/matches', [MatchController::class, 'index']);
     Route::get('/tournaments/{tournament:slug}/stages/{stage}/matches/{match}', [MatchController::class, 'show']);
+    Route::get('/tournaments/{tournament:slug}/stages/{stage}/groups/{group}/standings', [GroupController::class, 'standings']);
     Route::get('/tournaments/{tournament:slug}/participants', [ParticipantController::class, 'index']);
 
     Route::get('/sports', [\App\Http\Controllers\Api\V1\SportController::class, 'index']);
