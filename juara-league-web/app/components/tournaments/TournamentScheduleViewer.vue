@@ -12,10 +12,14 @@ import {
 } from '@internationalized/date'
 import type { TournamentMatch } from '~/types/tournament'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   matches: TournamentMatch[]
   isLoading?: boolean
-}>()
+  isStaff?: boolean
+}>(), {
+  isLoading: false,
+  isStaff: false
+})
 
 const emit = defineEmits(['select-match', 'schedule-match'])
 
@@ -255,7 +259,7 @@ const getParticipantName = (p: any) => {
           </div>
 
           <!-- Right: Separate Actions -->
-          <div class="flex items-center gap-2 pl-4 border-l border-neutral-100 dark:border-white/5">
+          <div v-if="isStaff" class="flex items-center gap-2 pl-4 border-l border-neutral-100 dark:border-white/5">
             <button
               type="button"
               class="size-8 flex items-center justify-center rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-500 hover:text-indigo-500 hover:bg-indigo-500/10 transition-all shadow-sm"
@@ -264,6 +268,9 @@ const getParticipantName = (p: any) => {
               <UIcon name="i-lucide-calendar-clock" class="size-4" />
             </button>
             <UIcon name="i-lucide-arrow-right" class="size-4 text-neutral-300 dark:text-neutral-700 opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
+          <div v-else class="pl-4 border-l border-neutral-100 dark:border-white/5">
+            <UIcon name="i-lucide-chevron-right" class="size-4 text-neutral-300 dark:text-neutral-700 opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
         </div>
       </div>

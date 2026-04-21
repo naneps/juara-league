@@ -226,7 +226,7 @@ defineExpose({ fetchMatches })
           <BracketNode 
             :match="match" 
             :bo-format="props.stage.config?.bo_format"
-            class="scale-110 !border-yellow-500/30 !bg-neutral-900 shadow-[0_0_40px_rgba(234,179,8,0.1)]"
+            class="scale-110 !border-yellow-500/30 bg-white dark:!bg-neutral-900 shadow-[0_0_40px_rgba(234,179,8,0.1)]"
             @click="emit('match-click', match)"
           />
         </div>
