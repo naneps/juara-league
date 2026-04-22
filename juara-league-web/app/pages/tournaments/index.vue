@@ -7,9 +7,6 @@ const sportStore = useSportStore()
 const { tournaments, isLoading, error } = storeToRefs(tournamentStore)
 const { sports } = storeToRefs(sportStore)
 
-definePageMeta({
-  colorMode: 'dark'
-})
 
 // Initial fetch
 const { pending } = await useAsyncData('tournaments-data', async () => {
@@ -56,28 +53,28 @@ const refreshTournaments = () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-neutral-950 pb-20 overflow-hidden relative">
-    <!-- Decoraive Background -->
-    <div class="absolute top-0 right-0 w-full h-[600px] bg-primary-500/5 blur-[120px] rounded-full pointer-events-none"></div>
-    <div class="absolute bottom-0 left-0 w-full h-[400px] bg-primary-600/5 blur-[100px] rounded-full pointer-events-none"></div>
+  <div class="min-h-screen bg-neutral-50 dark:bg-neutral-950 pb-20 overflow-hidden relative transition-colors duration-500">
+    <!-- Decorative Background -->
+    <div class="absolute top-0 right-0 w-full h-[600px] bg-primary-500/5 dark:bg-primary-500/5 blur-[120px] rounded-full pointer-events-none"></div>
+    <div class="absolute bottom-0 left-0 w-full h-[400px] bg-primary-600/5 dark:bg-primary-600/5 blur-[100px] rounded-full pointer-events-none"></div>
 
     <!-- Header Section -->
     <div class="pt-32 pb-16 relative z-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       <div class="text-center mb-16">
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-500/10 border border-primary-500/20 mb-6">
           <div class="size-1.5 rounded-full bg-primary-500 animate-pulse"></div>
-          <span class="text-[10px] font-black text-primary-400 uppercase tracking-widest">Tournament Center</span>
+          <span class="text-[10px] font-black text-primary-600 dark:text-primary-400 uppercase tracking-widest">Tournament Center</span>
         </div>
-        <h1 class="text-4xl sm:text-6xl font-black text-white tracking-tight mb-6 uppercase">
+        <h1 class="text-4xl sm:text-6xl font-black text-neutral-900 dark:text-white tracking-tight mb-6 uppercase">
           Temukan <span class="text-primary-500">Kemenanganmu</span>
         </h1>
-        <p class="text-neutral-400 text-lg max-w-2xl mx-auto font-medium">
+        <p class="text-neutral-500 dark:text-neutral-400 text-lg max-w-2xl mx-auto font-medium">
           Daftar dan kelola turnamen favoritmu. Dari sepak bola hingga e-sports, semua kompetisi ada di sini.
         </p>
       </div>
 
       <!-- Filters & Search Bar -->
-      <div class="bg-neutral-900/40 backdrop-blur-2xl p-4 sm:p-2 rounded-3xl sm:rounded-full border border-white/10 shadow-2xl relative overflow-hidden group mb-12 ring-1 ring-white/5">
+      <div class="bg-white/80 dark:bg-neutral-900/40 backdrop-blur-2xl p-4 sm:p-2 rounded-3xl sm:rounded-full border border-neutral-200 dark:border-white/10 shadow-xl relative overflow-hidden group mb-12 ring-1 ring-neutral-200 dark:ring-white/5 transition-all">
         <div class="flex flex-col lg:flex-row items-center gap-2">
           <!-- Search -->
           <div class="w-full lg:flex-1">
@@ -89,13 +86,13 @@ const refreshTournaments = () => {
               variant="none"
               class="w-full"
               :ui="{ 
-                base: 'bg-transparent border-none focus:ring-0 text-white placeholder-neutral-500 rounded-full py-4',
-                leading: 'text-neutral-500 group-focus-within:text-primary-400 transition-colors'
+                base: 'bg-transparent border-none focus:ring-0 text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 rounded-full py-4',
+                leading: 'text-neutral-400 dark:text-neutral-500 group-focus-within:text-primary-500 transition-colors'
               }"
             />
           </div>
 
-          <div class="hidden lg:block w-px h-8 bg-white/10"></div>
+          <div class="hidden lg:block w-px h-8 bg-neutral-200 dark:bg-white/10"></div>
           
           <!-- Filters Group -->
           <div class="w-full lg:w-auto flex flex-col sm:flex-row items-center gap-2 p-2 lg:p-0">
@@ -123,7 +120,7 @@ const refreshTournaments = () => {
               variant="none"
               class="w-full sm:w-44"
               :ui="{ 
-                base: 'bg-white/5 hover:bg-white/10 border-none focus:ring-primary-500/50 rounded-2xl sm:rounded-full transition-all text-neutral-300 font-bold px-4'
+                base: 'bg-neutral-100 dark:bg-white/5 hover:bg-neutral-200 dark:hover:bg-white/10 border-none focus:ring-primary-500/50 rounded-2xl sm:rounded-full transition-all text-neutral-700 dark:text-neutral-300 font-bold px-4'
               }"
             >
               <template #leading>
@@ -139,7 +136,7 @@ const refreshTournaments = () => {
               variant="none"
               class="w-full sm:w-44"
               :ui="{ 
-                base: 'bg-white/5 hover:bg-white/10 border-none focus:ring-primary-500/50 rounded-2xl sm:rounded-full transition-all text-neutral-300 font-bold px-4'
+                base: 'bg-neutral-100 dark:bg-white/5 hover:bg-neutral-200 dark:hover:bg-white/10 border-none focus:ring-primary-500/50 rounded-2xl sm:rounded-full transition-all text-neutral-700 dark:text-neutral-300 font-bold px-4'
               }"
             >
               <template #leading>
@@ -163,7 +160,7 @@ const refreshTournaments = () => {
 
       <!-- Loading State -->
       <div v-if="isLoading && filteredTournaments.length === 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        <div v-for="i in 6" :key="i" class="h-96 bg-neutral-900/40 rounded-[2.5rem] animate-pulse"></div>
+        <div v-for="i in 6" :key="i" class="h-96 bg-neutral-200 dark:bg-neutral-900/40 rounded-[2.5rem] animate-pulse"></div>
       </div>
 
       <!-- Results Grid -->
@@ -177,10 +174,10 @@ const refreshTournaments = () => {
 
       <!-- Empty State -->
       <div v-else class="py-20 flex flex-col items-center justify-center text-center">
-        <div class="bg-neutral-900/50 p-8 rounded-full mb-6 ring-1 ring-white/5">
-          <UIcon :name="error ? 'i-lucide-alert-triangle' : 'i-lucide-search-x'" class="size-16" :class="error ? 'text-red-500' : 'text-neutral-600'" />
+        <div class="bg-neutral-100 dark:bg-neutral-900/50 p-8 rounded-full mb-6 ring-1 ring-neutral-200 dark:ring-white/5">
+          <UIcon :name="error ? 'i-lucide-alert-triangle' : 'i-lucide-search-x'" class="size-16" :class="error ? 'text-red-500' : 'text-neutral-400 dark:text-neutral-600'" />
         </div>
-        <h3 class="text-2xl font-bold text-white mb-2">{{ error ? 'Terjadi Kesalahan' : 'Tidak Menemukan Apapun' }}</h3>
+        <h3 class="text-2xl font-bold text-neutral-900 dark:text-white mb-2">{{ error ? 'Terjadi Kesalahan' : 'Tidak Menemukan Apapun' }}</h3>
         <p class="text-neutral-500 font-medium max-w-xs mx-auto">
           {{ error || 'Coba atur ulang filter atau kata kunci pencarian Anda untuk hasil yang lebih baik.' }}
         </p>

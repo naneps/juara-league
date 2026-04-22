@@ -91,14 +91,14 @@ const formattedDate = computed(() => {
       </h3>
 
       <!-- Stats Grid -->
-      <div class="grid grid-cols-2 gap-y-5 gap-x-2 mt-auto">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 mt-auto">
         <div class="flex flex-col gap-1.5">
           <span class="text-[9px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">{{ $t('tournament_card.prize_pool') }}</span>
           <div class="flex items-center gap-2">
             <div class="p-1 bg-yellow-500/10 rounded-md ring-1 ring-yellow-500/20">
               <UIcon name="i-lucide-trophy" class="text-yellow-500 size-4" />
             </div>
-            <span class="text-sm sm:text-base font-black text-neutral-900 dark:text-white tracking-tight">{{ formatCurrency(tournament.prize_pool) }}</span>
+            <span class="text-sm font-black text-neutral-900 dark:text-white tracking-tight break-all">{{ formatCurrency(tournament.prize_pool) }}</span>
           </div>
         </div>
         <div class="flex flex-col gap-1.5">
@@ -107,7 +107,7 @@ const formattedDate = computed(() => {
             <div class="p-1 bg-primary-500/10 rounded-md ring-1 ring-primary-500/20">
               <UIcon name="i-lucide-users-2" class="text-primary-500 dark:text-primary-400 size-4" />
             </div>
-            <span class="text-sm sm:text-base font-black text-neutral-900 dark:text-white tracking-tight">{{ tournament.current_participants ?? 0 }}/{{ tournament.max_participants }}</span>
+            <span class="text-sm font-black text-neutral-900 dark:text-white tracking-tight">{{ tournament.current_participants ?? 0 }}/{{ tournament.max_participants }}</span>
           </div>
         </div>
 
@@ -145,7 +145,7 @@ const formattedDate = computed(() => {
                 class="ring-1 ring-neutral-200 dark:ring-white/10 rounded-lg shadow-sm"
               />
             </div>
-            <div v-if="tournament.user" class="flex flex-col min-w-0 pr-2">
+            <div v-if="tournament.user" class="flex flex-col min-w-0 flex-1 pr-2">
               <span class="text-xs font-bold text-neutral-800 dark:text-neutral-200 truncate">{{ tournament.user.name }}</span>
               <span class="text-[9px] font-medium text-neutral-400 dark:text-neutral-500 uppercase tracking-wide">{{ $t('tournament_card.organizer_label') }}</span>
             </div>

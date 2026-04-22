@@ -10,7 +10,7 @@
   >
     <!-- Background Stardust Fixed -->
     <div class="absolute inset-0 pointer-events-none overflow-hidden bg-white dark:bg-neutral-950 transition-colors duration-500">
-       <div v-if="colorMode.value === 'dark'" class="stardust-container">
+       <div class="stardust-container dark:opacity-100 opacity-0 transition-opacity">
           <div class="star star-small"></div>
           <div class="star star-medium"></div>
           <div class="star star-large"></div>

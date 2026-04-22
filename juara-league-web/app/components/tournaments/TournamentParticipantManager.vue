@@ -6,12 +6,20 @@ const props = defineProps<{
   tournamentSlug: string
   initialParticipants?: Participant[]
   participantType?: string
+  isReadOnly?: boolean
 }>()
+
 
 const tournamentStore = useTournamentStore()
 const { t, locale } = useI18n()
 const participants = ref<Participant[]>(props.initialParticipants || [])
 const isSubmitting = ref(false)
+
+// Watch for initialParticipants to ensure reactivity
+watch(() => props.initialParticipants, (newVal) => {
+  if (newVal) participants.value = newVal
+}, { immediate: true })
+
 
 const fetchParticipants = async () => {
   try {
@@ -21,6 +29,11 @@ const fetchParticipants = async () => {
     console.error('Failed to fetch participants', e)
   }
 }
+
+onMounted(() => {
+  fetchParticipants()
+})
+
 
 const updateStatus = async (id: number, status: string) => {
   isSubmitting.value = true
@@ -115,13 +128,14 @@ onMounted(() => {
         </UBadge>
       </div>
       <div class="flex items-center gap-2">
-        <UButton size="xs" color="primary" variant="subtle" icon="i-lucide-plus" @click="isManualModalOpen = true">
+        <UButton v-if="!isReadOnly" size="xs" color="primary" variant="subtle" icon="i-lucide-plus" @click="isManualModalOpen = true">
           {{ $t('managers.add_participant') }}
         </UButton>
         <UButton size="xs" color="neutral" variant="ghost" icon="i-lucide-refresh-cw" @click="fetchParticipants">
           {{ $t('dashboard.refresh') }}
         </UButton>
       </div>
+
     </div>
 
     <!-- Table -->
@@ -133,8 +147,9 @@ onMounted(() => {
             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400">{{ $t('managers.type') }}</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400">{{ $t('common.status') }}</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400">{{ $t('managers.registered') }}</th>
-            <th class="px-6 py-3 text-right text-xs font-medium text-neutral-500 dark:text-neutral-400">{{ $t('common.actions') }}</th>
+            <th v-if="!isReadOnly" class="px-6 py-3 text-right text-xs font-medium text-neutral-500 dark:text-neutral-400">{{ $t('common.actions') }}</th>
           </tr>
+
         </thead>
         <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
           <tr
@@ -183,7 +198,7 @@ onMounted(() => {
             </td>
 
             <!-- Actions -->
-            <td class="px-6 py-4">
+            <td v-if="!isReadOnly" class="px-6 py-4">
               <div class="flex items-center justify-end gap-1.5">
                 <template v-if="participant.status === 'pending'">
                   <UButton
@@ -236,6 +251,7 @@ onMounted(() => {
                 />
               </div>
             </td>
+
           </tr>
         </tbody>
       </table>

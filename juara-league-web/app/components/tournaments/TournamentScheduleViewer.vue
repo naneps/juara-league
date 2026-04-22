@@ -125,7 +125,7 @@ const getParticipantName = (p: any) => {
     <div class="lg:col-span-7 xl:col-span-8 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-white/5 rounded-3xl overflow-hidden flex flex-col shadow-sm">
       
       <!-- Calendar Header -->
-      <div class="px-6 py-4 border-b border-neutral-100 dark:border-white/5 flex items-center justify-between bg-neutral-50/50 dark:bg-neutral-800/20">
+      <div class="px-6 py-4 border-b border-neutral-100 dark:border-white/5 flex items-center justify-between bg-white dark:bg-neutral-800/20">
         <h3 class="text-sm font-black uppercase tracking-widest text-neutral-900 dark:text-white">{{ monthName }}</h3>
         
         <div class="flex items-center gap-1">
@@ -231,9 +231,9 @@ const getParticipantName = (p: any) => {
             @click="emit('select-match', match)"
           >
             <!-- Time -->
-            <div class="flex flex-col items-center justify-center py-1 px-3 bg-neutral-50 dark:bg-neutral-800 rounded-2xl min-w-[60px]">
+            <div class="flex flex-col items-center justify-center py-1 px-3 bg-neutral-100 dark:bg-neutral-800 rounded-2xl min-w-[60px]">
               <span class="text-xs font-black text-neutral-900 dark:text-white">{{ formatMatchTime(match.scheduled_at) }}</span>
-              <span class="text-[8px] font-bold text-neutral-400 uppercase tracking-widest">WIB</span>
+              <span class="text-[8px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-widest">WIB</span>
             </div>
 
             <!-- Match Info -->

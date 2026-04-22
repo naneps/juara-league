@@ -1,4 +1,5 @@
-export type SportType = 'e-sport' | 'traditional' | 'miscellaneous';
+export type SportType = 'esport' | 'sport';
+
 
 export interface Sport {
   id: string;

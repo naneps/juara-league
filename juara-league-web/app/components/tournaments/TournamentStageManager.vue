@@ -135,7 +135,7 @@ onMounted(() => { fetchStages() })
   <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden flex flex-col">
     
     <!-- ── Header ── -->
-    <div class="px-6 py-5 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/20">
+    <div class="px-6 py-5 border-b border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-800/20">
       <div class="flex items-center justify-between gap-4">
         <div>
           <h2 class="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">

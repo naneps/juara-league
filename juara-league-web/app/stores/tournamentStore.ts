@@ -58,7 +58,7 @@ export const useTournamentStore = defineStore('tournament', () => {
   const getBySlug = async (slug: string) => {
     isLoading.value = true
     try {
-      const response = await useApi<{ data: Tournament }>(`/api/v1/tournaments/${slug}?include=stages,participants,staff,sport`)
+      const response = await useApi<{ data: Tournament }>(`/api/v1/tournaments/${slug}?include=stages.groups,participants,staff,sport`)
       return response.data
     } catch (e: any) {
       error.value = e.message || 'Turnamen tidak ditemukan'
@@ -245,6 +245,15 @@ export const useTournamentStore = defineStore('tournament', () => {
 
   // ── Other ──
 
+  const fetchStandings = async (slug: string, stageId: string, groupId: string) => {
+    try {
+      const response = await useApi<{ data: any[] }>(`/api/v1/tournaments/${slug}/stages/${stageId}/groups/${groupId}/standings`)
+      return response.data
+    } catch (e: any) {
+      throw e
+    }
+  }
+
   const fetchParticipants = async (slug: string) => {
     try {
       const response = await useApi<{ data: any[] }>(`/api/v1/tournaments/${slug}/participants`)
@@ -365,7 +374,7 @@ export const useTournamentStore = defineStore('tournament', () => {
     // Match & Game
     fetchMatches, fetchMatchDetail, updateMatch, inputGame, correctGame,
     // Other
-    fetchParticipants, updateParticipantStatus, fetchSports,
+    fetchStandings, fetchParticipants, updateParticipantStatus, fetchSports,
     fetchStaff, addStaff, removeStaff
   }
 })

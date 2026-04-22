@@ -3,7 +3,14 @@ import type { Sport, StoreSportPayload, UpdateSportPayload, SportType } from '~/
 
 export const useSportStore = defineStore('sport', () => {
   const sports = ref<Sport[]>([])
+  const pagination = ref({
+    total: 0,
+    per_page: 10,
+    current_page: 1,
+    last_page: 1
+  })
   const isLoading = ref(false)
+
   const error = ref<string | null>(null)
 
   // Public fetching (usually active only)
@@ -25,16 +32,31 @@ export const useSportStore = defineStore('sport', () => {
   }
 
   // Admin CRUD operations
-  const fetchAllSportsAdmin = async () => {
+  const fetchAllSportsAdmin = async (params: { page?: number, per_page?: number, search?: string, type?: any } = {}) => {
     isLoading.value = true
     error.value = null
+    
+    // Ensure params are clean (handle object from SelectMenu)
+    const queryParams = { ...params }
+    if (queryParams.type && typeof queryParams.type === 'object') {
+      queryParams.type = queryParams.type.value
+    }
+
     try {
-      // Note: Backend might define different routes for admin list
-      // If same, we can add a filter. Here we assume index admin exists
-      // based on controller findings earlier
-      const response = await useApi<{ data: Sport[] }>('/api/v1/sports') // Assuming public index returns all for now or check admin routes
+      const response = await useApi<{ data: Sport[], meta: any }>('/api/v1/admin/sports', {
+        params: queryParams
+      })
+
       sports.value = response.data
-      return response.data
+      if (response.meta) {
+        pagination.value = {
+          total: response.meta.total,
+          per_page: response.meta.per_page,
+          current_page: response.meta.current_page,
+          last_page: response.meta.last_page
+        }
+      }
+      return response
     } catch (e: any) {
       error.value = e.message || 'Gagal mengambil data cabang olahraga admin'
       throw e
@@ -42,6 +64,7 @@ export const useSportStore = defineStore('sport', () => {
       isLoading.value = false
     }
   }
+
 
   const createSport = async (payload: StoreSportPayload) => {
     isLoading.value = true
@@ -97,7 +120,9 @@ export const useSportStore = defineStore('sport', () => {
 
   return {
     sports,
+    pagination,
     isLoading,
+
     error,
     fetchSports,
     fetchAllSportsAdmin,

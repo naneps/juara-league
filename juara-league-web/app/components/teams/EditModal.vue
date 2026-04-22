@@ -11,12 +11,15 @@ const emit = defineEmits<{
   success: []
   'update:open': [value: boolean]
 }>()
-const props = defineProps<{ team: Team }>()
-const emit = defineEmits(['success'])
+
 const teamStore = useTeamStore()
 const toast = useToast()
 const { t } = useI18n()
-const open = ref(false)
+const open = computed({
+  get: () => props.open ?? false,
+  set: (value) => emit('update:open', value)
+})
+
 
 const schema = z.object({
   name: z.string().min(3, t('teams.add_modal.error_name_min')).max(100),

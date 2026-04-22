@@ -101,7 +101,9 @@ Route::prefix('v1')->group(function () {
             Route::get('/stats', [\App\Http\Controllers\Api\V1\Admin\StatsController::class, 'index']);
 
             // Sports
+            Route::get('/sports', [\App\Http\Controllers\Api\V1\Admin\SportController::class, 'index']);
             Route::post('/sports', [\App\Http\Controllers\Api\V1\Admin\SportController::class, 'store']);
+
             Route::put('/sports/{id}', [\App\Http\Controllers\Api\V1\Admin\SportController::class, 'update']);
             Route::delete('/sports/{id}', [\App\Http\Controllers\Api\V1\Admin\SportController::class, 'destroy']);
 

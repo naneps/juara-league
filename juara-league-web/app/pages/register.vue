@@ -45,25 +45,25 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen relative flex items-start justify-center px-4 pt-32 pb-12 sm:px-6 lg:px-8 overflow-hidden bg-neutral-950">
+  <div class="min-h-screen relative flex items-start justify-center px-4 pt-32 pb-12 sm:px-6 lg:px-8 overflow-hidden bg-neutral-50 dark:bg-neutral-950 transition-colors duration-500">
     <!-- Background Decoration -->
     <div class="absolute top-0 right-1/2 translate-x-1/2 w-full max-w-4xl h-[500px] bg-primary-500/10 blur-[120px] rounded-full pointer-events-none"></div>
     <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-primary-600/5 blur-[100px] rounded-full pointer-events-none"></div>
     
     <div class="max-w-md w-full relative z-10">
       <!-- Card Container -->
-      <div class="bg-neutral-900/40 backdrop-blur-2xl p-8 rounded-[2rem] border border-white/5 shadow-2xl relative overflow-hidden group">
+      <div class="bg-white/80 dark:bg-neutral-900/40 backdrop-blur-2xl p-8 rounded-[2rem] border border-neutral-200 dark:border-white/5 shadow-2xl relative overflow-hidden group">
         <!-- Inner Glow -->
         <div class="absolute -top-24 -right-24 w-48 h-48 bg-primary-500/10 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
 
         <div class="text-center mb-10">
           <div class="inline-flex items-center justify-center p-4 bg-primary-500/10 rounded-2xl mb-6 ring-1 ring-primary-500/20">
-            <UIcon name="i-lucide-user-plus" class="text-primary-400 size-8" />
+            <UIcon name="i-lucide-user-plus" class="text-primary-500 dark:text-primary-400 size-8" />
           </div>
-          <h2 class="text-3xl font-black text-white tracking-tight mb-2">
+          <h2 class="text-3xl font-black text-neutral-900 dark:text-white tracking-tight mb-2">
             Mulai<span class="text-primary-500">Juara</span>
           </h2>
-          <p class="text-neutral-400 font-medium">Daftar sekarang & mulai turnamen Anda!</p>
+          <p class="text-neutral-600 dark:text-neutral-400 font-medium">Daftar sekarang & mulai turnamen Anda!</p>
         </div>
 
         <div v-if="errors.global" class="mb-6 bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm flex items-center gap-3">
@@ -80,8 +80,8 @@ onMounted(() => {
               size="lg"
               class="w-full"
               :ui="{ 
-                base: 'bg-white/5 border-white/5 focus:ring-primary-500/50 rounded-xl transition-all duration-300',
-                leading: 'pointer-events-none'
+                base: 'bg-neutral-50 dark:bg-white/5 border-neutral-200 dark:border-white/5 focus:ring-primary-500/50 rounded-xl transition-all duration-300 text-neutral-900 dark:text-white',
+                leading: 'pointer-events-none text-neutral-400 dark:text-neutral-500'
               }"
             />
           </UFormField>
@@ -95,8 +95,8 @@ onMounted(() => {
               size="lg"
               class="w-full"
               :ui="{ 
-                base: 'bg-white/5 border-white/5 focus:ring-primary-500/50 rounded-xl transition-all duration-300',
-                leading: 'pointer-events-none'
+                base: 'bg-neutral-50 dark:bg-white/5 border-neutral-200 dark:border-white/5 focus:ring-primary-500/50 rounded-xl transition-all duration-300 text-neutral-900 dark:text-white',
+                leading: 'pointer-events-none text-neutral-400 dark:text-neutral-500'
               }"
             />
           </UFormField>
@@ -110,8 +110,8 @@ onMounted(() => {
               size="lg"
               class="w-full"
               :ui="{ 
-                base: 'bg-white/5 border-white/5 focus:ring-primary-500/50 rounded-xl transition-all duration-300',
-                leading: 'pointer-events-none'
+                base: 'bg-neutral-50 dark:bg-white/5 border-neutral-200 dark:border-white/5 focus:ring-primary-500/50 rounded-xl transition-all duration-300 text-neutral-900 dark:text-white',
+                leading: 'pointer-events-none text-neutral-400 dark:text-neutral-500'
               }"
             />
           </UFormField>
@@ -125,8 +125,8 @@ onMounted(() => {
               size="lg"
               class="w-full"
               :ui="{ 
-                base: 'bg-white/5 border-white/5 focus:ring-primary-500/50 rounded-xl transition-all duration-300',
-                leading: 'pointer-events-none'
+                base: 'bg-neutral-50 dark:bg-white/5 border-neutral-200 dark:border-white/5 focus:ring-primary-500/50 rounded-xl transition-all duration-300 text-neutral-900 dark:text-white',
+                leading: 'pointer-events-none text-neutral-400 dark:text-neutral-500'
               }"
             />
           </UFormField>

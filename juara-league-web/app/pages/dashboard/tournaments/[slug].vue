@@ -15,6 +15,7 @@ const links = computed(() => [
   { label: t('dashboard.stages'),     icon: 'i-lucide-layers',            to: `/dashboard/tournaments/${slug}/stages` },
   { label: t('dashboard.matches'), icon: 'i-lucide-swords', to: `/dashboard/tournaments/${slug}/matches` },
   { label: t('dashboard.bracket'),   icon: 'i-lucide-git-branch',        to: `/dashboard/tournaments/${slug}/bracket` },
+  { label: t('dashboard.standings'), icon: 'i-lucide-list-ordered',       to: `/dashboard/tournaments/${slug}/standings` },
   { label: t('dashboard.staff'),      icon: 'i-lucide-shield-check',      to: `/dashboard/tournaments/${slug}/staff` },
 ])
 

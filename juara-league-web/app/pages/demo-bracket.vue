@@ -1,16 +1,16 @@
 <template>
-  <div class="min-h-screen bg-neutral-950 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] pt-24 pb-12 overflow-x-auto relative">
+  <div class="min-h-screen bg-white dark:bg-neutral-950 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] pt-24 pb-12 overflow-x-auto relative transition-colors duration-500">
     
     <!-- Header -->
     <div class="absolute top-24 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-primary-600/10 mix-blend-screen blur-[120px] rounded-full pointer-events-none"></div>
     
     <div class="max-w-[1400px] mx-auto px-8 mb-16 relative z-10 flex items-center justify-between">
       <div>
-        <NuxtLink to="/" class="text-neutral-400 hover:text-white flex items-center gap-2 mb-4 text-sm font-medium transition-colors w-fit">
+        <NuxtLink to="/" class="text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white flex items-center gap-2 mb-4 text-sm font-medium transition-colors w-fit">
           <UIcon name="i-lucide-arrow-left" class="size-4" /> Kembali ke Depan
         </NuxtLink>
-        <h1 class="text-4xl font-extrabold text-white mb-2 tracking-tight">Valorant Community Cup S4</h1>
-        <div class="flex items-center gap-4 text-sm text-neutral-400">
+        <h1 class="text-4xl font-extrabold text-neutral-900 dark:text-white mb-2 tracking-tight">Valorant Community Cup S4</h1>
+        <div class="flex items-center gap-4 text-sm text-neutral-500 dark:text-neutral-400">
           <span class="flex items-center gap-1.5"><UIcon name="i-lucide-trophy" class="size-4 text-primary-400" /> Single Elimination (Best of 3)</span>
           <span class="flex items-center gap-1.5"><UIcon name="i-lucide-users" class="size-4" /> 8 Besar</span>
         </div>

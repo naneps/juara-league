@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-neutral-950 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] pt-24 pb-24 overflow-x-auto selection:bg-primary-500/30">
+  <div class="min-h-screen bg-white dark:bg-neutral-950 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] pt-24 pb-24 overflow-x-auto selection:bg-primary-500/30 transition-colors duration-500">
     
     <!-- Background Glows -->
     <div class="fixed top-0 left-1/4 w-[500px] h-[500px] bg-primary-600/5 blur-[120px] rounded-full pointer-events-none"></div>
@@ -8,14 +8,14 @@
     <div class="max-w-[1600px] mx-auto px-8 mb-12 relative z-10">
       <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <NuxtLink to="/demo-bracket" class="text-neutral-500 hover:text-white flex items-center gap-2 mb-4 text-sm font-medium transition-colors w-fit">
+          <NuxtLink to="/demo-bracket" class="text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white flex items-center gap-2 mb-4 text-sm font-medium transition-colors w-fit">
             <UIcon name="i-lucide-arrow-left" class="size-4" /> Kembali ke Demo Dasar
           </NuxtLink>
-          <h1 class="text-5xl font-black text-white mb-3 tracking-tighter">Bracket Showcase</h1>
-          <p class="text-neutral-400 max-w-2xl text-lg">Eksplorasi berbagai format turnamen dengan animasi neon liquid yang mulus dan layout otomatis yang responsif.</p>
+          <h1 class="text-5xl font-black text-neutral-900 dark:text-white mb-3 tracking-tighter">Bracket Showcase</h1>
+          <p class="text-neutral-600 dark:text-neutral-400 max-w-2xl text-lg">Eksplorasi berbagai format turnamen dengan animasi neon liquid yang mulus dan layout otomatis yang responsif.</p>
         </div>
 
-        <div class="flex bg-neutral-900 p-1 rounded-xl border border-white/5 shadow-inner">
+        <div class="flex bg-neutral-100 dark:bg-neutral-900 p-1 rounded-xl border border-neutral-200 dark:border-white/5 shadow-inner">
           <button 
             v-for="f in formats" :key="f.id"
             @click="activeFormat = f.id"
@@ -60,7 +60,7 @@
           <div v-if="activeFormat === 'double-8'" class="flex flex-col gap-24 min-w-max items-center">
             <!-- Winners Bracket -->
             <div class="space-y-4">
-              <h2 class="text-white/20 font-black text-4xl uppercase tracking-widest text-center">Winners Bracket</h2>
+              <h2 class="text-neutral-300 dark:text-white/20 font-black text-4xl uppercase tracking-widest text-center">Winners Bracket</h2>
               <div class="flex items-center justify-center">
                  <div v-for="(round, rIdx) in winnersRounds" :key="rIdx" class="flex items-center">
                     <div class="flex flex-col justify-around h-full" :style="{ gap: `${round.gap}px` }">
@@ -75,7 +75,7 @@
 
             <!-- Losers Bracket -->
             <div class="space-y-4">
-              <h2 class="text-white/20 font-black text-4xl uppercase tracking-widest text-center">Losers Bracket</h2>
+              <h2 class="text-neutral-300 dark:text-white/20 font-black text-4xl uppercase tracking-widest text-center">Losers Bracket</h2>
               <div class="flex items-center justify-center">
                  <div v-for="(round, rIdx) in losersRounds" :key="rIdx" class="flex items-center">
                     <div class="flex flex-col justify-around h-full" :style="{ gap: `${round.gap}px` }">
@@ -103,19 +103,19 @@
 
           <!-- Group Stage Demo -->
           <div v-if="activeFormat === 'groups'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
-            <div v-for="g in ['A', 'B', 'C', 'D']" :key="g" class="bg-neutral-900/50 backdrop-blur border border-white/5 rounded-2xl p-6 hover:border-primary-500/30 transition-all group w-[280px]">
+            <div v-for="g in ['A', 'B', 'C', 'D']" :key="g" class="bg-white dark:bg-neutral-900/50 backdrop-blur border border-neutral-200 dark:border-white/5 rounded-2xl p-6 hover:border-primary-500/30 transition-all group w-[280px] shadow-sm">
               <div class="flex items-center justify-between mb-6">
-                <h3 class="text-2xl font-black text-white italic tracking-tighter">GROUP {{ g }}</h3>
+                <h3 class="text-2xl font-black text-neutral-900 dark:text-white italic tracking-tighter">GROUP {{ g }}</h3>
                 <span class="text-[10px] font-bold text-primary-400 bg-primary-500/10 px-2 py-1 rounded">ONGOING</span>
               </div>
               <div class="space-y-3">
-                 <div v-for="i in 4" :key="i" class="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 group-hover:bg-white/10 transition-colors">
+                 <div v-for="i in 4" :key="i" class="flex items-center justify-between p-3 rounded-lg bg-neutral-50 dark:bg-white/5 border border-neutral-100 dark:border-white/5 group-hover:bg-neutral-100 dark:group-hover:bg-white/10 transition-colors">
                     <div class="flex items-center gap-3">
-                       <span class="text-neutral-500 font-mono text-xs w-4">{{ i }}</span>
+                       <span class="text-neutral-400 dark:text-neutral-500 font-mono text-xs w-4">{{ i }}</span>
                        <UAvatar src="https://i.pravatar.cc/50" size="xs" />
-                       <span class="text-sm font-bold text-neutral-300">Team {{ i }}</span>
+                       <span class="text-sm font-bold text-neutral-700 dark:text-neutral-300">Team {{ i }}</span>
                     </div>
-                    <span class="text-xs font-mono text-neutral-500">6 pts</span>
+                    <span class="text-xs font-mono text-neutral-400 dark:text-neutral-500">6 pts</span>
                  </div>
               </div>
             </div>

@@ -12,13 +12,14 @@ class SportRepository implements SportRepositoryInterface
     {
         $query = Sport::query();
 
-        if (isset($filters['search'])) {
+        if (!empty($filters['search'])) {
             $query->where('name', 'like', '%' . $filters['search'] . '%');
         }
 
-        if (isset($filters['type']) && $filters['type'] !== 'all') {
+        if (!empty($filters['type']) && $filters['type'] !== 'all') {
             $query->where('type', $filters['type']);
         }
+
 
         if (isset($filters['active_only']) && $filters['active_only']) {
             $query->where('is_active', true);

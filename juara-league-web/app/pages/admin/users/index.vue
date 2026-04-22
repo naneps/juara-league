@@ -12,20 +12,26 @@ const toast = useToast()
 
 const columns: any[] = [{
   id: 'user',
-  header: 'User'
+  header: 'User',
+  class: 'w-[35%]'
 }, {
   id: 'roles',
-  header: 'Role'
+  header: 'Role',
+  class: 'w-[20%]'
 }, {
   id: 'status',
-  header: 'Status'
+  header: 'Status',
+  class: 'w-[15%]'
 }, {
   id: 'created_at',
-  header: 'Bergabung'
+  header: 'Bergabung',
+  class: 'w-[20%]'
 }, {
   id: 'actions',
-  header: 'Aksi'
+  header: 'Aksi',
+  class: 'w-[10%] text-right'
 }]
+
 
 const search = ref('')
 const roleFilter = ref('all')
@@ -129,15 +135,17 @@ const formatDate = (date: string) => {
             />
             <USelectMenu
               v-model="roleFilter"
-              :items="[
+              :options="[
                 { label: 'Semua Role', value: 'all' },
                 { label: 'Admin', value: 'admin' },
                 { label: 'User', value: 'user' }
               ]"
               value-attribute="value"
+              option-attribute="label"
               size="sm"
               class="w-32"
             />
+
             <UButton
               icon="i-lucide-refresh-cw"
               variant="ghost"
@@ -151,31 +159,37 @@ const formatDate = (date: string) => {
     </template>
 
     <template #body>
-      <div v-if="error && !users.length" class="p-12 text-center">
-        <div class="p-8 rounded-3xl bg-error-500/10 border border-error-500/20 max-w-md mx-auto">
-          <UIcon name="i-lucide-alert-triangle" class="size-12 text-error-500 mb-4" />
-          <h3 class="text-lg font-bold dark:text-white mb-2">Gagal Memuat Data</h3>
-          <p class="text-sm dark:text-neutral-400 mb-6">{{ error }}</p>
-          <UButton color="neutral" variant="outline" @click="refresh">Coba Lagi</UButton>
-        </div>
-      </div>
+      <div class="flex flex-col h-full overflow-hidden">
 
-      <div v-else class="space-y-6">
+        <div v-if="error && !users.length" class="p-12 text-center shrink-0">
+          <div class="p-8 rounded-3xl bg-error-500/10 border border-error-500/20 max-w-md mx-auto">
+            <UIcon name="i-lucide-alert-triangle" class="size-12 text-error-500 mb-4" />
+            <h3 class="text-lg font-bold dark:text-white mb-2">Gagal Memuat Data</h3>
+            <p class="text-sm dark:text-neutral-400 mb-6">{{ error }}</p>
+            <UButton color="neutral" variant="outline" @click="refresh">Coba Lagi</UButton>
+          </div>
+        </div>
+
         <UCard
-          class="dark:bg-neutral-900/40 backdrop-blur-xl border border-neutral-200 dark:border-white/5 overflow-hidden"
-          :ui="{ body: 'p-0 sm:p-0' }"
+          v-else
+          class="flex-1 min-h-0 flex flex-col dark:bg-neutral-900/40 backdrop-blur-xl border border-neutral-200 dark:border-white/5 overflow-hidden"
+          :ui="{ body: 'p-0 sm:p-0 flex-1 overflow-hidden flex flex-col' }"
         >
-          <UTable
-            :data="users || []"
-            :columns="columns"
-            :loading="isLoading || status === 'pending'"
-            :row-key="row => row.id"
-            :ui="{ 
-              thead: 'bg-neutral-50 dark:bg-white/[0.02]',
-              th: { base: 'text-[10px] uppercase tracking-widest font-black text-neutral-500 py-4 px-4 border-b border-neutral-200 dark:border-white/5' },
-              td: { base: 'py-4 px-4' }
-            }"
-          >
+
+            <UTable
+              :data="users || []"
+              :columns="columns"
+              :loading="isLoading || status === 'pending'"
+              :row-key="row => row.id"
+              class="flex-1 overflow-auto"
+              :ui="{ 
+                wrapper: 'flex-1 overflow-auto',
+                thead: 'bg-neutral-50 dark:bg-white/[0.02] sticky top-0 z-10 backdrop-blur-md',
+                th: { base: 'text-[10px] uppercase tracking-widest font-black text-neutral-500 py-3 px-4 border-b border-neutral-200 dark:border-white/5' },
+                td: { base: 'py-2 px-4 border-b border-neutral-100 dark:border-white/[0.02]' }
+              }"
+            >
+
             <template #user-cell="{ row }">
               <div class="flex items-center gap-3">
                 <UAvatar 
@@ -224,30 +238,33 @@ const formatDate = (date: string) => {
             </template>
 
             <template #actions-cell="{ row }">
-              <UDropdownMenu
-                v-if="row"
-                :items="[[
-                  {
-                    label: (row.original as any).roles?.includes('admin') ? 'Jadikan User Biasa' : 'Beri Akses Admin',
-                    icon: (row.original as any).roles?.includes('admin') ? 'i-lucide-user' : 'i-lucide-shield-check',
-                    onSelect: () => handleChangeRole((row.original as any), (row.original as any).roles?.includes('admin') ? 'user' : 'admin')
-                  },
-                  {
-                    label: (row.original as any).is_suspended ? 'Aktifkan Akun' : 'Blokir Akun',
-                    icon: (row.original as any).is_suspended ? 'i-lucide-unlock' : 'i-lucide-lock',
-                    color: (row.original as any).is_suspended ? 'success' : 'error',
-                    onSelect: () => handleToggleSuspension((row.original as any))
-                  }
-                ]]"
-              >
-                <UButton
-                  icon="i-lucide-more-horizontal"
-                  color="neutral"
-                  variant="ghost"
-                  size="xs"
-                />
-              </UDropdownMenu>
+              <div class="flex justify-end">
+                <UDropdownMenu
+                  v-if="row"
+                  :items="[[
+                    {
+                      label: (row.original as any).roles?.includes('admin') ? 'Jadikan User Biasa' : 'Beri Akses Admin',
+                      icon: (row.original as any).roles?.includes('admin') ? 'i-lucide-user' : 'i-lucide-shield-check',
+                      onSelect: () => handleChangeRole((row.original as any), (row.original as any).roles?.includes('admin') ? 'user' : 'admin')
+                    },
+                    {
+                      label: (row.original as any).is_suspended ? 'Aktifkan Akun' : 'Blokir Akun',
+                      icon: (row.original as any).is_suspended ? 'i-lucide-unlock' : 'i-lucide-lock',
+                      color: (row.original as any).is_suspended ? 'success' : 'error',
+                      onSelect: () => handleToggleSuspension((row.original as any))
+                    }
+                  ]]"
+                >
+                  <UButton
+                    icon="i-lucide-more-horizontal"
+                    color="neutral"
+                    variant="ghost"
+                    size="xs"
+                  />
+                </UDropdownMenu>
+              </div>
             </template>
+
 
             <template #empty-state>
               <div class="flex flex-col items-center justify-center py-24 text-neutral-600">
@@ -260,7 +277,8 @@ const formatDate = (date: string) => {
             </template>
           </UTable>
 
-          <div v-if="usersMeta && usersMeta.total > usersMeta.per_page" class="p-4 border-t border-neutral-200 dark:border-white/5 flex justify-end">
+
+          <div v-if="usersMeta && usersMeta.total > usersMeta.per_page" class="p-4 border-t border-neutral-200 dark:border-white/5 flex justify-end shrink-0">
             <UPagination
               v-model="page"
               :total="usersMeta.total"
@@ -271,5 +289,6 @@ const formatDate = (date: string) => {
         </UCard>
       </div>
     </template>
+
   </UDashboardPanel>
 </template>
