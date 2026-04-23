@@ -20,6 +20,11 @@ useHead({
 const title = 'Juara League - Platform Turnamen Terlengkap'
 const description = 'Platform turnamen olahraga terlengkap di Indonesia. Mewujudkan era kompetisi modern dengan eksekusi Zero-hassle.'
 
+const { fetchSettings } = useSettings()
+onMounted(() => {
+  fetchSettings()
+})
+
 useSeoMeta({
   title,
   description,

@@ -8,6 +8,7 @@ export const useAdminStore = defineStore('admin', () => {
   const users = ref<User[]>([])
   const usersMeta = ref<any>(null)
   const pendingTournaments = ref<Tournament[]>([])
+  const settings = ref<any>(null)
   
   const isLoading = ref(false)
   const error = ref<string | null>(null)
@@ -112,6 +113,34 @@ export const useAdminStore = defineStore('admin', () => {
     }
   }
 
+  // --- ACTIONS: SETTINGS ---
+  const fetchSettings = async () => {
+    isLoading.value = true
+    try {
+      const response = await useApi<any>('/api/v1/admin/settings')
+      settings.value = response.data
+    } catch (e: any) {
+      throw e
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const updateSettings = async (payload: { key: string, value: any }[]) => {
+    isLoading.value = true
+    try {
+      await useApi('/api/v1/admin/settings', {
+        method: 'PUT',
+        body: { settings: payload }
+      })
+      await fetchSettings()
+    } catch (e: any) {
+      throw e
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     stats,
     users,
@@ -125,6 +154,9 @@ export const useAdminStore = defineStore('admin', () => {
     changeUserRole,
     fetchPendingTournaments,
     approveTournament,
-    rejectTournament
+    rejectTournament,
+    settings,
+    fetchSettings,
+    updateSettings
   }
 })

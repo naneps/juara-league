@@ -13,6 +13,14 @@ export const useApi = <T = any>(path: string, options: any = {}) => {
       ...options.headers,
     },
     async onResponseError({ response }: { response: any }) {
+      // Handle Maintenance Mode
+      if (response.status === 503 && response._data?.code === 'MAINTENANCE_MODE') {
+        const currentPath = useRoute().path
+        if (currentPath !== '/maintenance') {
+          return navigateTo('/maintenance')
+        }
+      }
+
       if (response.status === 401) {
         // Only clear the session if we're on a page that strictly requires it
         // and we aren't currently in the middle of an auth process

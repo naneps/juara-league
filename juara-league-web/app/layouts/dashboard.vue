@@ -52,6 +52,14 @@ const links = computed(() => {
       onSelect: () => {
         open.value = false
       }
+    }, {
+      label: t('sidebar.system_settings'),
+      icon: 'i-lucide-settings-2',
+      to: '/admin/settings',
+      color: 'indigo',
+      onSelect: () => {
+        open.value = false
+      }
     }])
   }
 

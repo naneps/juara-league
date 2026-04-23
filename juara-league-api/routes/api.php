@@ -41,6 +41,8 @@ Route::prefix('v1')->group(function () {
 
     Route::get('/sports', [\App\Http\Controllers\Api\V1\SportController::class, 'index']);
     Route::get('/sports/{id}', [\App\Http\Controllers\Api\V1\SportController::class, 'show']);
+    
+    Route::get('/settings/public', [\App\Http\Controllers\Api\V1\Admin\SettingController::class, 'publicIndex']);
 
     /*
     |--------------------------------------------------------------------------
@@ -117,6 +119,10 @@ Route::prefix('v1')->group(function () {
             Route::patch('/users/{user}/role', [\App\Http\Controllers\Api\V1\Admin\UserController::class, 'updateRole']);
             Route::patch('/users/{user}/suspend', [\App\Http\Controllers\Api\V1\Admin\UserController::class, 'toggleSuspension']);
             Route::delete('/users/{user}', [\App\Http\Controllers\Api\V1\Admin\UserController::class, 'destroy']);
+            
+            // Settings
+            Route::get('/settings', [\App\Http\Controllers\Api\V1\Admin\SettingController::class, 'index']);
+            Route::put('/settings', [\App\Http\Controllers\Api\V1\Admin\SettingController::class, 'update']);
         });
 
         // Team Management

@@ -1,10 +1,9 @@
 <template>
-  <div class="min-h-screen bg-white dark:bg-neutral-950 text-neutral-900 dark:text-white transition-colors duration-500">
+  <div class="min-h-screen relative text-neutral-900 dark:text-white transition-colors duration-500">
 
-    <!-- Subtle background glow -->
-    <div class="fixed inset-0 pointer-events-none overflow-hidden">
-      <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[60rem] h-[30rem] bg-primary-500/5 dark:bg-primary-500/6 rounded-full blur-[120px]" />
-    </div>
+    <ClientOnly>
+      <HeroBackground />
+    </ClientOnly>
 
 
     <!-- ─── HERO ─── -->
