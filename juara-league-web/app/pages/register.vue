@@ -1,5 +1,7 @@
 <script setup lang="ts">
 const { register, loggedIn } = useAuth()
+const { isRegistrationEnabled } = useSettings()
+const toast = useToast()
 
 definePageMeta({
   layout: 'default'
@@ -16,6 +18,12 @@ const loading = ref(false)
 const errors = ref<any>({})
 
 async function onSubmit() {
+  // Double-check di sisi frontend sebelum kirim request
+  if (!isRegistrationEnabled.value) {
+    errors.value = { global: 'Pendaftaran akun baru sedang ditutup sementara oleh admin.' }
+    return
+  }
+
   loading.value = true
   errors.value = {}
 
@@ -24,7 +32,10 @@ async function onSubmit() {
     await register(state)
     success = true
   } catch (err: any) {
-    if (err.data?.errors) {
+    // Handle REGISTRATION_DISABLED khusus dari backend
+    if (err.data?.code === 'REGISTRATION_DISABLED') {
+      errors.value = { global: 'Pendaftaran akun baru sedang ditutup sementara oleh admin.' }
+    } else if (err.data?.errors) {
       errors.value = err.data.errors
     } else {
       errors.value = { global: err.data?.message || 'Registrasi gagal. Silakan coba lagi.' }
@@ -33,13 +44,18 @@ async function onSubmit() {
   }
 
   if (success) {
-    await navigateTo('/')
+    toast.add({
+      title: 'Registrasi Berhasil!',
+      description: 'Selamat datang di Juara League. Akun Anda telah dibuat.',
+      color: 'success'
+    })
+    await navigateTo('/dashboard')
   }
 }
 
 onMounted(() => {
   if (loggedIn.value) {
-    navigateTo('/')
+    navigateTo('/dashboard')
   }
 })
 </script>
@@ -64,6 +80,19 @@ onMounted(() => {
             Mulai<span class="text-primary-500">Juara</span>
           </h2>
           <p class="text-neutral-600 dark:text-neutral-400 font-medium">Daftar sekarang & mulai turnamen Anda!</p>
+        </div>
+
+        <!-- Banner: Registrasi Ditutup -->
+        <div v-if="!isRegistrationEnabled" class="mb-6 bg-amber-500/10 border border-amber-500/30 px-5 py-4 rounded-2xl flex items-start gap-4">
+          <div class="shrink-0 bg-amber-500/10 rounded-xl p-2 border border-amber-500/20">
+            <UIcon name="i-lucide-lock" class="size-5 text-amber-400" />
+          </div>
+          <div>
+            <p class="text-sm font-black text-amber-400 uppercase tracking-widest mb-1">Registrasi Ditutup</p>
+            <p class="text-xs text-amber-300/70 leading-relaxed">
+              Pendaftaran akun baru sedang ditutup sementara oleh admin. Silakan cek kembali nanti atau hubungi tim kami.
+            </p>
+          </div>
         </div>
 
         <div v-if="errors.global" class="mb-6 bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm flex items-center gap-3">
@@ -137,9 +166,10 @@ onMounted(() => {
             block 
             size="xl" 
             :loading="loading"
-            class="font-extrabold rounded-xl shadow-lg shadow-primary-500/20 hover:shadow-primary-500/30 transform active:scale-95 transition-all w-full mt-4"
+            :disabled="!isRegistrationEnabled"
+            class="font-extrabold rounded-xl shadow-lg shadow-primary-500/20 hover:shadow-primary-500/30 transform active:scale-95 transition-all w-full mt-4 disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            Daftar Sekarang
+            {{ isRegistrationEnabled ? 'Daftar Sekarang' : 'Registrasi Ditutup' }}
           </UButton>
         </UForm>
 

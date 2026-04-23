@@ -16,7 +16,17 @@ export const useApi = <T = any>(path: string, options: any = {}) => {
       // Handle Maintenance Mode
       if (response.status === 503 && response._data?.code === 'MAINTENANCE_MODE') {
         const currentPath = useRoute().path
-        if (currentPath !== '/maintenance') {
+
+        // Jangan redirect jika:
+        // 1. Sudah di halaman maintenance
+        // 2. Sedang di halaman login (biarkan admin tetap bisa login)
+        // 3. Request yang gagal adalah endpoint login itu sendiri
+        //    (backend sudah whitelist /login, jadi 503 di sini bukan dari maintenance)
+        const isLoginPage = currentPath === '/login'
+        const isLoginRequest = path.includes('/login')
+        const isMaintenancePage = currentPath === '/maintenance'
+
+        if (!isMaintenancePage && !isLoginPage && !isLoginRequest) {
           return navigateTo('/maintenance')
         }
       }

@@ -78,6 +78,18 @@ const socialLinks = [
         >
           CEK KONDISI ARENA
         </UButton>
+
+        <!-- Admin Login Button — discreet, only visible on hover -->
+        <UButton
+          to="/login"
+          size="xl"
+          color="neutral"
+          variant="ghost"
+          class="px-10 py-4 font-black rounded-2xl opacity-0 hover:opacity-100 focus:opacity-100 transition-all duration-500 border border-white/5 hover:border-white/20 hover:bg-white/5 text-white/30 hover:text-white/70 text-sm"
+          icon="i-lucide-shield"
+        >
+          Admin Login
+        </UButton>
       </div>
 
       <!-- Socials -->
