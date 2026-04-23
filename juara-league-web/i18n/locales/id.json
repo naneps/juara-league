@@ -660,5 +660,39 @@
       "publish_failed": "Gagal mempublikasikan turnamen"
     },
     "live_subtitle": "Update skor & monitor pertandingan aktif"
+  },
+  "guide": {
+      "scoring": {
+        "title": "Panduan Scoring: Skor vs Poin",
+        "subtitle": "Pahami cara kerja sistem penilaian di Juara League.",
+        "score": {
+          "title": "Skor (Score)",
+          "desc": "Hasil langsung dari suatu pertandingan atau set/game yang sedang berlangsung.",
+          "example": "Contoh: Futsal (3-1) atau MLBB (2-0)."
+        },
+        "points": {
+          "title": "Poin (Points) - Klasemen",
+          "desc": "Nilai akumulasi yang didapatkan oleh peserta berdasarkan hasil akhir sejumlah pertandingan.",
+          "example": "Menang = 3 poin, Seri = 1 poin, Kalah = 0 poin."
+        },
+        "formats": {
+          "elimination": {
+            "title": "Sistem Gugur (Elimination)",
+            "desc": "Hanya menggunakan Skor. Pemenang ditentukan langsung dari hasil match. Tidak ada akumulasi poin."
+          },
+          "league": {
+            "title": "Sistem Liga / Grup",
+            "desc": "Menggunakan Skor dan Poin. Skor match dikonversi menjadi Poin Klasemen untuk menentukan peringkat."
+          }
+        },
+        "tie_breaker": {
+          "title": "Logika Tie-breaker",
+          "desc": "Jika poin sama, urutan ditentukan oleh:",
+          "step1": "Selisih Skor (Goal Difference)",
+          "step2": "Total Skor Masuk (Goals For)",
+          "step3": "Head-to-head (Jika tersedia)"
+        }
+      }
+    }
   }
 }

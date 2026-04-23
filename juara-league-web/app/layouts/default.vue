@@ -152,6 +152,7 @@ const handleLogout = async () => {
           <div>
             <h4 class="text-neutral-900 dark:text-white font-semibold text-lg mb-6">Dukungan</h4>
             <ul class="text-neutral-500 dark:text-neutral-400 text-sm space-y-4">
+              <li><NuxtLink to="/guide/scoring" class="hover:text-primary-500 dark:hover:text-primary-400 transition-colors">Panduan Scoring</NuxtLink></li>
               <li><a href="#" class="hover:text-primary-500 dark:hover:text-primary-400 transition-colors">Dokumentasi API</a></li>
               <li><a href="#" class="hover:text-primary-500 dark:hover:text-primary-400 transition-colors">Pusat Bantuan</a></li>
               <li><a href="#" class="hover:text-primary-500 dark:hover:text-primary-400 transition-colors">Syarat Kebijakan</a></li>

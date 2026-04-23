@@ -658,5 +658,38 @@
       "publish_failed": "Failed to publish"
     },
     "live_subtitle": "Update scores & monitor active matches"
+  },
+  "guide": {
+    "scoring": {
+      "title": "Scoring Guide: Score vs Points",
+      "subtitle": "Understand how the scoring system works in Juara League.",
+      "score": {
+        "title": "Score",
+        "desc": "Direct result of a specific match or set/game in progress.",
+        "example": "Example: Futsal (3-1) or Mobile Legends (2-0)."
+      },
+      "points": {
+        "title": "Points - Standings",
+        "desc": "Accumulated value earned by participants based on the final results of multiple matches.",
+        "example": "Win = 3 pts, Draw = 1 pt, Loss = 0 pts."
+      },
+      "formats": {
+        "elimination": {
+          "title": "Elimination System",
+          "desc": "Only uses Scores. Winners are determined directly from match results. No point accumulation."
+        },
+        "league": {
+          "title": "League / Group System",
+          "desc": "Uses both Scores and Points. Match scores are converted to Standing Points to determine rankings."
+        }
+      },
+      "tie_breaker": {
+        "title": "Tie-breaker Logic",
+        "desc": "If points are tied, the order is determined by:",
+        "step1": "Score Difference (Goal Difference)",
+        "step2": "Total Scores For (Goals For)",
+        "step3": "Head-to-head (If available)"
+      }
+    }
   }
 }
