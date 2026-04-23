@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const { user, loggedIn, logout, fetchUser } = useAuth()
+const { isRegistrationEnabled } = useSettings()
 const isLogoutModalOpen = ref(false)
 
 const handleLogout = async () => {
@@ -10,7 +11,7 @@ const handleLogout = async () => {
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col bg-neutral-50 dark:bg-transparent text-neutral-900 dark:text-white transition-colors duration-500">
+  <div class="min-h-screen flex flex-col bg-transparent text-neutral-900 dark:text-white transition-colors duration-500">
     <!-- Logout Confirmation Modal -->
     <UModal v-model:open="isLogoutModalOpen">
       <template #content>
@@ -103,7 +104,7 @@ const handleLogout = async () => {
               <NuxtLink to="/login">
                 <UButton variant="ghost" color="neutral" class="hidden sm:inline-flex hover:bg-neutral-100 dark:hover:bg-white/5 ring-1 ring-neutral-200 dark:ring-white/10 hover:ring-neutral-300 dark:hover:ring-white/20">Sign In</UButton>
               </NuxtLink>
-              <NuxtLink to="/register">
+              <NuxtLink v-if="isRegistrationEnabled" to="/register">
                 <UButton color="primary" class="font-semibold px-6 shadow-lg shadow-primary-500/20 hover:shadow-primary-500/40">Register</UButton>
               </NuxtLink>
             </template>
