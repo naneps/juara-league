@@ -106,14 +106,22 @@ class RoundRobinGenerator
                 }
 
                 $matchCount++;
-                TournamentMatch::create([
+                $match = TournamentMatch::create([
                     'stage_id' => $stage->id,
                     'group_id' => $group->id,
                     'round' => $round + 1,
                     'match_number' => $matchCount,
-                    'participant_1_id' => $home->id,
-                    'participant_2_id' => $away->id,
                     'status' => 'upcoming',
+                ]);
+
+                // Add participants to match_participants
+                $match->matchParticipants()->create([
+                    'participant_id' => $home->id,
+                    'slot' => 1
+                ]);
+                $match->matchParticipants()->create([
+                    'participant_id' => $away->id,
+                    'slot' => 2
                 ]);
             }
         }

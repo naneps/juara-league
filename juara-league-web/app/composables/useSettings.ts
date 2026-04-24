@@ -5,7 +5,7 @@ export const useSettings = () => {
   const fetchSettings = async () => {
     loading.value = true
     try {
-      const response = await useApi('/v1/settings/public')
+      const response = await useApi('/api/v1/settings/public')
       settings.value = response.data
     } catch (e) {
       console.error('Failed to fetch settings', e)

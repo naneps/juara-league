@@ -15,7 +15,9 @@ const selectedStage = computed(() => {
 })
 
 onMounted(() => {
-  if (tournament.value?.stages?.length) {
+  if (route.query.stage) {
+    selectedStageId.value = route.query.stage as string
+  } else if (tournament.value?.stages?.length) {
     selectedStageId.value = tournament.value.stages[0].id
   }
 })

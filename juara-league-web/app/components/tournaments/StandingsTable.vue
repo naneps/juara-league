@@ -22,7 +22,7 @@ defineProps<{
 </script>
 
 <template>
-  <div class="overflow-x-auto rounded-2xl border border-neutral-200 dark:border-white/5 bg-white dark:bg-neutral-900/40 shadow-sm">
+  <div class="overflow-x-auto custom-scrollbar rounded-2xl border border-neutral-200 dark:border-white/5 bg-white dark:bg-neutral-900/40 shadow-sm">
     <table class="w-full text-left border-collapse">
       <thead>
         <tr class="bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-100 dark:border-white/5">

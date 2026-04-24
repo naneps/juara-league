@@ -21,14 +21,17 @@ class TournamentMatchResource extends JsonResource
             'round' => $this->round,
             'match_number' => $this->match_number,
 
-            // Participants
-            'participant_1' => new ParticipantResource($this->whenLoaded('participant1')),
-            'participant_2' => new ParticipantResource($this->whenLoaded('participant2')),
+            // New multi-participant list
+            'participants' => MatchParticipantResource::collection($this->whenLoaded('matchParticipants')),
+
+            // Participants (Mapped from matchParticipants for backward compatibility)
+            'participant_1' => $this->getLegacyParticipant(1),
+            'participant_2' => $this->getLegacyParticipant(2),
             'winner' => new ParticipantResource($this->whenLoaded('winner')),
 
-            // Raw IDs (always included for bracket linking)
-            'participant_1_id' => $this->participant_1_id,
-            'participant_2_id' => $this->participant_2_id,
+            // Raw IDs (for legacy support)
+            'participant_1_id' => $this->getLegacyParticipantId(1),
+            'participant_2_id' => $this->getLegacyParticipantId(2),
             'winner_id' => $this->winner_id,
 
             // Match state
@@ -50,5 +53,25 @@ class TournamentMatchResource extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
+    }
+
+    protected function getLegacyParticipant(int $slot)
+    {
+        if (!$this->relationLoaded('matchParticipants')) {
+            return null;
+        }
+
+        $mp = $this->matchParticipants->where('slot', $slot)->first();
+        return $mp ? new ParticipantResource($mp->participant) : null;
+    }
+
+    protected function getLegacyParticipantId(int $slot)
+    {
+        if (!$this->relationLoaded('matchParticipants')) {
+            return null;
+        }
+
+        $mp = $this->matchParticipants->where('slot', $slot)->first();
+        return $mp ? $mp->participant_id : null;
     }
 }

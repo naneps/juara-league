@@ -70,12 +70,14 @@ class SettingController extends Controller
             if ($setting) {
                 $value = $item['value'];
                 if ($setting->type === 'boolean') {
-                    $value = filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false';
+                    // Explicitly handle all falsy variants to avoid filter_var edge cases
+                    $isTruthy = $value === true || $value === 'true' || $value === '1' || $value === 1;
+                    $value = $isTruthy ? 'true' : 'false';
                 } elseif ($setting->type === 'json' && (is_array($value) || is_object($value))) {
                     $value = json_encode($value);
                 }
                 
-                $setting->update(['value' => $value]);
+                $setting->update(['value' => (string) $value]);
             }
         }
 

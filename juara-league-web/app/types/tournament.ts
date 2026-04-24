@@ -22,12 +22,23 @@ export interface Stage {
   name: string;
   type: 'single_elim' | 'double_elim' | 'round_robin' | 'swiss';
   status: 'pending' | 'ongoing' | 'completed';
-  bo_format: 'bo1' | 'bo3' | 'bo5' | 'bo7';
+  bo_format: string; // Legacy
   participants_advance?: number;
   groups_count?: number;
   participants_per_group?: number;
   order: number;
-  settings?: any;
+  settings?: {
+    match_format: 'single_game' | 'best_of' | 'leg';
+    win_condition: number;
+    scoring_method: 'score_based' | 'result_based' | 'point_based';
+    advance_count: number;
+    rounds?: number;
+    rules: {
+      allow_draw: boolean;
+      extra_time: boolean;
+      penalties: boolean;
+    }
+  };
   groups?: Group[];
   matches?: TournamentMatch[];
   created_at: string;
@@ -44,23 +55,40 @@ export interface Group {
   updated_at: string;
 }
 
+export interface MatchParticipant {
+  id: string;
+  match_id: string;
+  participant_id: string;
+  slot: number;
+  score: number;
+  rank?: number;
+  is_winner: boolean;
+  participant?: Participant;
+}
+
 export interface TournamentMatch {
   id: string;
   stage_id: string;
   group_id?: string;
   round: number;
   match_number: number;
+  
+  // Pivot participants (new system)
+  participants?: MatchParticipant[];
+  
+  // Legacy participants mapping
   participant_1?: Participant;
   participant_2?: Participant;
   winner?: Participant;
   participant_1_id?: string;
   participant_2_id?: string;
   winner_id?: string;
+  
   status: 'upcoming' | 'ongoing' | 'completed' | 'bye';
   bracket_side?: 'upper' | 'lower' | 'grand_final';
   next_match_winner_id?: string;
   next_match_loser_id?: string;
-  scores?: { participant_1: number; participant_2: number };
+  scores?: Record<string, number>;
   games?: Game[];
   scheduled_at?: string;
   completed_at?: string;

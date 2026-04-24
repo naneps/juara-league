@@ -176,23 +176,62 @@ class DoubleEliminationGenerator
             $p1 = $seeded[$i * 2] ?? null;
             $p2 = $seeded[$i * 2 + 1] ?? null;
 
-            $updateData = [
-                'participant_1_id' => $p1?->id,
-                'participant_2_id' => $p2?->id,
-            ];
-
-            if ($p1 && !$p2) {
-                $updateData['winner_id'] = $p1->id;
-                $updateData['status'] = 'bye';
-            } elseif ($p2 && !$p1) {
-                $updateData['winner_id'] = $p2->id;
-                $updateData['status'] = 'bye';
+            // Add participants to match_participants
+            if ($p1) {
+                $match->matchParticipants()->create([
+                    'participant_id' => $p1->id,
+                    'slot' => 1
+                ]);
+            }
+            if ($p2) {
+                $match->matchParticipants()->create([
+                    'participant_id' => $p2->id,
+                    'slot' => 2
+                ]);
             }
 
-            $match->update($updateData);
+            if ($p1 && !$p2) {
+                $match->update([
+                    'winner_id' => $p1->id,
+                    'status' => 'bye'
+                ]);
+                $match->matchParticipants()->where('participant_id', $p1->id)->update(['is_winner' => true]);
+                $this->advanceWinnerToNextMatch($match, $p1);
+            } elseif ($p2 && !$p1) {
+                $match->update([
+                    'winner_id' => $p2->id,
+                    'status' => 'bye'
+                ]);
+                $match->matchParticipants()->where('participant_id', $p2->id)->update(['is_winner' => true]);
+                $this->advanceWinnerToNextMatch($match, $p2);
+            }
         }
 
         return $matchNumber;
+    }
+
+    /**
+     * Advance the winner of a bye/completed match to their next match.
+     */
+    protected function advanceWinnerToNextMatch(TournamentMatch $match, Participant $winner): void
+    {
+        if (!$match->next_match_winner_id) {
+            return;
+        }
+
+        $nextMatch = TournamentMatch::find($match->next_match_winner_id);
+        if (!$nextMatch) {
+            return;
+        }
+
+        // Determine which slot the winner should go to in the next match
+        // For double elim, it's usually based on the index in the current round
+        $existingCount = $nextMatch->matchParticipants()->count();
+        
+        $nextMatch->matchParticipants()->create([
+            'participant_id' => $winner->id,
+            'slot' => $existingCount + 1
+        ]);
     }
 
     /**

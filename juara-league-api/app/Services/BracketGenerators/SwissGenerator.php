@@ -37,42 +37,36 @@ class SwissGenerator
 
         for ($i = 0; $i < $half; $i++) {
             $matchCount++;
-            TournamentMatch::create([
+            $match = TournamentMatch::create([
                 'stage_id' => $stage->id,
                 'round' => $round,
                 'match_number' => $matchCount,
-                'participant_1_id' => $players[$i]->id,
-                'participant_2_id' => $players[$half + $i]->id,
                 'status' => 'upcoming',
             ]);
+
+            $match->matchParticipants()->create(['participant_id' => $players[$i]->id, 'slot' => 1]);
+            $match->matchParticipants()->create(['participant_id' => $players[$half + $i]->id, 'slot' => 2]);
         }
 
         // Handle bye for odd number of participants
         if ($count % 2 !== 0) {
             $byeParticipant = $players->last();
             $matchCount++;
-            TournamentMatch::create([
+            $match = TournamentMatch::create([
                 'stage_id' => $stage->id,
                 'round' => $round,
                 'match_number' => $matchCount,
-                'participant_1_id' => $byeParticipant->id,
-                'participant_2_id' => null,
                 'winner_id' => $byeParticipant->id,
                 'status' => 'bye',
             ]);
+            $match->matchParticipants()->create(['participant_id' => $byeParticipant->id, 'slot' => 1, 'is_winner' => true]);
         }
 
         return $matchCount;
     }
 
     /**
-     * Generate the next Swiss round based on current standings.
-     * Pairs participants with the same or closest point totals,
-     * avoiding rematches.
-     *
-     * @param Stage $stage
-     * @param int $roundNumber The round number to generate
-     * @return int Number of matches generated
+     * Generate the next Swiss round...
      */
     public function generateNextRound(Stage $stage, int $roundNumber): int
     {
@@ -111,30 +105,30 @@ class SwissGenerator
 
             if ($bestOpponent) {
                 $matchCount++;
-                TournamentMatch::create([
+                $match = TournamentMatch::create([
                     'stage_id' => $stage->id,
                     'round' => $roundNumber,
                     'match_number' => $matchCount,
-                    'participant_1_id' => $p1['participant_id'],
-                    'participant_2_id' => $bestOpponent['participant_id'],
                     'status' => 'upcoming',
                 ]);
+
+                $match->matchParticipants()->create(['participant_id' => $p1['participant_id'], 'slot' => 1]);
+                $match->matchParticipants()->create(['participant_id' => $bestOpponent['participant_id'], 'slot' => 2]);
 
                 $paired[] = $p1['participant_id'];
                 $paired[] = $bestOpponent['participant_id'];
             } else {
-                // No valid opponent found — give bye (only if not already given)
+                // No valid opponent found — give bye
                 $matchCount++;
-                TournamentMatch::create([
+                $match = TournamentMatch::create([
                     'stage_id' => $stage->id,
                     'round' => $roundNumber,
                     'match_number' => $matchCount,
-                    'participant_1_id' => $p1['participant_id'],
-                    'participant_2_id' => null,
                     'winner_id' => $p1['participant_id'],
                     'status' => 'bye',
                 ]);
 
+                $match->matchParticipants()->create(['participant_id' => $p1['participant_id'], 'slot' => 1, 'is_winner' => true]);
                 $paired[] = $p1['participant_id'];
             }
         }
@@ -144,18 +138,19 @@ class SwissGenerator
 
     /**
      * Calculate standings for a Swiss stage.
-     * Returns collection with participant_id, points, buchholz, wins.
      */
     public function calculateStandings(Stage $stage): Collection
     {
         $matches = $stage->matches()
+            ->with('matchParticipants')
             ->whereIn('status', ['completed', 'bye'])
             ->get();
 
         $stats = [];
 
         foreach ($matches as $match) {
-            foreach ([$match->participant_1_id, $match->participant_2_id] as $pid) {
+            $pIds = $match->matchParticipants->pluck('participant_id')->toArray();
+            foreach ($pIds as $pid) {
                 if (!$pid) continue;
                 if (!isset($stats[$pid])) {
                     $stats[$pid] = [
@@ -169,18 +164,17 @@ class SwissGenerator
             }
 
             if ($match->status === 'bye') {
-                if ($match->participant_1_id) {
-                    $stats[$match->participant_1_id]['points'] += 3;
-                    $stats[$match->participant_1_id]['wins']++;
+                $p1 = $match->matchParticipants->first();
+                if ($p1) {
+                    $stats[$p1->participant_id]['points'] += 3;
+                    $stats[$p1->participant_id]['wins']++;
                 }
                 continue;
             }
 
             if ($match->winner_id) {
                 $winnerId = $match->winner_id;
-                $loserId = $match->participant_1_id === $winnerId
-                    ? $match->participant_2_id
-                    : $match->participant_1_id;
+                $loserId = collect($pIds)->reject(fn($id) => $id === $winnerId)->first();
 
                 if ($winnerId && isset($stats[$winnerId])) {
                     $stats[$winnerId]['points'] += 3;
@@ -198,13 +192,13 @@ class SwissGenerator
             }
         }
 
-        // Calculate Buchholz Score (sum of opponents' points)
+        // Calculate Buchholz Score
         foreach ($stats as &$stat) {
             $stat['buchholz'] = 0;
             foreach ($stat['opponents'] as $oppId) {
                 $stat['buchholz'] += $stats[$oppId]['points'] ?? 0;
             }
-            unset($stat['opponents']); // Clean up
+            unset($stat['opponents']);
         }
 
         return collect(array_values($stats));
@@ -216,10 +210,14 @@ class SwissGenerator
     protected function getPreviousPairings(Stage $stage): array
     {
         return $stage->matches()
-            ->whereNotNull('participant_1_id')
-            ->whereNotNull('participant_2_id')
+            ->with('matchParticipants')
             ->get()
-            ->map(fn($m) => $this->pairingKey($m->participant_1_id, $m->participant_2_id))
+            ->map(function($m) {
+                $pIds = $m->matchParticipants->pluck('participant_id')->sort()->values()->toArray();
+                if (count($pIds) < 2) return null;
+                return "{$pIds[0]}:{$pIds[1]}";
+            })
+            ->filter()
             ->toArray();
     }
 

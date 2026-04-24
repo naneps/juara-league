@@ -60,6 +60,9 @@ Route::prefix('v1')->group(function () {
         Route::put('/users/me', [ProfileController::class, 'updateProfile']);
         Route::put('/users/password', [ProfileController::class, 'updatePassword']);
 
+        // Dashboard Overview
+        Route::get('/dashboard/overview', [\App\Http\Controllers\Api\V1\DashboardController::class, 'overview']);
+
         // File Upload
         Route::post('/upload', [FileController::class, 'upload']);
 
@@ -67,6 +70,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/my-tournaments', [TournamentController::class, 'mine']);
         Route::get('/my-matches', [TournamentController::class, 'liveMatches']);
         Route::post('/tournaments', [TournamentController::class, 'store']);
+        Route::get('/tournaments/{tournament:slug}/stats', [TournamentController::class, 'stats']);
         Route::put('/tournaments/{tournament:slug}', [TournamentController::class, 'update']);
         Route::delete('/tournaments/{tournament:slug}', [TournamentController::class, 'destroy']);
         Route::post('/tournaments/{tournament:slug}/publish', [TournamentController::class, 'publish']);
@@ -81,7 +85,9 @@ Route::prefix('v1')->group(function () {
         Route::put('/tournaments/{tournament:slug}/stages/{stage}', [StageController::class, 'update']);
         Route::delete('/tournaments/{tournament:slug}/stages/{stage}', [StageController::class, 'destroy']);
         Route::post('/tournaments/{tournament:slug}/stages/{stage}/seed', [StageController::class, 'seed']);
+        Route::post('/tournaments/{tournament:slug}/stages/{stage}/shuffle', [StageController::class, 'shuffle']);
         Route::post('/tournaments/{tournament:slug}/stages/{stage}/start', [StageController::class, 'start']);
+        Route::post('/tournaments/{tournament:slug}/stages/{stage}/reset', [StageController::class, 'reset']);
         Route::post('/tournaments/{tournament:slug}/stages/{stage}/auto-schedule', [StageController::class, 'autoSchedule']);
         Route::post('/tournaments/{tournament:slug}/stages/{stage}/advance', [StageController::class, 'advance']);
 

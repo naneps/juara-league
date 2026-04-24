@@ -19,8 +19,6 @@ class TournamentMatch extends Model
         'group_id',
         'round',
         'match_number',
-        'participant_1_id',
-        'participant_2_id',
         'winner_id',
         'status',
         'bracket_side',
@@ -40,6 +38,12 @@ class TournamentMatch extends Model
     ];
 
     /**
+     * Always eager-load participants from pivot table.
+     * This prevents TBD showing up anywhere in the app.
+     */
+    protected $with = ['matchParticipants'];
+
+    /**
      * Get the stage this match belongs to.
      */
     public function stage(): BelongsTo
@@ -53,22 +57,6 @@ class TournamentMatch extends Model
     public function group(): BelongsTo
     {
         return $this->belongsTo(Group::class);
-    }
-
-    /**
-     * Get participant 1.
-     */
-    public function participant1(): BelongsTo
-    {
-        return $this->belongsTo(Participant::class, 'participant_1_id');
-    }
-
-    /**
-     * Get participant 2.
-     */
-    public function participant2(): BelongsTo
-    {
-        return $this->belongsTo(Participant::class, 'participant_2_id');
     }
 
     /**
@@ -120,10 +108,34 @@ class TournamentMatch extends Model
     }
 
     /**
+     * Get the participants for this match (New Pivot Table).
+     */
+    public function matchParticipants(): HasMany
+    {
+        return $this->hasMany(MatchParticipant::class, 'match_id');
+    }
+
+    /**
      * Get the games for this match.
      */
     public function games(): HasMany
     {
         return $this->hasMany(Game::class, 'match_id')->orderBy('game_number');
+    }
+
+    /**
+     * Helper to get the winner from match_participants table.
+     */
+    public function getActualWinner()
+    {
+        return $this->matchParticipants()->where('is_winner', true)->first()?->participant;
+    }
+
+    /**
+     * Helper to check if a specific participant is in this match.
+     */
+    public function hasParticipant(string $participantId): bool
+    {
+        return $this->matchParticipants()->where('participant_id', $participantId)->exists();
     }
 }

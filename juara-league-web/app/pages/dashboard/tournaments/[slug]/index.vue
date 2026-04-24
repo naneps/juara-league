@@ -8,7 +8,12 @@ const tournamentStore = useTournamentStore()
 const toast = useToast()
 const { t } = useI18n()
 
-const { data: tournament, refresh } = await useAsyncData(`tournament-${slug}`, () => tournamentStore.getBySlug(slug))
+const { data: tournament, refresh: refreshTournament } = await useAsyncData(`tournament-${slug}`, () => tournamentStore.getBySlug(slug))
+const { data: stats, refresh: refreshStats } = await useAsyncData(`tournament-stats-${slug}`, () => tournamentStore.fetchStats(slug))
+
+const refresh = async () => {
+  await Promise.all([refreshTournament(), refreshStats()])
+}
 
 const isPublishing = ref(false)
 const isPublishModalOpen = ref(false)
@@ -62,8 +67,14 @@ const selectedMatchStageId = computed(() => {
 const selectedMatchBoFormat = computed(() => {
   if (!matchDetailModalRef.value?.selectedMatch) return 'bo1'
   const stage = tournament.value?.stages?.find((s: any) => s.id === matchDetailModalRef.value.selectedMatch.stage_id)
-  return stage?.config?.bo_format || 'bo1'
+  return stage?.bo_format || 'bo1'
 })
+
+const getParticipantName = (p: any) => {
+  if (!p) return t('match.bracket.tbd')
+  const participant = p.participant || p 
+  return participant.team?.name || participant.user?.name || t('match.bracket.tbd')
+}
 </script>
 
 <template>
@@ -143,15 +154,124 @@ const selectedMatchBoFormat = computed(() => {
       </div>
     </div>
 
-    <!-- ── Stat Cards ── -->
+    <!-- ── Live & Progress ── -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Progress Card -->
+      <div class="lg:col-span-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-[2rem] p-6 relative overflow-hidden">
+        <div class="relative z-10">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xs font-black text-neutral-400 uppercase tracking-widest">{{ $t('dashboard.stats.tournament_progress') }}</h3>
+            <UIcon name="i-lucide-activity" class="size-4 text-primary-500" />
+          </div>
+          
+          <div class="flex flex-col items-center justify-center py-4">
+            <div class="relative size-32 mb-6">
+              <svg class="size-full" viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="16" fill="none" class="stroke-neutral-100 dark:stroke-neutral-800" stroke-width="3"></circle>
+                <circle cx="18" cy="18" r="16" fill="none" class="stroke-primary-500" stroke-width="3" stroke-dasharray="100" :stroke-dashoffset="100 - (stats?.completion_rate || 0)" stroke-linecap="round" transform="rotate(-90 18 18)"></circle>
+              </svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <span class="text-3xl font-black text-neutral-900 dark:text-white">{{ stats?.completion_rate || 0 }}%</span>
+                <span class="text-[9px] font-bold text-neutral-400 uppercase">{{ $t('dashboard.stats.completed') }}</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-8 w-full border-t border-neutral-100 dark:border-neutral-800 pt-6">
+              <div class="text-center">
+                <p class="text-lg font-black text-neutral-900 dark:text-white leading-none mb-1">{{ stats?.matches_completed || 0 }}</p>
+                <p class="text-[10px] text-neutral-400 font-bold uppercase">{{ $t('dashboard.stats.matches') }}</p>
+              </div>
+              <div class="text-center">
+                <p class="text-lg font-black text-neutral-900 dark:text-white leading-none mb-1">{{ stats?.participants_active || 0 }}</p>
+                <p class="text-[10px] text-neutral-400 font-bold uppercase">{{ $t('dashboard.stats.active') }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Matches / Active Stage -->
+      <div class="lg:col-span-2 space-y-6">
+        <div v-if="stats?.active_stage" class="bg-primary-500 rounded-[2rem] p-6 text-white relative overflow-hidden shadow-xl shadow-primary-500/20">
+          <div class="absolute -top-12 -right-12 size-48 bg-white/10 blur-3xl rounded-full"></div>
+          <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+              <p class="text-[10px] font-black text-white/60 uppercase tracking-widest mb-1">{{ $t('dashboard.stats.active_stage') }}</p>
+              <h3 class="text-2xl font-black uppercase tracking-tight">{{ stats.active_stage.name }}</h3>
+            </div>
+            <div class="flex-1 md:max-w-xs">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-[10px] font-black text-white/80 uppercase">{{ $t('dashboard.stats.stage_progress') }}</span>
+                <span class="text-xs font-black">{{ stats.active_stage.progress }}%</span>
+              </div>
+              <UProgress :value="stats.active_stage.progress" color="neutral" size="sm" class="bg-white/20" />
+            </div>
+          </div>
+        </div>
+
+        <div v-if="tournament.stages?.some(s => s.matches?.some((m: any) => m.status === 'ongoing'))" class="bg-neutral-900 border border-white/5 rounded-[2.5rem] p-8 relative overflow-hidden group">
+          <div class="absolute -top-10 -right-10 size-40 bg-primary-500/10 blur-[80px] group-hover:bg-primary-500/20 transition-all"></div>
+          
+          <div class="flex items-center justify-between mb-8 relative z-10">
+            <div class="flex items-center gap-4">
+              <div class="size-12 rounded-2xl bg-neutral-800 flex items-center justify-center border border-white/5 shadow-inner">
+                <UIcon name="i-lucide-play-circle" class="size-6 text-primary-500 animate-pulse" />
+              </div>
+              <div>
+                <h3 class="text-sm font-black text-white uppercase tracking-[0.2em]">{{ $t('public.live_matches') }}</h3>
+                <p class="text-[10px] text-neutral-500 font-bold uppercase tracking-widest mt-1">{{ $t('tournament_detail.live_subtitle') }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
+            <template v-for="stage in tournament.stages">
+              <template v-for="match in stage.matches">
+                <button 
+                  v-if="match.status === 'ongoing'" 
+                  :key="match.id"
+                  @click="matchDetailModalRef?.open(match)"
+                  class="flex flex-col bg-neutral-950 border border-white/5 rounded-2xl p-5 transition-all hover:border-primary-500/40 hover:scale-[1.02] text-left group/card shadow-lg"
+                >
+                  <div class="flex items-center justify-between mb-6">
+                    <span class="text-[9px] font-black text-neutral-600 uppercase tracking-widest">{{ stage.name }}</span>
+                    <div class="flex items-center gap-1.5">
+                      <span class="size-1.5 rounded-full bg-primary-500 animate-ping"></span>
+                      <span class="text-primary-500 font-black text-[8px] uppercase tracking-widest">LIVE</span>
+                    </div>
+                  </div>
+                  
+                  <div class="space-y-4">
+                    <div class="flex items-center justify-between gap-4">
+                      <span class="text-xs font-black text-white truncate flex-1 uppercase tracking-tight">{{ getParticipantName(match.participant_1) }}</span>
+                      <span class="text-2xl font-black text-primary-500 italic">{{ match.scores?.participant_1 ?? 0 }}</span>
+                    </div>
+                    <div class="flex items-center justify-between gap-4">
+                      <span class="text-xs font-black text-white truncate flex-1 uppercase tracking-tight">{{ getParticipantName(match.participant_2) }}</span>
+                      <span class="text-2xl font-black text-primary-500 italic">{{ match.scores?.participant_2 ?? 0 }}</span>
+                    </div>
+                  </div>
+
+                  <div class="mt-6 pt-4 border-t border-white/5 flex items-center justify-between opacity-40 group-hover/card:opacity-100 transition-opacity">
+                    <span class="text-[8px] font-black text-neutral-500 uppercase tracking-[0.2em]">{{ $t('public.click_update') }}</span>
+                    <UIcon name="i-lucide-arrow-right" class="size-3 text-primary-500" />
+                  </div>
+                </button>
+              </template>
+            </template>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Stat Cards (Secondary) ── -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <div
         v-for="stat in [
           { label: $t('tournament_detail.stats.participants'),      value: String(tournament.participants_count ?? 0),                                                           sub: `${$t('tournament_detail.stats.from')} ${tournament.max_participants}`, icon: 'i-lucide-users' },
           { label: $t('tournament_detail.stats.prize'), value: tournament.prize_pool ? formatCurrency(tournament.prize_pool) : '—',                                  sub: $t('tournament_detail.stats.prize_pool_sub'),                         icon: 'i-lucide-trophy' },
-          { label: $t('tournament_detail.stats.fee'),    value: !tournament.entry_fee || tournament.entry_fee == 0 ? $t('tournament_detail.stats.free') : formatCurrency(tournament.entry_fee), sub: $t('tournament_detail.stats.per_participant'),                        icon: 'i-lucide-ticket' },
+          { label: $t('tournament_detail.stats.revenue'),    value: stats?.revenue ? formatCurrency(stats.revenue) : '—', sub: $t('tournament_detail.stats.projected'),                        icon: 'i-lucide-trending-up' },
           { label: $t('tournament_detail.stats.reg_close'),   value: formatDate(tournament.registration_end_at),                                                            sub: $t('tournament_detail.stats.reg_deadline'),             icon: 'i-lucide-timer' },
-          { label: $t('tournament_detail.stats.kickoff'),      value: formatDate(tournament.start_at),                                                                       sub: $t('tournament_detail.stats.first_day'),           icon: 'i-lucide-calendar' },
         ]"
         :key="stat.label"
         class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5"
@@ -219,56 +339,6 @@ const selectedMatchBoFormat = computed(() => {
             <p class="text-sm text-neutral-400 dark:text-neutral-500">{{ $t('tournament_detail.empty.prizes') }}</p>
           </div>
         </div>
-      </div>
-
-    </div>
-
-    <!-- ── Live Matches Management ── -->
-    <div v-if="tournament.stages?.some(s => s.matches?.some((m: any) => m.status === 'ongoing'))" class="bg-neutral-900 border border-primary-500/20 rounded-[2.5rem] p-8 relative overflow-hidden group">
-      <div class="absolute -top-10 -right-10 size-40 bg-primary-500/10 blur-[80px] group-hover:bg-primary-500/20 transition-all"></div>
-      
-      <div class="flex items-center justify-between mb-8 relative z-10">
-        <div class="flex items-center gap-4">
-          <div class="size-12 rounded-2xl bg-neutral-800 flex items-center justify-center border border-white/5 shadow-inner">
-            <UIcon name="i-lucide-play-circle" class="size-6 text-primary-500 animate-pulse" />
-          </div>
-          <div>
-            <h3 class="text-sm font-black text-white uppercase tracking-[0.2em]">{{ $t('public.live_matches') }}</h3>
-            <p class="text-[10px] text-neutral-500 font-bold uppercase tracking-widest mt-1">{{ $t('tournament_detail.live_subtitle') }}</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 relative z-10">
-        <template v-for="stage in tournament.stages">
-          <template v-for="match in stage.matches">
-            <button 
-              v-if="match.status === 'ongoing'" 
-              :key="match.id"
-              @click="matchDetailModalRef?.open(match)"
-              class="flex flex-col bg-neutral-950 border border-white/5 rounded-2xl p-4 transition-all hover:border-primary-500/40 hover:scale-[1.02] text-left group/card"
-            >
-              <div class="flex items-center justify-between mb-4">
-                <span class="text-[9px] font-black text-neutral-600 uppercase tracking-widest">{{ stage.name }}</span>
-                <UBadge color="primary" variant="subtle" size="xs" class="font-black text-[8px]">LIVE NOW</UBadge>
-              </div>
-              
-              <div class="flex items-center justify-between gap-4 mb-2">
-                <span class="text-xs font-black text-white truncate flex-1 uppercase tracking-tight">{{ match.participant_1?.team?.name || match.participant_1?.user?.name || 'TBD' }}</span>
-                <span class="text-xl font-black text-primary-500 italic">{{ match.scores?.participant_1 ?? 0 }}</span>
-              </div>
-              <div class="flex items-center justify-between gap-4">
-                <span class="text-xs font-black text-white truncate flex-1 uppercase tracking-tight">{{ match.participant_2?.team?.name || match.participant_2?.user?.name || 'TBD' }}</span>
-                <span class="text-xl font-black text-primary-500 italic">{{ match.scores?.participant_2 ?? 0 }}</span>
-              </div>
-
-              <div class="mt-4 pt-4 border-t border-white/5 flex items-center justify-between opacity-0 group-hover/card:opacity-100 transition-opacity">
-                <span class="text-[8px] font-bold text-neutral-500 uppercase tracking-widest">{{ $t('public.click_update') }}</span>
-                <UIcon name="i-lucide-arrow-right" class="size-3 text-primary-500" />
-              </div>
-            </button>
-          </template>
-        </template>
       </div>
     </div>
 

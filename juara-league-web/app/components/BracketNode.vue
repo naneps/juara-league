@@ -1,6 +1,6 @@
 <template>
   <div 
-    class="relative flex flex-col justify-center my-3 group w-[300px] shrink-0 border border-neutral-200 dark:border-white/5 bg-white dark:bg-neutral-900/60 backdrop-blur-xl shadow-xl dark:shadow-2xl rounded-[1.25rem] z-10 hover:border-primary-500/50 hover:bg-neutral-50 dark:hover:bg-neutral-900/80 transition-all duration-300 cursor-pointer select-none"
+    class="relative flex flex-col justify-center group w-[300px] h-[140px] shrink-0 border border-neutral-200 dark:border-white/5 bg-white dark:bg-neutral-900/60 backdrop-blur-xl shadow-xl dark:shadow-2xl rounded-[1.25rem] z-10 hover:border-primary-500/50 hover:bg-neutral-50 dark:hover:bg-neutral-900/80 transition-all duration-300 cursor-pointer select-none"
     @click="$emit('click')"
   >
     <!-- Glow Effect Backing -->

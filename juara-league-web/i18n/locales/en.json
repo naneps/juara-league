@@ -169,11 +169,18 @@
         "delete_failed": "Failed to delete stage",
         "start_success": "Stage Started!",
         "start_failed": "Failed to start stage",
+        "shuffle_success": "Participants shuffled successfully!",
+        "shuffle_failed": "Failed to shuffle participants.",
+        "seed_success": "Participant seeding saved successfully!",
+        "seed_failed": "Failed to save participant seeding.",
+        "reset_success": "Stage reset successfully.",
+        "reset_failed": "Failed to reset stage.",
         "matches_gen": "{count} matches have been generated."
       },
       "confirm": {
         "delete": "Delete this stage? All brackets in this stage will be lost.",
-        "start": "Start stage \"{name}\"? Bracket will be generated and cannot be changed."
+        "start": "Start stage \"{name}\"? Bracket will be generated and cannot be changed.",
+        "reset": "Reset this stage? All matches and brackets will be deleted. This action cannot be undone."
       },
       "empty": {
         "title": "No Stages Yet",
@@ -190,6 +197,9 @@
       },
       "actions": {
         "start": "Start Stage",
+        "shuffle": "Shuffle Participants",
+        "seed_manual": "Manual Seeding",
+        "reset": "Reset Bracket",
         "view_bracket": "View Bracket"
       }
     },
@@ -252,10 +262,10 @@
     "create_tournament": "Create Tournament",
     "notifications": "Notifications",
     "stats": {
-      "total_teams": "Total Teams",
-      "registrations": "Registrations",
-      "prize_pool": "Total Prize Pool",
-      "matches": "Matches"
+      "total_tournaments": "Total Tournaments",
+      "ongoing_stages": "Ongoing Stages",
+      "pending_participants": "New Participants",
+      "matches_today": "Matches Today"
     },
     "matches_title": "Active Matches",
     "no_matches": "No matches are currently running"

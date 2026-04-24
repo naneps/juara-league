@@ -139,7 +139,7 @@ class MatchController extends Controller
         ]);
 
         // Validate winner is one of the participants
-        if ($validated['winner_id'] !== $match->participant_1_id && $validated['winner_id'] !== $match->participant_2_id) {
+        if (!$match->hasParticipant($validated['winner_id'])) {
             return response()->json(['message' => 'Pemenang harus salah satu peserta match.'], 422);
         }
 

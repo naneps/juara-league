@@ -17,13 +17,47 @@ class Stage extends Model
         'name',
         'type',
         'status',
-        'bo_format',
         'participants_advance',
         'groups_count',
         'participants_per_group',
         'order',
         'settings',
     ];
+
+    protected $appends = ['bo_format'];
+
+    /**
+     * Settings Accessors
+     */
+    public function getMatchFormat(): string
+    {
+        return $this->settings['match_format'] ?? 'best_of';
+    }
+
+    public function getScoringMethod(): string
+    {
+        return $this->settings['scoring_method'] ?? 'result_based';
+    }
+
+    public function getBoFormatAttribute(): string
+    {
+        if ($this->getMatchFormat() === 'best_of') {
+            $winCondition = $this->getWinCondition();
+            $games = ($winCondition * 2) - 1;
+            return "bo{$games}";
+        }
+        return 'bo1';
+    }
+
+    public function getWinCondition(): int
+    {
+        return (int) ($this->settings['win_condition'] ?? 1);
+    }
+
+    public function getMatchRules(): array
+    {
+        return $this->settings['rules'] ?? [];
+    }
 
     protected $casts = [
         'settings' => 'array',

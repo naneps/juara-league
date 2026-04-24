@@ -169,11 +169,18 @@
         "delete_failed": "Gagal menghapus babak",
         "start_success": "Babak Dimulai!",
         "start_failed": "Gagal memulai babak",
+        "shuffle_success": "Peserta berhasil diacak!",
+        "shuffle_failed": "Gagal mengacak peserta.",
+        "seed_success": "Urutan peserta berhasil disimpan!",
+        "seed_failed": "Gagal menyimpan urutan peserta.",
+        "reset_success": "Stage berhasil direset.",
+        "reset_failed": "Gagal mereset stage.",
         "matches_gen": "{count} match telah digenerate."
       },
       "confirm": {
         "delete": "Hapus tahapan ini? Semua bracket di babak ini akan hilang.",
-        "start": "Mulai babak \"{name}\"? Bracket akan digenerate dan tidak bisa diubah."
+        "start": "Mulai babak \"{name}\"? Bracket akan digenerate dan tidak bisa diubah.",
+        "reset": "Reset stage ini? Semua pertandingan dan bracket akan dihapus. Aksi ini tidak bisa dibatalkan."
       },
       "empty": {
         "title": "Belum Ada Babak",
@@ -190,6 +197,9 @@
       },
       "actions": {
         "start": "Mulai Babak",
+        "shuffle": "Acak Peserta",
+        "seed_manual": "Seeding Manual",
+        "reset": "Reset Bracket",
         "view_bracket": "Lihat Bracket"
       }
     },
@@ -252,10 +262,10 @@
     "create_tournament": "Buat Turnamen",
     "notifications": "Notifikasi",
     "stats": {
-      "total_teams": "Total Tim",
-      "registrations": "Pendaftaran",
-      "prize_pool": "Total Hadiah",
-      "matches": "Pertandingan"
+      "total_tournaments": "Total Turnamen",
+      "ongoing_stages": "Babak Berjalan",
+      "pending_participants": "Pendaftar Baru",
+      "matches_today": "Match Hari Ini"
     },
     "matches_title": "Pertandingan Berjalan",
     "no_matches": "Tidak ada pertandingan yang sedang berjalan"

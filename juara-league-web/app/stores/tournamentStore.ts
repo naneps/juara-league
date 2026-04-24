@@ -147,12 +147,44 @@ export const useTournamentStore = defineStore('tournament', () => {
     }
   }
 
+  const updateSeeds = async (slug: string, stageId: string, seeds: string[]) => {
+    try {
+      const response = await useApi(`/api/v1/tournaments/${slug}/stages/${stageId}/seed`, {
+        method: 'POST',
+        body: { seeds }
+      })
+      return response
+    } catch (e: any) {
+      throw e
+    }
+  }
+
+  const shuffleParticipants = async (slug: string, stageId: string) => {
+    try {
+      await useApi(`/api/v1/tournaments/${slug}/stages/${stageId}/shuffle`, {
+        method: 'POST'
+      })
+    } catch (e: any) {
+      throw e
+    }
+  }
+
   const startStage = async (slug: string, stageId: string) => {
     try {
       const response = await useApi<{ data: any }>(`/api/v1/tournaments/${slug}/stages/${stageId}/start`, {
         method: 'POST'
       })
       return response.data
+    } catch (e: any) {
+      throw e
+    }
+  }
+
+  const resetStage = async (slug: string, stageId: string) => {
+    try {
+      await useApi(`/api/v1/tournaments/${slug}/stages/${stageId}/reset`, {
+        method: 'POST'
+      })
     } catch (e: any) {
       throw e
     }
@@ -316,6 +348,15 @@ export const useTournamentStore = defineStore('tournament', () => {
     }
   }
 
+  const fetchStats = async (slug: string) => {
+    try {
+      const response = await useApi<{ data: any }>(`/api/v1/tournaments/${slug}/stats`)
+      return response.data
+    } catch (e: any) {
+      throw e
+    }
+  }
+
   const getById = async (id: number | string) => {
     isLoading.value = true
     try {
@@ -354,7 +395,7 @@ export const useTournamentStore = defineStore('tournament', () => {
     isLoading.value = true
     error.value = null
     try {
-      const response = await useApi<{ data: Participant[] }>('/api/v1/my-participations')
+      const response = await useApi<{ data: Participant[] }>('/api/my-participations')
       myParticipations.value = response.data
     } catch (e: any) {
       error.value = e.message || 'Gagal mengambil data pendaftaran'
@@ -364,13 +405,32 @@ export const useTournamentStore = defineStore('tournament', () => {
     }
   }
 
+  const fetchDashboardOverview = async () => {
+    try {
+      const response = await useApi<{
+        stats: {
+          total_tournaments: number;
+          ongoing_tournaments: number;
+          pending_participants: number;
+          matches_today: number;
+        };
+        recent_participants: any[];
+        upcoming_matches: any[];
+        recent_tournaments: any[];
+      }>('/api/v1/dashboard/overview')
+      return response
+    } catch (e: any) {
+      throw e
+    }
+  }
+
   return {
     tournaments, myTournaments, myParticipations, isLoading, error,
-    fetchTournaments, fetchMyTournaments, fetchMyParticipations,
+    fetchTournaments, fetchMyTournaments, fetchMyParticipations, fetchDashboardOverview,
     createTournament, updateTournament, getBySlug, getById, publishTournament,
     // Stage
     fetchStages, fetchStageDetail, createStage, updateStage, deleteStage,
-    seedParticipants, startStage, advanceParticipants, autoScheduleMatches,
+    seedParticipants, shuffleParticipants, startStage, resetStage, advanceParticipants, autoScheduleMatches,
     // Match & Game
     fetchMatches, fetchMatchDetail, updateMatch, inputGame, correctGame,
     // Other

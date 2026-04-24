@@ -123,6 +123,33 @@ class StageService
     }
 
     /**
+     * Randomly shuffle participant seeds.
+     */
+    public function shuffleParticipants(Stage $stage): void
+    {
+        if (!$stage->isPending()) {
+            throw ValidationException::withMessages([
+                'stage' => ['Shuffle hanya bisa dilakukan sebelum stage dimulai.'],
+            ]);
+        }
+
+        $participantIds = $stage->tournament->participants()
+            ->where('status', 'approved')
+            ->pluck('id')
+            ->toArray();
+
+        if (empty($participantIds)) {
+            return;
+        }
+
+        shuffle($participantIds);
+
+        foreach ($participantIds as $index => $id) {
+            Participant::where('id', $id)->update(['seed' => $index + 1]);
+        }
+    }
+
+    /**
      * Start a stage and generate bracket/schedule.
      */
     public function startStage(Stage $stage): array
@@ -249,6 +276,45 @@ class StageService
                 'next_stage_id' => $nextStage->id,
                 'advancing_count' => count($advancingParticipantIds),
             ];
+        });
+    }
+
+    /**
+     * Reset a stage: delete matches and set status back to pending.
+     * Only allowed if no matches have scores yet.
+     */
+    public function resetStage(Stage $stage): void
+    {
+        if ($stage->isPending()) {
+            throw ValidationException::withMessages([
+                'stage' => ['Stage sudah dalam status pending.'],
+            ]);
+        }
+
+        // Check if any match is completed or has scores
+        $hasResults = $stage->matches()
+            ->where(function($q) {
+                $q->where('status', 'completed')
+                  ->orWhereNotNull('winner_id')
+                  ->orWhereNotNull('scores');
+            })
+            ->exists();
+
+        if ($hasResults) {
+            throw ValidationException::withMessages([
+                'stage' => ['Stage tidak bisa direset karena sudah ada pertandingan yang selesai atau memiliki skor.'],
+            ]);
+        }
+
+        DB::transaction(function () use ($stage) {
+            // Delete all matches
+            $stage->matches()->delete();
+
+            // Delete groups if any
+            $stage->groups()->delete();
+
+            // Reset stage status
+            $stage->update(['status' => 'pending']);
         });
     }
 

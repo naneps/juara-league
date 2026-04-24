@@ -20,8 +20,18 @@ const expandedStageId = ref<string | null>(null)
 const newStage = ref({
   name: '',
   type: 'single_elim',
-  bo_format: 'bo1',
-  participants_advance: 4,
+  settings: {
+    match_format: 'best_of',
+    win_condition: 1,
+    scoring_method: 'score_based',
+    advance_count: 4,
+    rounds: null as number | null,
+    rules: {
+      allow_draw: false,
+      extra_time: false,
+      penalties: false,
+    }
+  },
   groups_count: null as number | null,
   participants_per_group: null as number | null,
 })
@@ -33,11 +43,23 @@ const stageTemplates = computed(() => [
   { id: 'swiss', title: t('managers.stages.templates.swiss.title'), description: t('managers.stages.templates.swiss.desc'), icon: 'i-lucide-git-merge', type: 'swiss', defaultName: t('managers.stages.templates.swiss.default'), color: 'emerald' },
 ])
 
-const boFormats = [
-  { label: 'Best of 1', value: 'bo1' },
-  { label: 'Best of 3', value: 'bo3' },
-  { label: 'Best of 5', value: 'bo5' },
-  { label: 'Best of 7', value: 'bo7' },
+const matchFormats = [
+  { label: 'Single Game', value: 'single_game', icon: 'i-lucide-swords' },
+  { label: 'Best of X', value: 'best_of', icon: 'i-lucide-trophy' },
+  { label: 'Home & Away', value: 'leg', icon: 'i-lucide-repeat' },
+]
+
+const scoringMethods = [
+  { label: 'Score Based', value: 'score_based', description: 'Win by total score/goals' },
+  { label: 'Result Based', value: 'result_based', description: 'Win by match outcome' },
+  { label: 'Point Based', value: 'point_based', description: 'Win by accumulated points (3/1/0)' },
+]
+
+const boOptions = [
+  { label: 'BO1', value: 1 },
+  { label: 'BO3', value: 2 },
+  { label: 'BO5', value: 3 },
+  { label: 'BO7', value: 4 },
 ]
 
 const stageTypeInfo = (type: string) => {
@@ -70,7 +92,24 @@ const applyTemplate = (template: any) => {
 const resetAddState = () => {
   isAdding.value = false
   isSelectingTemplate.value = true
-  newStage.value = { name: '', type: 'single_elim', bo_format: 'bo1', participants_advance: 4, groups_count: null, participants_per_group: null }
+  newStage.value = {
+    name: '',
+    type: 'single_elim',
+    settings: {
+      match_format: 'best_of',
+      win_condition: 1,
+      scoring_method: 'score_based',
+      advance_count: 4,
+      rounds: null,
+      rules: {
+        allow_draw: false,
+        extra_time: false,
+        penalties: false,
+      }
+    },
+    groups_count: null,
+    participants_per_group: null
+  }
 }
 
 const fetchStages = async () => {
@@ -97,26 +136,200 @@ const addStage = async () => {
   }
 }
 
-const removeStage = async (stage: Stage) => {
-  if (!confirm(t('managers.stages.confirm.delete'))) return
+const participants = ref<any[]>([])
+const isSeedingModalOpen = ref(false)
+const seedingStage = ref<Stage | null>(null)
+const localParticipants = ref<any[]>([])
+
+const fetchParticipants = async () => {
   try {
-    await tournamentStore.deleteStage(props.tournamentSlug, stage.id)
+    const data = await tournamentStore.fetchParticipants(props.tournamentSlug)
+    participants.value = data.filter((p: any) => p.status === 'approved')
+  } catch (e) {
+    console.error('Failed to fetch participants', e)
+  }
+}
+
+const openSeeding = async (stage: Stage) => {
+  seedingStage.value = stage
+  if (participants.value.length === 0) {
+    await fetchParticipants()
+  }
+  // Sort by current seed or default to whatever is in the list
+  localParticipants.value = [...participants.value].sort((a, b) => (a.seed || 999) - (b.seed || 999))
+  isSeedingModalOpen.value = true
+}
+
+let draggedIndex: number | null = null
+const dragStart = (index: number) => {
+  draggedIndex = index
+}
+const drop = (index: number) => {
+  if (draggedIndex === null) return
+  const item = localParticipants.value.splice(draggedIndex, 1)[0]
+  localParticipants.value.splice(index, 0, item)
+  draggedIndex = null
+}
+
+const saveSeeding = async () => {
+  if (!seedingStage.value) return
+  isSubmitting.value = true
+  try {
+    const seeds = localParticipants.value.map(p => p.id)
+    await tournamentStore.seedParticipants(props.tournamentSlug, seedingStage.value.id, seeds)
+    useToast().add({ title: t('common.success'), description: t('managers.stages.toast.seed_success'), color: 'success' })
+    isSeedingModalOpen.value = false
+    await fetchStages()
+  } catch (e: any) {
+    useToast().add({ title: t('common.error'), description: e.data?.message || t('managers.stages.toast.seed_failed'), color: 'error' })
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
+// ── Matchup Preview Logic ──
+const matchupPreview = computed(() => {
+  if (!localParticipants.value.length || !seedingStage.value) return { type: 'none', data: [] }
+  
+  const type = seedingStage.value.type
+  const participants = localParticipants.value
+  const count = participants.length
+
+  if (type === 'round_robin') {
+    const groupsCount = seedingStage.value.groups_count || 1
+    const groups = Array.from({ length: groupsCount }, (_, i) => ({
+      name: `Grup ${String.fromCharCode(65 + i)}`,
+      members: [] as any[]
+    }))
+    
+    // Snake draft logic
+    let direction = 1
+    let groupIndex = 0
+    participants.forEach((p) => {
+      groups[groupIndex].members.push(p)
+      groupIndex += direction
+      if (groupIndex >= groupsCount) {
+        groupIndex = groupsCount - 1
+        direction = -1
+      } else if (groupIndex < 0) {
+        groupIndex = 0
+        direction = 1
+      }
+    })
+    return { type: 'groups', data: groups }
+  } 
+  
+  if (type === 'single_elim' || type === 'double_elim') {
+    const totalRounds = Math.ceil(Math.log2(count))
+    const bracketSize = Math.pow(2, totalRounds)
+    
+    // Generate Seed Positions (Standard balanced bracket)
+    const generateSeedPositions = (size: number): number[] => {
+      if (size === 1) return [0]
+      let positions = [0, 1]
+      while (positions.length < size) {
+        const newPositions = []
+        const currentSize = positions.length
+        for (const pos of positions) {
+          newPositions.push(pos)
+          newPositions.push(currentSize * 2 - 1 - pos)
+        }
+        positions = newPositions
+      }
+      return positions
+    }
+
+    const positions = generateSeedPositions(bracketSize)
+    const matches = []
+    for (let i = 0; i < bracketSize / 2; i++) {
+      const p1Index = positions[i * 2]
+      const p2Index = positions[i * 2 + 1]
+      
+      matches.push({
+        label: `Match ${i + 1}`,
+        p1: participants[p1Index] || { id: 'bye-' + i, team: { name: 'BYE' } },
+        p2: participants[p2Index] || { id: 'bye-' + i + '-2', team: { name: 'BYE' } }
+      })
+    }
+    return { type: 'matches', data: matches }
+  }
+
+  return { type: 'none', data: [] }
+})
+
+const isResetModalOpen = ref(false)
+const stageToReset = ref<Stage | null>(null)
+const openReset = (stage: Stage) => {
+  stageToReset.value = stage
+  isResetModalOpen.value = true
+}
+
+const isResetting = ref(false)
+const resetStage = async () => {
+  if (!stageToReset.value) return
+  isResetting.value = true
+  try {
+    await tournamentStore.resetStage(props.tournamentSlug, stageToReset.value.id)
+    await fetchStages()
+    useToast().add({ title: t('common.success'), description: t('managers.stages.toast.reset_success'), color: 'success' })
+    isResetModalOpen.value = false
+  } catch (e: any) {
+    useToast().add({ title: t('common.error'), description: e.data?.message || t('managers.stages.toast.reset_failed'), color: 'error' })
+  } finally {
+    isResetting.value = false
+  }
+}
+
+const isShuffling = ref(false)
+const shuffleParticipants = async (stage: Stage) => {
+  isShuffling.value = true
+  try {
+    await tournamentStore.shuffleParticipants(props.tournamentSlug, stage.id)
+    useToast().add({ title: t('common.success'), description: t('managers.stages.toast.shuffle_success'), color: 'success' })
+    await fetchParticipants()
+  } catch (e: any) {
+    useToast().add({ title: t('common.error'), description: e.data?.message || t('managers.stages.toast.shuffle_failed'), color: 'error' })
+  } finally {
+    isShuffling.value = false
+  }
+}
+
+const isDeleteModalOpen = ref(false)
+const stageToDelete = ref<Stage | null>(null)
+const openDelete = (stage: Stage) => {
+  stageToDelete.value = stage
+  isDeleteModalOpen.value = true
+}
+
+const removeStage = async () => {
+  if (!stageToDelete.value) return
+  try {
+    await tournamentStore.deleteStage(props.tournamentSlug, stageToDelete.value.id)
     await fetchStages()
     useToast().add({ title: t('common.success'), description: t('managers.stages.toast.delete_success'), color: 'success' })
+    isDeleteModalOpen.value = false
   } catch (e: any) {
     useToast().add({ title: t('common.error'), description: e.data?.message || t('managers.stages.toast.delete_failed'), color: 'error' })
   }
 }
 
+const isStartModalOpen = ref(false)
+const stageToStart = ref<Stage | null>(null)
+const openStart = (stage: Stage) => {
+  stageToStart.value = stage
+  isStartModalOpen.value = true
+}
+
 const isStarting = ref(false)
-const startStage = async (stage: Stage) => {
-  if (!confirm(t('managers.stages.confirm.start', { name: stage.name }))) return
+const startStage = async () => {
+  if (!stageToStart.value) return
   isStarting.value = true
   try {
-    const result = await tournamentStore.startStage(props.tournamentSlug, stage.id)
+    const result = await tournamentStore.startStage(props.tournamentSlug, stageToStart.value.id)
     await fetchStages()
     useToast().add({ title: t('managers.stages.toast.start_success'), description: t('managers.stages.toast.matches_gen', { count: result.matches_generated }), color: 'success' })
-    emit('stage-started', stage.id)
+    emit('stage-started', stageToStart.value.id)
+    isStartModalOpen.value = false
   } catch (e: any) {
     useToast().add({ title: t('common.error'), description: e.data?.message || t('managers.stages.toast.start_failed'), color: 'error' })
   } finally {
@@ -128,7 +341,10 @@ const toggleExpand = (stageId: string) => {
   expandedStageId.value = expandedStageId.value === stageId ? null : stageId
 }
 
-onMounted(() => { fetchStages() })
+onMounted(() => { 
+  fetchStages() 
+  fetchParticipants()
+})
 </script>
 
 <template>
@@ -211,28 +427,108 @@ onMounted(() => { fetchStages() })
                 <UInput v-model="newStage.name" :placeholder="t('managers.stages.config.name_placeholder')" icon="i-lucide-edit-3" size="xl" class="w-full" />
               </div>
 
-              <div>
-                <label class="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-2">{{ t('managers.stages.config.bo_label') }}</label>
-                <div class="grid grid-cols-4 gap-2">
-                  <button
-                    v-for="bo in boFormats"
-                    :key="bo.value"
-                    @click="newStage.bo_format = bo.value"
-                    :class="[
-                      'px-4 py-3 rounded-xl text-xs font-bold border transition-all text-center',
-                      newStage.bo_format === bo.value
-                        ? 'border-primary-500 bg-primary-500/10 text-primary-500'
-                        : 'border-neutral-200 dark:border-neutral-700 text-neutral-500 hover:border-primary-300'
-                    ]"
-                  >
-                    {{ bo.label }}
-                  </button>
+              <!-- Match Format & Scoring -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                  <label class="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-3">{{ t('managers.stages.config.match_format') }}</label>
+                  <div class="space-y-2">
+                    <button
+                      v-for="format in matchFormats"
+                      :key="format.value"
+                      @click="newStage.settings.match_format = format.value"
+                      :class="[
+                        'w-full flex items-center gap-3 p-3 rounded-2xl border transition-all text-left group',
+                        newStage.settings.match_format === format.value
+                          ? 'border-primary-500 bg-primary-500/5 ring-1 ring-primary-500'
+                          : 'border-neutral-100 dark:border-neutral-800 hover:border-primary-300'
+                      ]"
+                    >
+                      <div :class="[
+                        'size-10 rounded-xl flex items-center justify-center transition-colors',
+                        newStage.settings.match_format === format.value ? 'bg-primary-500 text-white' : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 group-hover:text-primary-500'
+                      ]">
+                        <UIcon :name="format.icon" class="size-5" />
+                      </div>
+                      <span :class="['text-xs font-bold', newStage.settings.match_format === format.value ? 'text-primary-500' : 'text-neutral-600 dark:text-neutral-400']">
+                        {{ format.label }}
+                      </span>
+                    </button>
+                  </div>
+
+                  <!-- BO Condition -->
+                  <div v-if="newStage.settings.match_format === 'best_of'" class="mt-4 p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-800">
+                    <label class="block text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-3">Win Condition (Race to X wins)</label>
+                    <div class="grid grid-cols-4 gap-2">
+                      <button
+                        v-for="opt in boOptions"
+                        :key="opt.value"
+                        @click="newStage.settings.win_condition = opt.value"
+                        :class="[
+                          'py-2 rounded-xl text-[10px] font-black border transition-all',
+                          newStage.settings.win_condition === opt.value
+                            ? 'bg-white dark:bg-neutral-900 border-primary-500 text-primary-500 shadow-sm'
+                            : 'border-transparent text-neutral-400 hover:text-neutral-600'
+                        ]"
+                      >
+                        {{ opt.label }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-3">{{ t('managers.stages.config.scoring_method') }}</label>
+                  <div class="space-y-2">
+                    <button
+                      v-for="method in scoringMethods"
+                      :key="method.value"
+                      @click="newStage.settings.scoring_method = method.value"
+                      :class="[
+                        'w-full p-4 rounded-2xl border transition-all text-left group',
+                        newStage.settings.scoring_method === method.value
+                          ? 'border-primary-500 bg-primary-500/5 ring-1 ring-primary-500'
+                          : 'border-neutral-100 dark:border-neutral-800 hover:border-primary-300'
+                      ]"
+                    >
+                      <p :class="['text-xs font-bold mb-0.5', newStage.settings.scoring_method === method.value ? 'text-primary-500' : 'text-neutral-700 dark:text-neutral-200']">
+                        {{ method.label }}
+                      </p>
+                      <p class="text-[10px] text-neutral-400 dark:text-neutral-500">{{ method.description }}</p>
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <label class="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-2">{{ t('managers.stages.config.advance_label') }}</label>
-                <UInput v-model.number="newStage.participants_advance" type="number" placeholder="4" icon="i-lucide-arrow-up-right" size="lg" class="w-full" />
+              <!-- Rules & Advance -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                <div class="space-y-4">
+                  <label class="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-3">Additional Rules</label>
+                  <div class="flex items-center justify-between p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/30">
+                    <div class="flex items-center gap-2">
+                      <UIcon name="i-lucide-divide" class="size-4 text-neutral-400" />
+                      <span class="text-xs font-bold text-neutral-600 dark:text-neutral-400">Allow Draws</span>
+                    </div>
+                    <UToggle v-model="newStage.settings.rules.allow_draw" color="primary" />
+                  </div>
+                  <div class="flex items-center justify-between p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/30">
+                    <div class="flex items-center gap-2">
+                      <UIcon name="i-lucide-timer" class="size-4 text-neutral-400" />
+                      <span class="text-xs font-bold text-neutral-600 dark:text-neutral-400">Extra Time</span>
+                    </div>
+                    <UToggle v-model="newStage.settings.rules.extra_time" color="primary" />
+                  </div>
+                </div>
+
+                <div class="space-y-6">
+                  <div>
+                    <label class="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-2">{{ t('managers.stages.config.advance_label') }}</label>
+                    <UInput v-model.number="newStage.settings.advance_count" type="number" placeholder="4" icon="i-lucide-arrow-up-right" size="lg" class="w-full" />
+                  </div>
+                  <div v-if="newStage.type === 'swiss'">
+                    <label class="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-2">Total Rounds</label>
+                    <UInput v-model.number="newStage.settings.rounds" type="number" placeholder="Automatic" icon="i-lucide-hash" size="lg" class="w-full" />
+                  </div>
+                </div>
               </div>
 
               <div v-if="newStage.type === 'round_robin'" class="grid grid-cols-2 gap-4">
@@ -283,7 +579,14 @@ onMounted(() => { fetchStages() })
                     </UBadge>
                   </div>
                   <p class="text-[11px] text-neutral-400 dark:text-neutral-500">
-                    {{ stage.bo_format?.toUpperCase() }} · {{ stage.participants_advance }} {{ t('managers.stages.config.advance_label').toLowerCase() }}
+                    <template v-if="stage.settings?.match_format">
+                      <span class="capitalize">{{ stage.settings.match_format.replace('_', ' ') }}</span>
+                      <span v-if="stage.settings.match_format === 'best_of'"> (BO{{ stage.settings.win_condition * 2 - 1 }})</span>
+                    </template>
+                    <template v-else>
+                      {{ stage.bo_format?.toUpperCase() }}
+                    </template>
+                    · {{ stage.settings?.advance_count || stage.participants_advance }} {{ t('managers.stages.config.advance_label').toLowerCase() }}
                   </p>
                 </div>
               </div>
@@ -302,16 +605,38 @@ onMounted(() => { fetchStages() })
               class="px-6 pb-5 border-t border-neutral-50 dark:border-neutral-800/50 bg-neutral-50/30 dark:bg-neutral-800/10"
             >
               <div class="flex flex-wrap items-center gap-2 pt-4">
-                <!-- Start Stage -->
+                <!-- Start Babak (only pending) -->
                 <UButton
                   v-if="stage.status === 'pending'"
-                  color="success"
+                  color="primary"
+                  variant="solid"
                   size="sm"
                   icon="i-lucide-play"
-                  :loading="isStarting"
-                  @click.stop="startStage(stage)"
+                  @click.stop="openStart(stage)"
                 >
                   {{ t('managers.stages.actions.start') }}
+                </UButton>
+
+                <!-- Quick Shuffle (only pending) -->
+                <UButton
+                  v-if="stage.status === 'pending'"
+                  color="neutral"
+                  variant="ghost"
+                  size="sm"
+                  icon="i-lucide-shuffle"
+                  @click.stop="shuffleParticipants(stage)"
+                />
+
+                <!-- Manual Seed (only pending) -->
+                <UButton
+                  v-if="stage.status === 'pending'"
+                  color="neutral"
+                  variant="outline"
+                  size="sm"
+                  icon="i-lucide-list-ordered"
+                  @click.stop="openSeeding(stage)"
+                >
+                  {{ t('managers.stages.actions.seed_manual') }}
                 </UButton>
 
                 <!-- View Bracket (when ongoing/completed) -->
@@ -321,9 +646,21 @@ onMounted(() => { fetchStages() })
                   variant="outline"
                   size="sm"
                   icon="i-lucide-git-branch"
-                  @click.stop="emit('stage-started', stage.id)"
+                  :to="`/dashboard/tournaments/${tournamentSlug}/bracket?stage=${stage.id}`"
                 >
                   {{ t('managers.stages.actions.view_bracket') }}
+                </UButton>
+
+                <!-- Reset Bracket (only ongoing/completed) -->
+                <UButton
+                  v-if="stage.status === 'ongoing' || stage.status === 'completed'"
+                  color="warning"
+                  variant="ghost"
+                  size="sm"
+                  icon="i-lucide-rotate-ccw"
+                  @click.stop="openReset(stage)"
+                >
+                  {{ t('managers.stages.actions.reset') }}
                 </UButton>
 
                 <!-- Delete (only pending) -->
@@ -333,7 +670,7 @@ onMounted(() => { fetchStages() })
                   variant="ghost"
                   size="sm"
                   icon="i-lucide-trash-2"
-                  @click.stop="removeStage(stage)"
+                  @click.stop="openDelete(stage)"
                 >
                   {{ t('common.delete') }}
                 </UButton>
@@ -388,5 +725,268 @@ onMounted(() => { fetchStages() })
         </div>
       </div>
     </div>
+    <!-- ── Seeding Modal ── -->
+    <UModal v-model:open="isSeedingModalOpen" :ui="{ content: 'rounded-[2.5rem] bg-white dark:bg-neutral-900 border-none overflow-hidden sm:max-w-4xl' }">
+      <template #body>
+        <div class="p-8 relative min-h-[500px] overflow-x-hidden custom-scrollbar max-h-[85vh]">
+          <!-- Decoration -->
+          <div class="absolute -top-24 -right-24 size-64 bg-primary-500/10 blur-[100px] rounded-full pointer-events-none"></div>
+
+          <div class="flex items-center gap-4 mb-8 relative z-10 pt-4">
+            <div class="size-14 rounded-2xl bg-primary-500/10 flex items-center justify-center border border-primary-500/20 shadow-inner">
+              <UIcon name="i-lucide-list-ordered" class="size-7 text-primary-500" />
+            </div>
+            <div>
+              <h3 class="text-xl font-black text-neutral-900 dark:text-white uppercase tracking-tight leading-none">Manual Seeding</h3>
+              <p class="text-[11px] font-medium text-neutral-500 mt-1.5 uppercase tracking-widest">Atur urutan untuk menentukan lawan di Round 1</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
+            <!-- Left: Draggable List -->
+            <div class="space-y-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-[10px] font-black text-neutral-400 uppercase tracking-widest">Daftar Peserta (Tarik untuk urutkan)</span>
+                <UBadge variant="subtle" color="primary" class="rounded-full text-[9px] px-2 py-0">Seed Order</UBadge>
+              </div>
+              <div class="space-y-2 max-h-[450px] overflow-y-auto pr-2 custom-scrollbar">
+                <div 
+                  v-for="(p, index) in localParticipants" 
+                  :key="p.id"
+                  draggable="true"
+                  @dragstart="dragStart(index)"
+                  @dragover.prevent
+                  @drop="drop(index)"
+                  class="group p-3 bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-white/5 rounded-2xl cursor-move flex items-center gap-4 hover:border-primary-500/50 hover:bg-primary-500/[0.02] transition-all"
+                >
+                  <div class="size-7 rounded-lg bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center text-[10px] font-black text-neutral-500 border border-neutral-300 dark:border-white/5 shadow-inner shrink-0">
+                    {{ index + 1 }}
+                  </div>
+                  <div class="flex-grow min-w-0">
+                    <p class="text-xs font-black text-neutral-800 dark:text-neutral-200 uppercase tracking-tight leading-tight truncate">
+                      {{ p.team?.name || p.user?.name || 'TBD' }}
+                    </p>
+                  </div>
+                  <UIcon name="i-lucide-grip-vertical" class="size-4 text-neutral-300 group-hover:text-primary-400 transition-colors shrink-0" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Preview Matchups -->
+            <div class="bg-neutral-50/50 dark:bg-black/20 rounded-[2rem] border border-neutral-200 dark:border-white/5 p-6 flex flex-col h-full">
+              <div class="flex items-center gap-3 mb-6 shrink-0">
+                <div class="size-8 rounded-xl bg-primary-500/20 flex items-center justify-center">
+                  <UIcon name="i-lucide-swords" class="size-4 text-primary-500" />
+                </div>
+                <h4 class="text-sm font-black text-neutral-900 dark:text-white uppercase tracking-widest">Preview Round 1</h4>
+              </div>
+
+              <div class="flex-grow overflow-y-auto custom-scrollbar pr-2">
+                <!-- Elimination Preview -->
+                <div v-if="matchupPreview.type === 'matches'" class="space-y-3">
+                  <div v-for="(m, i) in matchupPreview.data" :key="i" class="p-3 bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-white/5 rounded-2xl shadow-sm relative overflow-hidden group">
+                    <div class="absolute inset-y-0 left-0 w-1 bg-primary-500/50"></div>
+                    <div class="flex items-center justify-between gap-4">
+                      <div class="flex-1 text-right">
+                        <p class="text-[10px] font-black text-neutral-800 dark:text-neutral-200 uppercase truncate">
+                          {{ m.p1.team?.name || m.p1.user?.name || 'BYE' }}
+                        </p>
+                        <p class="text-[8px] text-primary-500 font-bold uppercase tracking-tighter">Seed #{{ localParticipants.findIndex(p => p.id === m.p1.id) + 1 || '?' }}</p>
+                      </div>
+                      <div class="size-6 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0 border border-neutral-200 dark:border-white/10">
+                        <span class="text-[8px] font-black text-neutral-400 uppercase">VS</span>
+                      </div>
+                      <div class="flex-1">
+                        <p class="text-[10px] font-black text-neutral-800 dark:text-neutral-200 uppercase truncate">
+                          {{ m.p2.team?.name || m.p2.user?.name || 'BYE' }}
+                        </p>
+                        <p class="text-[8px] text-primary-500 font-bold uppercase tracking-tighter">Seed #{{ localParticipants.findIndex(p => p.id === m.p2.id) + 1 || '?' }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Round Robin Preview -->
+                <div v-else-if="matchupPreview.type === 'groups'" class="space-y-6">
+                  <div v-for="(g, i) in matchupPreview.data" :key="i" class="space-y-2">
+                    <div class="flex items-center gap-2 px-2">
+                      <div class="size-2 rounded-full bg-primary-500"></div>
+                      <span class="text-[10px] font-black text-neutral-400 uppercase tracking-widest">{{ g.name }}</span>
+                    </div>
+                    <div class="grid grid-cols-1 gap-1.5">
+                      <div v-for="mem in g.members" :key="mem.id" class="px-3 py-2 bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-white/5 rounded-xl flex items-center justify-between">
+                        <span class="text-[10px] font-bold text-neutral-700 dark:text-neutral-300 uppercase truncate">{{ mem.team?.name || mem.user?.name }}</span>
+                        <span class="text-[8px] font-black text-primary-500">#{{ localParticipants.findIndex(p => p.id === mem.id) + 1 }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="mt-6 pt-4 border-t border-neutral-100 dark:border-white/5 shrink-0">
+                <p class="text-[9px] text-neutral-400 font-medium italic text-center leading-normal">
+                  *Preview ini berdasarkan standar algoritma turnamen {{ seedingStage?.type === 'round_robin' ? 'Snake Draft' : 'Balanced Seeding' }}.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <template #footer>
+        <div class="flex items-center justify-end gap-3 w-full px-4">
+          <UButton 
+            color="neutral" 
+            variant="ghost" 
+            size="xl"
+            class="rounded-2xl font-bold uppercase tracking-widest text-[10px] px-8"
+            @click="isSeedingModalOpen = false"
+          >
+            {{ t('common.cancel') }}
+          </UButton>
+          <UButton 
+            color="primary" 
+            size="xl"
+            icon="i-lucide-save" 
+            class="rounded-2xl font-black uppercase tracking-widest px-10 py-4 shadow-xl shadow-primary-500/20"
+            :loading="isSubmitting" 
+            @click="saveSeeding"
+          >
+            Simpan & Terapkan Matchup
+          </UButton>
+        </div>
+      </template>
+    </UModal>
+
+    <!-- ── Reset Confirmation Modal ── -->
+    <UModal v-model:open="isResetModalOpen" :ui="{ content: 'rounded-[2.5rem] bg-white dark:bg-neutral-900 border-none overflow-hidden sm:max-w-sm' }">
+      <template #body>
+        <div class="p-4 text-center relative">
+          <!-- Decoration -->
+          <div class="absolute -top-24 -left-24 size-48 bg-warning-500/10 blur-[80px] rounded-full pointer-events-none"></div>
+
+          <div class="size-20 rounded-full bg-warning-500/10 flex items-center justify-center mx-auto mb-6 border border-warning-500/20 relative z-10">
+            <UIcon name="i-lucide-alert-triangle" class="size-10 text-warning-500" />
+          </div>
+          
+          <h3 class="text-2xl font-black text-neutral-900 dark:text-white uppercase tracking-tight mb-2 relative z-10">Reset Bracket?</h3>
+          <p class="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2 relative z-10 leading-relaxed px-4">
+            Aksi ini akan menghapus semua jadwal pertandingan dan bagan yang sudah ada.
+          </p>
+          <p class="text-[10px] font-black text-warning-500 uppercase tracking-widest relative z-10">
+            Pastikan belum ada skor yang masuk!
+          </p>
+        </div>
+      </template>
+
+      <template #footer>
+        <div class="flex flex-col gap-3 w-full">
+          <UButton
+            color="warning"
+            block
+            size="xl"
+            label="Ya, Reset Bracket"
+            class="rounded-2xl font-black uppercase tracking-widest py-4 shadow-xl shadow-warning-500/20"
+            :loading="isResetting"
+            @click="resetStage"
+          />
+          <UButton
+            color="neutral"
+            variant="ghost"
+            block
+            size="xl"
+            label="Batal"
+            class="rounded-2xl font-bold uppercase tracking-widest text-[10px] py-2"
+            @click="isResetModalOpen = false"
+          />
+        </div>
+      </template>
+    </UModal>
+
+    <!-- ── Start Confirmation Modal ── -->
+    <UModal v-model:open="isStartModalOpen" :ui="{ content: 'rounded-[2.5rem] bg-white dark:bg-neutral-900 border-none overflow-hidden sm:max-w-sm' }">
+      <template #body>
+        <div class="p-4 text-center relative">
+          <!-- Decoration -->
+          <div class="absolute -top-24 -right-24 size-48 bg-primary-500/10 blur-[80px] rounded-full pointer-events-none"></div>
+
+          <div class="size-20 rounded-full bg-primary-500/10 flex items-center justify-center mx-auto mb-6 border border-primary-500/20 relative z-10">
+            <UIcon name="i-lucide-play" class="size-10 text-primary-500" />
+          </div>
+          
+          <h3 class="text-2xl font-black text-neutral-900 dark:text-white uppercase tracking-tight mb-2 relative z-10">Mulai Babak?</h3>
+          <p class="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2 relative z-10 leading-relaxed px-4">
+            Ini akan mengunci daftar peserta dan meng-generate bagan pertandingan secara otomatis.
+          </p>
+          <p class="text-[10px] font-black text-primary-500 uppercase tracking-widest relative z-10">
+            Format dan urutan tidak bisa diubah lagi!
+          </p>
+        </div>
+      </template>
+
+      <template #footer>
+        <div class="flex flex-col gap-3 w-full">
+          <UButton
+            color="primary"
+            block
+            size="xl"
+            label="Gass, Mulai Sekarang"
+            class="rounded-2xl font-black uppercase tracking-widest py-4 shadow-xl shadow-primary-500/20"
+            :loading="isStarting"
+            @click="startStage"
+          />
+          <UButton
+            color="neutral"
+            variant="ghost"
+            block
+            size="xl"
+            label="Nanti Dulu"
+            class="rounded-2xl font-bold uppercase tracking-widest text-[10px] py-2"
+            @click="isStartModalOpen = false"
+          />
+        </div>
+      </template>
+    </UModal>
+
+    <!-- ── Delete Confirmation Modal ── -->
+    <UModal v-model:open="isDeleteModalOpen" :ui="{ content: 'rounded-[2.5rem] bg-white dark:bg-neutral-900 border-none overflow-hidden sm:max-w-sm' }">
+      <template #body>
+        <div class="p-4 text-center relative">
+          <!-- Decoration -->
+          <div class="absolute -bottom-24 -left-24 size-48 bg-error-500/10 blur-[80px] rounded-full pointer-events-none"></div>
+
+          <div class="size-20 rounded-full bg-error-500/10 flex items-center justify-center mx-auto mb-6 border border-error-500/20 relative z-10">
+            <UIcon name="i-lucide-trash-2" class="size-10 text-error-500" />
+          </div>
+          
+          <h3 class="text-2xl font-black text-neutral-900 dark:text-white uppercase tracking-tight mb-2 relative z-10">Hapus Babak?</h3>
+          <p class="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-6 relative z-10 leading-relaxed px-4">
+            Data babak ini akan dihapus permanen. Aksi ini tidak dapat dibatalkan.
+          </p>
+        </div>
+      </template>
+
+      <template #footer>
+        <div class="flex flex-col gap-3 w-full">
+          <UButton
+            color="error"
+            block
+            size="xl"
+            label="Ya, Hapus Permanen"
+            class="rounded-2xl font-black uppercase tracking-widest py-4 shadow-xl shadow-error-500/20"
+            @click="removeStage"
+          />
+          <UButton
+            color="neutral"
+            variant="ghost"
+            block
+            size="xl"
+            label="Batal"
+            class="rounded-2xl font-bold uppercase tracking-widest text-[10px] py-2"
+            @click="isDeleteModalOpen = false"
+          />
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>

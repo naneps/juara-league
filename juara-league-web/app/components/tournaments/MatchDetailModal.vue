@@ -21,18 +21,27 @@ const isSubmitting = ref(false)
 const tournamentStore = useTournamentStore()
 
 const maxGames = computed(() => {
+  if (selectedMatch.value?.stage?.settings?.match_format === 'best_of') {
+    return (selectedMatch.value.stage.settings.win_condition * 2) - 1
+  }
+  if (selectedMatch.value?.stage?.settings?.match_format === 'single_game') return 1
+  if (selectedMatch.value?.stage?.settings?.match_format === 'leg') return 2
+  
   const map: Record<string, number> = { bo1: 1, bo3: 3, bo5: 5, bo7: 7 }
   return map[props.boFormat] || 1
 })
 
 const winCondition = computed(() => {
-  const map: Record<string, number> = { bo1: 1, bo3: 2, bo5: 3, bo7: 4 }
-  return map[props.boFormat] || 1
+  if (selectedMatch.value?.stage?.settings?.match_format === 'best_of') {
+    return selectedMatch.value.stage.settings.win_condition
+  }
+  return 1
 })
 
 const getParticipantName = (p: any) => {
   if (!p) return t('match.bracket.tbd')
-  return p.team?.name || p.user?.name || t('match.bracket.tbd')
+  const participant = p.participant || p // Handle MatchParticipant pivot or direct Participant
+  return participant.team?.name || participant.user?.name || t('match.bracket.tbd')
 }
 
 const open = (match: TournamentMatch) => {
@@ -138,7 +147,7 @@ defineExpose({ open })
         {{ $t('match.no_match_selected') }}
       </div>
       
-      <div v-else class="p-8 space-y-8 relative overflow-hidden">
+      <div v-else class="p-8 space-y-8 relative overflow-x-hidden custom-scrollbar max-h-[85vh]">
         <!-- Close Button -->
         <button 
           @click="model = false"
@@ -161,7 +170,17 @@ defineExpose({ open })
               <h3 class="text-sm font-black text-neutral-950 dark:text-white uppercase tracking-wider flex items-center gap-2">
                 Match #{{ selectedMatch.match_number }}
                 <span class="text-neutral-300 dark:text-neutral-700">/</span>
-                <span class="text-primary-500">{{ boFormat.toUpperCase() }}</span>
+                <span class="text-primary-500">
+                  <template v-if="selectedMatch.stage?.settings?.match_format === 'best_of'">
+                    BO{{ (selectedMatch.stage.settings.win_condition * 2) - 1 }}
+                  </template>
+                  <template v-else-if="selectedMatch.stage?.settings?.match_format === 'single_game'">
+                    SINGLE
+                  </template>
+                  <template v-else>
+                    {{ boFormat.toUpperCase() }}
+                  </template>
+                </span>
               </h3>
               <p class="text-[10px] text-neutral-500 font-bold uppercase tracking-widest mt-1">{{ $t('match.round') }} {{ selectedMatch.round }}</p>
             </div>

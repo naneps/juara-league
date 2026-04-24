@@ -63,9 +63,12 @@ class MatchService
     public function getMatchesByStage(Stage $stage, array $filters = []): Collection
     {
         $query = $stage->matches()
-            ->with(['participant1.user', 'participant1.team',
-                    'participant2.user', 'participant2.team',
-                    'winner', 'games']);
+            ->with([
+                'matchParticipants.participant.user',
+                'matchParticipants.participant.team',
+                'winner.user', 'winner.team',
+                'games',
+            ]);
 
         if (!empty($filters['status'])) {
             $query->where('status', $filters['status']);
@@ -77,9 +80,8 @@ class MatchService
 
         if (!empty($filters['participant_id'])) {
             $pid = $filters['participant_id'];
-            $query->where(function ($q) use ($pid) {
-                $q->where('participant_1_id', $pid)
-                  ->orWhere('participant_2_id', $pid);
+            $query->whereHas('matchParticipants', function ($q) use ($pid) {
+                $q->where('participant_id', $pid);
             });
         }
 
@@ -92,9 +94,10 @@ class MatchService
     public function getMatchDetail(TournamentMatch $match): TournamentMatch
     {
         $match->load([
-            'participant1.user', 'participant1.team',
-            'participant2.user', 'participant2.team',
-            'winner', 'games.winner',
+            'matchParticipants.participant.user',
+            'matchParticipants.participant.team',
+            'winner.user', 'winner.team',
+            'games',
         ]);
 
         return $match;
@@ -140,25 +143,19 @@ class MatchService
         }
 
         // Validate winner is one of the participants
-        if ($winnerId !== $match->participant_1_id && $winnerId !== $match->participant_2_id) {
+        if (!$match->hasParticipant($winnerId)) {
             throw ValidationException::withMessages([
                 'winner_id' => ['Pemenang harus salah satu peserta match.'],
             ]);
         }
 
-        // Get BO format from stage
-        $boFormat = $match->stage->bo_format ?? 'bo1';
-        $maxGames = $this->getMaxGames($boFormat);
-        $winCondition = $this->getWinCondition($boFormat);
+        // Get config from stage settings
+        $stage = $match->stage;
+        $format = $stage->getMatchFormat();
+        $scoringMethod = $stage->getScoringMethod();
+        $winCondition = $stage->getWinCondition();
 
-        // Validate not exceeding max games
-        if ($gameNumber > $maxGames) {
-            throw ValidationException::withMessages([
-                'game_number' => ["Tidak bisa input lebih dari {$maxGames} game untuk format {$boFormat}."],
-            ]);
-        }
-
-        return DB::transaction(function () use ($match, $gameNumber, $winnerId, $scoreP1, $scoreP2, $winCondition) {
+        return DB::transaction(function () use ($match, $gameNumber, $winnerId, $scoreP1, $scoreP2, $winCondition, $format) {
             // Create game record
             $game = Game::create([
                 'match_id' => $match->id,
@@ -169,52 +166,56 @@ class MatchService
                 'status' => 'created',
             ]);
 
-            // Count wins per participant
-            $p1Wins = $match->games()->where('winner_id', $match->participant_1_id)->count();
-            $p2Wins = $match->games()->where('winner_id', $match->participant_2_id)->count();
+            // Update wins in match_participants
+            $winnerParticipant = $match->matchParticipants()->where('participant_id', $winnerId)->first();
+            $winnerParticipant->increment('score'); // Using 'score' column to track game wins in BO
 
+            // Recalculate match state
+            $participants = $match->matchParticipants()->orderBy('slot')->get();
             $matchWinner = null;
             $matchCompleted = false;
 
-            // Check win condition
-            if ($p1Wins >= $winCondition) {
-                $matchWinner = $match->participant_1_id;
-                $matchCompleted = true;
-            } elseif ($p2Wins >= $winCondition) {
-                $matchWinner = $match->participant_2_id;
+            if ($format === 'best_of') {
+                foreach ($participants as $p) {
+                    if ($p->score >= $winCondition) {
+                        $matchWinner = $p->participant_id;
+                        $matchCompleted = true;
+                        break;
+                    }
+                }
+            } elseif ($format === 'single_game') {
+                $matchWinner = $winnerId;
                 $matchCompleted = true;
             }
+
+            $scores = $participants->mapWithKeys(function($p, $index) {
+                return ["participant_" . ($index + 1) => $p->score];
+            })->toArray();
 
             if ($matchCompleted) {
                 $match->update([
                     'status' => 'completed',
                     'winner_id' => $matchWinner,
-                    'scores' => [
-                        'participant_1' => $p1Wins,
-                        'participant_2' => $p2Wins,
-                    ],
+                    'scores' => $scores,
                     'completed_at' => now(),
                 ]);
+
+                // Mark winner in pivot table
+                $match->matchParticipants()->where('participant_id', $matchWinner)->update(['is_winner' => true]);
 
                 // Auto-advance winner and handle bracket updates
                 $this->handleMatchCompletion($match);
             } else {
                 // Update running score
                 $match->update([
-                    'scores' => [
-                        'participant_1' => $p1Wins,
-                        'participant_2' => $p2Wins,
-                    ],
+                    'scores' => $scores,
                 ]);
             }
 
             return [
                 'game' => $game->load('winner'),
                 'match_status' => $match->fresh()->status,
-                'current_score' => [
-                    'participant_1' => $p1Wins,
-                    'participant_2' => $p2Wins,
-                ],
+                'current_score' => $scores,
                 'match_winner' => $matchWinner ? Participant::with(['user', 'team'])->find($matchWinner) : null,
                 'next_match_id' => $matchCompleted ? $match->next_match_winner_id : null,
             ];
@@ -256,26 +257,45 @@ class MatchService
             ]);
 
             // Recalculate match winner
-            $winCondition = $this->getWinCondition($match->stage->bo_format ?? 'bo1');
-            $p1Wins = $match->games()->where('winner_id', $match->participant_1_id)->count();
-            $p2Wins = $match->games()->where('winner_id', $match->participant_2_id)->count();
+            $stage = $match->stage;
+            $winCondition = $stage->getWinCondition();
+            $format = $stage->getMatchFormat();
 
+            $participants = $match->matchParticipants()->orderBy('slot')->get();
             $matchWinner = null;
-            if ($p1Wins >= $winCondition) {
-                $matchWinner = $match->participant_1_id;
-            } elseif ($p2Wins >= $winCondition) {
-                $matchWinner = $match->participant_2_id;
+            
+            // Re-sync scores from match_participants table
+            foreach ($participants as $p) {
+                $p->update(['score' => $match->games()->where('winner_id', $p->participant_id)->count()]);
+            }
+
+            if ($format === 'best_of') {
+                foreach ($participants as $p) {
+                    if ($p->score >= $winCondition) {
+                        $matchWinner = $p->participant_id;
+                        break;
+                    }
+                }
+            } elseif ($format === 'single_game') {
+                $matchWinner = $data['winner_id'];
             }
 
             // Update match scores and potentially new winner
             $oldWinner = $match->winner_id;
+            $scores = $participants->mapWithKeys(function($p, $index) {
+                return ["participant_" . ($index + 1) => $p->score];
+            })->toArray();
+
             $match->update([
                 'winner_id' => $matchWinner,
-                'scores' => [
-                    'participant_1' => $p1Wins,
-                    'participant_2' => $p2Wins,
-                ],
+                'scores' => $scores,
             ]);
+
+            // Mark winner in pivot table
+            $match->matchParticipants()->update(['is_winner' => false]);
+            if ($matchWinner) {
+                $match->matchParticipants()->where('participant_id', $matchWinner)->update(['is_winner' => true]);
+            }
 
             // If winner changed, update bracket
             if ($oldWinner !== $matchWinner && $matchWinner) {
@@ -296,18 +316,23 @@ class MatchService
     {
         $stage = $match->stage;
         $winnerId = $match->winner_id;
-        $loserId = $match->participant_1_id === $winnerId
-            ? $match->participant_2_id
-            : $match->participant_1_id;
+        
+        // Find loser(s)
+        $pIds = $match->matchParticipants()->pluck('participant_id')->toArray();
+        $loserIds = collect($pIds)->reject(fn($id) => $id === $winnerId)->values()->toArray();
+        $loserId = $loserIds[0] ?? null;
 
         // Advance winner to next match
         if ($match->next_match_winner_id && $winnerId) {
             $nextMatch = TournamentMatch::find($match->next_match_winner_id);
             if ($nextMatch) {
-                if (!$nextMatch->participant_1_id) {
-                    $nextMatch->update(['participant_1_id' => $winnerId]);
-                } elseif (!$nextMatch->participant_2_id) {
-                    $nextMatch->update(['participant_2_id' => $winnerId]);
+                // Check if already in next match
+                if (!$nextMatch->hasParticipant($winnerId)) {
+                    $existingCount = $nextMatch->matchParticipants()->count();
+                    $nextMatch->matchParticipants()->create([
+                        'participant_id' => $winnerId,
+                        'slot' => $existingCount + 1
+                    ]);
                 }
             }
         }
@@ -316,10 +341,12 @@ class MatchService
         if ($match->next_match_loser_id && $loserId) {
             $loserMatch = TournamentMatch::find($match->next_match_loser_id);
             if ($loserMatch) {
-                if (!$loserMatch->participant_1_id) {
-                    $loserMatch->update(['participant_1_id' => $loserId]);
-                } elseif (!$loserMatch->participant_2_id) {
-                    $loserMatch->update(['participant_2_id' => $loserId]);
+                if (!$loserMatch->hasParticipant($loserId)) {
+                    $existingCount = $loserMatch->matchParticipants()->count();
+                    $loserMatch->matchParticipants()->create([
+                        'participant_id' => $loserId,
+                        'slot' => $existingCount + 1
+                    ]);
                 }
             }
         }
@@ -364,11 +391,10 @@ class MatchService
             return;
         }
 
-        if ($nextMatch->participant_1_id === $oldWinnerId) {
-            $nextMatch->update(['participant_1_id' => $newWinnerId]);
-        } elseif ($nextMatch->participant_2_id === $oldWinnerId) {
-            $nextMatch->update(['participant_2_id' => $newWinnerId]);
-        }
+        // Find the participant record in next match and update it
+        $nextMatch->matchParticipants()
+            ->where('participant_id', $oldWinnerId)
+            ->update(['participant_id' => $newWinnerId]);
     }
 
     /**
@@ -390,10 +416,12 @@ class MatchService
 
         // Cannot start match with disqualified participant
         if ($newStatus === 'ongoing') {
-            $p1 = $match->participant_1_id ? Participant::find($match->participant_1_id) : null;
-            $p2 = $match->participant_2_id ? Participant::find($match->participant_2_id) : null;
+            $pIds = $match->matchParticipants()->pluck('participant_id');
+            $disqualifiedCount = Participant::whereIn('id', $pIds)
+                ->where('status', 'disqualified')
+                ->count();
 
-            if (($p1 && $p1->status === 'disqualified') || ($p2 && $p2->status === 'disqualified')) {
+            if ($disqualifiedCount > 0) {
                 throw ValidationException::withMessages([
                     'status' => ['Salah satu peserta telah didiskualifikasi.'],
                 ]);

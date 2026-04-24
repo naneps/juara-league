@@ -120,4 +120,22 @@ class TournamentController extends Controller
             'data' => $matches
         ]);
     }
+
+    /**
+     * Get tournament statistics.
+     */
+    public function stats(Request $request, string $slug): JsonResponse
+    {
+        $tournament = $this->tournamentService->getTournamentBySlug($slug);
+        
+        if (!$tournament) {
+             throw new \App\Exceptions\TournamentException('Turnamen tidak ditemukan.', 'TOURNAMENT_NOT_FOUND', 404);
+        }
+
+        $stats = $this->tournamentService->getTournamentStats($tournament);
+
+        return response()->json([
+            'data' => $stats
+        ]);
+    }
 }

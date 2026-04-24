@@ -125,6 +125,45 @@ class TournamentService
         return $tournament->staff()->where('user_id', $userId)->delete();
     }
 
+    /**
+     * Get statistics for the tournament overview.
+     */
+    public function getTournamentStats(Tournament $tournament): array
+    {
+        $matchesTotal = \App\Models\TournamentMatch::whereHas('stage', function($q) use ($tournament) {
+            $q->where('tournament_id', $tournament->id);
+        })->count();
+
+        $matchesCompleted = \App\Models\TournamentMatch::whereHas('stage', function($q) use ($tournament) {
+            $q->where('tournament_id', $tournament->id);
+        })->where('status', 'completed')->count();
+
+        $activeStage = $tournament->stages()->where('status', 'ongoing')->first();
+        $stageProgress = 0;
+        if ($activeStage) {
+            $stageMatches = $activeStage->matches()->count();
+            $stageCompleted = $activeStage->matches()->where('status', 'completed')->count();
+            $stageProgress = $stageMatches > 0 ? round(($stageCompleted / $stageMatches) * 100) : 0;
+        }
+
+        $revenue = (float) $tournament->entry_fee * $tournament->participants()
+            ->where('payment_status', 'paid')
+            ->count();
+
+        return [
+            'matches_total' => $matchesTotal,
+            'matches_completed' => $matchesCompleted,
+            'participants_active' => $tournament->participants()->where('status', 'approved')->count(),
+            'revenue' => $revenue,
+            'active_stage' => $activeStage ? [
+                'id' => $activeStage->id,
+                'name' => $activeStage->name,
+                'progress' => $stageProgress,
+            ] : null,
+            'completion_rate' => $matchesTotal > 0 ? round(($matchesCompleted / $matchesTotal) * 100) : 0,
+        ];
+    }
+
     protected function generateUniqueSlug(string $title): string
     {
         $slug = Str::slug($title);
@@ -147,7 +186,11 @@ class TournamentService
             $query->where('user_id', $userId);
         })
         ->where('status', 'ongoing')
-        ->with(['participant_1.team', 'participant_1.user', 'participant_2.team', 'participant_2.user', 'stage.tournament'])
+        ->with([
+            'matchParticipants.participant.user',
+            'matchParticipants.participant.team',
+            'stage.tournament',
+        ])
         ->get();
     }
 }

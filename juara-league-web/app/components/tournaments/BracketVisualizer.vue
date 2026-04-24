@@ -70,8 +70,7 @@ const getRoundTitle = (round: any, isLower = false) => {
 }
 
 const calculateConnectorHeight = (roundIndex: number, matchIndex: number) => {
-  const baseDistance = 184 
-  return baseDistance * Math.pow(2, roundIndex)
+  return (140 + 24) * Math.pow(2, roundIndex)
 }
 
 watch(() => props.stage.id, () => { fetchMatches() })
@@ -111,12 +110,12 @@ defineExpose({ fetchMatches })
     <p class="text-neutral-500 font-bold uppercase tracking-widest text-sm">{{ $t('match.bracket.empty') }}</p>
   </div>
 
-  <div v-else class="p-20 min-w-max min-h-max flex items-center gap-32 relative">
+  <div v-else class="px-20 pt-28 pb-20 min-w-max min-h-max flex items-center gap-32 relative">
     
     <!-- Left Side: Upper and Lower Brackets -->
     <div class="flex flex-col gap-32">
       <!-- Upper Bracket Area -->
-      <div class="flex items-start gap-32 relative">
+      <div class="flex items-start gap-32 relative pt-20">
         <TransitionGroup name="bracket-round" appear>
           <div 
             v-for="(r, rIndex) in (isDoubleElim ? upperBracketRounds : rounds)" 
@@ -124,46 +123,46 @@ defineExpose({ fetchMatches })
             class="flex flex-col relative"
             :style="{ transitionDelay: `${rIndex * 150}ms` }"
           >
-          <!-- Round Header -->
-          <div class="mb-12 flex flex-col items-center">
-            <div class="px-4 py-1.5 rounded-full bg-primary-500/10 border border-primary-500/20 mb-3 block">
-              <span class="text-[10px] font-black text-primary-500 uppercase tracking-[0.2em]">{{ $t('match.bracket.round') }} {{ rIndex + 1 }}</span>
+            <!-- Fixed Height Round Header -->
+            <div class="h-20 flex flex-col items-center justify-center gap-1 mb-4">
+              <div class="px-3 py-1.5 rounded-full bg-primary-500/10 border border-primary-500/20">
+                <span class="text-[10px] font-black text-primary-500 uppercase tracking-[0.2em]">{{ $t('match.bracket.round') }} {{ rIndex + 1 }}</span>
+              </div>
+              <h3 class="text-[10px] font-black text-neutral-400 dark:text-white/40 uppercase tracking-[0.25em]">{{ getRoundTitle(r) }}</h3>
+              <span v-if="isDoubleElim" class="text-[8px] text-primary-500 font-bold uppercase tracking-widest">Upper</span>
             </div>
-            <h3 class="text-xs font-black text-neutral-400 dark:text-white/40 uppercase tracking-[0.3em]">{{ getRoundTitle(r) }}</h3>
-            <span v-if="isDoubleElim" class="text-[9px] text-primary-500 font-bold uppercase mt-1 tracking-widest">Upper Bracket</span>
-          </div>
 
-          <!-- Matches in Round -->
-          <div class="flex flex-col gap-12 relative">
-            <div 
-              v-for="(match, mIndex) in r.matches" 
-              :key="match.id"
-              class="relative flex items-center"
-            >
-              <BracketNode 
-                :match="match" 
-                :bo-format="props.stage.config?.bo_format"
-                @click="emit('match-click', match)"
-              />
-
-              <!-- Connector to Next Round (if not final) -->
+            <!-- Matches Area -->
+            <div class="flex flex-col relative">
               <div 
-                v-if="rIndex < (isDoubleElim ? upperBracketRounds : rounds).length - 1 && mIndex % 2 === 0"
-                class="absolute left-full top-1/2 -translate-y-1/2"
+                v-for="(match, mIndex) in r.matches" 
+                :key="match.id"
+                class="relative flex flex-col justify-center items-center"
+                :style="{ height: `${(140 + 24) * Math.pow(2, rIndex)}px` }"
               >
-                 <BracketConnector 
-                   :height="calculateConnectorHeight(rIndex, mIndex)" 
-                   class="ml-8"
-                 />
+                <BracketNode 
+                  :match="match" 
+                  :bo-format="props.stage.config?.bo_format"
+                  @click="emit('match-click', match)"
+                />
+                
+                <!-- Connector to Next Round — Positioned exactly from center of Match 1 -->
+                <div 
+                  v-if="rIndex < (isDoubleElim ? upperBracketRounds : rounds).length - 1 && mIndex % 2 === 0"
+                  class="absolute left-full top-[calc(50%-2px)] z-0"
+                >
+                   <BracketConnector 
+                     :height="(140 + 24) * Math.pow(2, rIndex)" 
+                     class="ml-8"
+                   />
+                </div>
               </div>
             </div>
           </div>
-        </div>
         </TransitionGroup>
       </div>
 
-      <!-- Lower Bracket Area -->
-      <div v-if="isDoubleElim && lowerBracketRounds.length > 0" class="flex items-start gap-32 relative pt-24 border-t-2 border-dashed border-neutral-300 dark:border-white/10">
+      <div v-if="isDoubleElim && lowerBracketRounds.length > 0" class="flex items-center gap-32 relative pt-8 border-t-2 border-dashed border-neutral-300 dark:border-white/10" style="margin-top: 6rem;">
         <div class="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-white/10 rounded-full font-black text-[10px] uppercase tracking-widest text-neutral-500">
           Lower Bracket 
         </div>
@@ -175,32 +174,32 @@ defineExpose({ fetchMatches })
             class="flex flex-col relative"
             :style="{ transitionDelay: `${rIndex * 150}ms` }"
           >
-          <!-- Round Header (Lower) -->
-          <div class="mb-12 flex flex-col items-center">
-            <div class="px-4 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/20 mb-3 block">
-              <span class="text-[10px] font-black text-rose-500 uppercase tracking-[0.2em]">{{ getRoundTitle(r, true) }}</span>
+            <!-- Fixed Height Lower Round Header -->
+            <div class="h-20 flex flex-col items-center justify-center gap-1 mb-4">
+              <div class="px-3 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/20">
+                <span class="text-[10px] font-black text-rose-500 uppercase tracking-[0.2em]">{{ getRoundTitle(r, true) }}</span>
+              </div>
+              <h3 class="text-[10px] font-black text-neutral-400 dark:text-white/40 uppercase tracking-[0.25em]">{{ r.matches.length }} Laga</h3>
+              <span class="text-[8px] text-rose-500 font-bold uppercase tracking-widest">Elimination</span>
             </div>
-            <h3 class="text-xs font-black text-neutral-400 dark:text-white/40 uppercase tracking-[0.3em]">{{ r.matches.length }} Laga</h3>
-            <span class="text-[9px] text-rose-500 font-bold uppercase mt-1 tracking-widest">Elimination</span>
-          </div>
 
-          <!-- Matches in Lower Round -->
-          <div class="flex flex-col gap-8 relative justify-center flex-1">
-            <div 
-              v-for="match in r.matches" 
-              :key="match.id"
-              class="relative flex items-center"
-            >
-              <BracketNode 
-                :match="match" 
-                :bo-format="props.stage.config?.bo_format"
-                class="!border-rose-500/20 hover:!border-rose-500/50 hover:!bg-rose-500/5"
-                @click="emit('match-click', match)"
-              />
-              <!-- Connectors in lower brackets are often complex to draw properly (as matches drop down). For this premium V1 we will omit rendering SVG lines in lower bracket to keep it cleanly readable. -->
+            <!-- Matches Area (Lower) -->
+            <div class="flex flex-col relative">
+              <div 
+                v-for="match in r.matches" 
+                :key="match.id"
+                class="relative flex flex-col justify-center items-center"
+                :style="{ height: `${(140 + 24) * Math.pow(2, Math.floor(rIndex/2))}px` }"
+              >
+                <BracketNode 
+                  :match="match" 
+                  :bo-format="props.stage.config?.bo_format"
+                  class="!border-rose-500/20 hover:!border-rose-500/50 hover:!bg-rose-500/5"
+                  @click="emit('match-click', match)"
+                />
+              </div>
             </div>
           </div>
-        </div>
         </TransitionGroup>
       </div>
     </div>

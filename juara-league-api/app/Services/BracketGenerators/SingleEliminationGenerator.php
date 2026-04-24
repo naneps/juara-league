@@ -63,23 +63,36 @@ class SingleEliminationGenerator
             $p1 = $seeded[$i * 2] ?? null;
             $p2 = $seeded[$i * 2 + 1] ?? null;
 
-            $updateData = [
-                'participant_1_id' => $p1?->id,
-                'participant_2_id' => $p2?->id,
-            ];
+            // Add participants to match_participants
+            if ($p1) {
+                $round1Matches[$i]->matchParticipants()->create([
+                    'participant_id' => $p1->id,
+                    'slot' => 1
+                ]);
+            }
+            if ($p2) {
+                $round1Matches[$i]->matchParticipants()->create([
+                    'participant_id' => $p2->id,
+                    'slot' => 2
+                ]);
+            }
 
             // Handle bye: one participant is null
             if ($p1 && !$p2) {
-                $updateData['winner_id'] = $p1->id;
-                $updateData['status'] = 'bye';
+                $round1Matches[$i]->update([
+                    'winner_id' => $p1->id,
+                    'status' => 'bye'
+                ]);
+                $round1Matches[$i]->matchParticipants()->where('participant_id', $p1->id)->update(['is_winner' => true]);
                 $this->advanceWinnerToNextMatch($round1Matches[$i], $p1);
             } elseif ($p2 && !$p1) {
-                $updateData['winner_id'] = $p2->id;
-                $updateData['status'] = 'bye';
+                $round1Matches[$i]->update([
+                    'winner_id' => $p2->id,
+                    'status' => 'bye'
+                ]);
+                $round1Matches[$i]->matchParticipants()->where('participant_id', $p2->id)->update(['is_winner' => true]);
                 $this->advanceWinnerToNextMatch($round1Matches[$i], $p2);
             }
-
-            $round1Matches[$i]->update($updateData);
         }
 
         return $matchNumber;
@@ -146,10 +159,15 @@ class SingleEliminationGenerator
             return;
         }
 
-        if (!$nextMatch->participant_1_id) {
-            $nextMatch->update(['participant_1_id' => $winner->id]);
-        } elseif (!$nextMatch->participant_2_id) {
-            $nextMatch->update(['participant_2_id' => $winner->id]);
-        }
+        // Determine which slot the winner should go to in the next match
+        // Based on the current match's index in its round
+        $currentMatchIndex = ($match->match_number - 1) % (pow(2, $match->stage->tournament->participants()->count() - $match->round));
+        // Actually simpler: check how many participants are already in the next match
+        $existingCount = $nextMatch->matchParticipants()->count();
+        
+        $nextMatch->matchParticipants()->create([
+            'participant_id' => $winner->id,
+            'slot' => $existingCount + 1
+        ]);
     }
 }

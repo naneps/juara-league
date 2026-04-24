@@ -143,6 +143,26 @@ class StageController extends Controller
     }
 
     /**
+     * Randomly shuffle participants in a stage.
+     */
+    public function shuffle(Request $request, Tournament $tournament, Stage $stage): JsonResponse
+    {
+        if (!$this->isStaff($request, $tournament)) {
+            return response()->json(['message' => 'Hanya staff turnamen yang dapat melakukan ini.'], 403);
+        }
+
+        if ($stage->tournament_id !== $tournament->id) {
+            return response()->json(['message' => 'Stage tidak ditemukan di turnamen ini.'], 404);
+        }
+
+        $this->stageService->shuffleParticipants($stage);
+
+        return response()->json([
+            'message' => 'Peserta berhasil diacak.',
+        ]);
+    }
+
+    /**
      * Start a stage and generate bracket.
      */
     public function start(Request $request, Tournament $tournament, Stage $stage): JsonResponse
@@ -160,6 +180,26 @@ class StageController extends Controller
         return response()->json([
             'message' => 'Stage berhasil dimulai. Bracket telah digenerate.',
             'data' => $result,
+        ]);
+    }
+
+    /**
+     * Reset a stage and delete generated bracket.
+     */
+    public function reset(Request $request, Tournament $tournament, Stage $stage): JsonResponse
+    {
+        if (!$this->isStaff($request, $tournament)) {
+            return response()->json(['message' => 'Hanya staff turnamen yang dapat melakukan ini.'], 403);
+        }
+
+        if ($stage->tournament_id !== $tournament->id) {
+            return response()->json(['message' => 'Stage tidak ditemukan di turnamen ini.'], 404);
+        }
+
+        $this->stageService->resetStage($stage);
+
+        return response()->json([
+            'message' => 'Stage berhasil direset. Bracket telah dihapus.',
         ]);
     }
 
