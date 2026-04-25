@@ -20,6 +20,7 @@ class TournamentMatchResource extends JsonResource
             'group_id' => $this->group_id,
             'round' => $this->round,
             'match_number' => $this->match_number,
+            'stage' => new StageResource($this->whenLoaded('stage')),
 
             // New multi-participant list
             'participants' => MatchParticipantResource::collection($this->whenLoaded('matchParticipants')),

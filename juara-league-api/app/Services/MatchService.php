@@ -93,14 +93,18 @@ class MatchService
      */
     public function getMatchDetail(TournamentMatch $match): TournamentMatch
     {
-        $match->load([
+        return $this->loadMatchRelations($match);
+    }
+
+    private function loadMatchRelations(TournamentMatch $match): TournamentMatch
+    {
+        return $match->load([
+            'stage',
             'matchParticipants.participant.user',
             'matchParticipants.participant.team',
             'winner.user', 'winner.team',
             'games',
         ]);
-
-        return $match;
     }
 
     /**
@@ -114,7 +118,7 @@ class MatchService
         }
 
         $match->update($data);
-        return $match;
+        return $this->loadMatchRelations($match);
     }
 
     /**
@@ -155,7 +159,7 @@ class MatchService
         $scoringMethod = $stage->getScoringMethod();
         $winCondition = $stage->getWinCondition();
 
-        return DB::transaction(function () use ($match, $gameNumber, $winnerId, $scoreP1, $scoreP2, $winCondition, $format) {
+        return DB::transaction(function () use ($match, $stage, $gameNumber, $winnerId, $scoreP1, $scoreP2, $winCondition, $format) {
             // Create game record
             $game = Game::create([
                 'match_id' => $match->id,
@@ -166,31 +170,45 @@ class MatchService
                 'status' => 'created',
             ]);
 
-            // Update wins in match_participants
-            $winnerParticipant = $match->matchParticipants()->where('participant_id', $winnerId)->first();
-            $winnerParticipant->increment('score'); // Using 'score' column to track game wins in BO
-
-            // Recalculate match state
+            // Update scores in match_participants
             $participants = $match->matchParticipants()->orderBy('slot')->get();
+            
             $matchWinner = null;
             $matchCompleted = false;
 
-            if ($format === 'best_of') {
-                foreach ($participants as $p) {
+            if ($format === 'single_game') {
+                // For single game, match score = game score
+                foreach ($participants as $index => $p) {
+                    $p->update(['score' => $data["score_p" . ($index + 1)] ?? 0]);
+                }
+                $matchWinner = $winnerId;
+                $matchCompleted = true;
+            } else {
+                // For BO, increment games won
+                $winnerParticipant = $participants->firstWhere('participant_id', $winnerId);
+                $winnerParticipant->increment('score');
+                
+                // Recalculate match completion for BO
+                foreach ($participants->fresh() as $p) {
                     if ($p->score >= $winCondition) {
                         $matchWinner = $p->participant_id;
                         $matchCompleted = true;
                         break;
                     }
                 }
-            } elseif ($format === 'single_game') {
-                $matchWinner = $winnerId;
-                $matchCompleted = true;
             }
 
+            // Build scores JSON for display and standings
+            $participants = $match->matchParticipants()->orderBy('slot')->get(); // Reload updated scores
             $scores = $participants->mapWithKeys(function($p, $index) {
-                return ["participant_" . ($index + 1) => $p->score];
+                return ["participant_" . ($index + 1) => (float) $p->score];
             })->toArray();
+
+            // If score based, we might want to store aggregate points too
+            if ($stage->getScoringMethod() === 'score_based') {
+                $scores['aggregate_p1'] = $match->games()->sum('score_p1');
+                $scores['aggregate_p2'] = $match->games()->sum('score_p2');
+            }
 
             if ($matchCompleted) {
                 $match->update([

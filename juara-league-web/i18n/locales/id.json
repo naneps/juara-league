@@ -154,13 +154,19 @@
         "name_label": "Nama Babak",
         "name_placeholder": "Masukkan nama babak...",
         "bo_label": "Format BO",
-        "advance_label": "Peserta Advance",
+        "match_format": "Format Pertandingan",
+        "scoring_method": "Metode Penilaian",
+        "advance_label": "Peserta Lolos",
         "groups_label": "Jumlah Grup",
         "per_group_label": "Peserta / Grup",
         "submit": "Simpan Babak",
         "select_template": "Pilih Template Babak",
         "select_template_desc": "Gunakan template untuk setup cepat.",
-        "use_template": "Gunakan Template"
+        "use_template": "Gunakan Template",
+        "win_condition": "Syarat Menang (Race to X)",
+        "additional_rules": "Aturan Tambahan",
+        "total_rounds": "Total Ronde",
+        "group_config": "Konfigurasi Grup"
       },
       "toast": {
         "add_success": "Babak berhasil ditambahkan.",
@@ -526,7 +532,9 @@
     "field_reg_start": "Dibuka",
     "field_reg_end": "Ditutup",
     "field_start_at": "Pertandingan Dimulai",
-    "field_bracket": "Format Bracket",
+    "field_bracket": "Format Utama (Preset)",
+    "field_bracket_placeholder": "Pilih Format (Opsional)",
+    "field_bracket_desc": "Format ini akan digunakan untuk membuat Babak (Stage) pertama secara otomatis.",
     "field_max_participants": "Maks. Peserta",
     "field_prize": "Total Hadiah (IDR)",
     "field_entry_fee": "Biaya Daftar (IDR)",
@@ -589,7 +597,9 @@
     "bracket_types": {
       "single": "Single Elimination",
       "double": "Double Elimination",
-      "round_robin": "Round Robin"
+      "round_robin": "Round Robin",
+      "swiss": "Swiss System",
+      "group_stage": "Group Stage + Playoffs"
     }
   },
   "tournament_join": {

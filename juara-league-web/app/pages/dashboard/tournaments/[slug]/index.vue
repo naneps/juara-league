@@ -3,6 +3,7 @@ import { useTournamentStore } from '~/stores/tournamentStore'
 import { getApprovalStatus, getTournamentStatus } from '~/utils/tournamentStatus'
 
 const route = useRoute()
+const router = useRouter()
 const slug = route.params.slug as string
 const tournamentStore = useTournamentStore()
 const toast = useToast()
@@ -230,7 +231,7 @@ const getParticipantName = (p: any) => {
                 <button 
                   v-if="match.status === 'ongoing'" 
                   :key="match.id"
-                  @click="matchDetailModalRef?.open(match)"
+                  @click="router.push(`/dashboard/tournaments/${slug}/stages/${stage.id}/matches/${match.id}`)"
                   class="flex flex-col bg-neutral-950 border border-white/5 rounded-2xl p-5 transition-all hover:border-primary-500/40 hover:scale-[1.02] text-left group/card shadow-lg"
                 >
                   <div class="flex items-center justify-between mb-6">

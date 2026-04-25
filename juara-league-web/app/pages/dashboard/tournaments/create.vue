@@ -28,7 +28,7 @@ const state = reactive<StoreTournamentPayload>({
   venue_type: 'online',
   participant_type: 'individual',
   team_size: undefined,
-  bracket_type: 'single',
+  bracket_type: undefined,
   max_participants: 16,
   prize_pool: 0,
   prize_description: '',
@@ -127,7 +127,7 @@ const bracketTypes: { label: string, value: BracketType }[] = [
 ]
 
 const selectedBracketType = computed({
-  get: () => bracketTypes.find(b => b.value === state.bracket_type) || bracketTypes[0],
+  get: () => bracketTypes.find(b => b.value === state.bracket_type) || null,
   set: (val: any) => { if (val) state.bracket_type = val.value }
 })
 
@@ -423,13 +423,18 @@ const onSubmit = async () => {
 
                 <div class="p-6 space-y-5">
                   <div class="grid grid-cols-2 gap-4">
-                    <UFormField :label="$t('tournament_form.field_bracket')" name="bracket_type" required>
+                    <UFormField :label="$t('tournament_form.field_bracket')" name="bracket_type">
                       <USelectMenu
                         v-model="selectedBracketType"
                         :items="bracketTypes"
                         size="xl"
                         class="w-full"
-                      />
+                        :placeholder="$t('tournament_form.field_bracket_placeholder')"
+                      >
+                        <template #description>
+                          <span class="text-[10px] text-neutral-500 italic">{{ $t('tournament_form.field_bracket_desc') }}</span>
+                        </template>
+                      </USelectMenu>
                     </UFormField>
                     <UFormField :label="$t('tournament_form.field_max_participants')" name="max_participants" required>
                       <UInput

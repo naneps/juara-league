@@ -277,9 +277,12 @@ export const useTournamentStore = defineStore('tournament', () => {
 
   // ── Other ──
 
-  const fetchStandings = async (slug: string, stageId: string, groupId: string) => {
+  const fetchStandings = async (slug: string, stageId: string, groupId?: string) => {
     try {
-      const response = await useApi<{ data: any[] }>(`/api/v1/tournaments/${slug}/stages/${stageId}/groups/${groupId}/standings`)
+      const url = groupId 
+        ? `/api/v1/tournaments/${slug}/stages/${stageId}/groups/${groupId}/standings`
+        : `/api/v1/tournaments/${slug}/stages/${stageId}/standings`
+      const response = await useApi<{ data: any[] }>(url)
       return response.data
     } catch (e: any) {
       throw e

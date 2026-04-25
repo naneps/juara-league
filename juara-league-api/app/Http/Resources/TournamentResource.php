@@ -30,6 +30,8 @@ class TournamentResource extends JsonResource
             'participant_type' => $this->participant_type,
             'team_size' => $this->team_size,
             'bracket_type' => $this->bracket_type,
+            'format_summary' => $this->getFormatSummary(),
+            'stages_info' => $this->getStagesInfo(),
             'venue' => $this->venue,
             'banner_url' => $this->banner_url,
             'prize_pool' => $this->prize_pool,

@@ -540,6 +540,32 @@ onMounted(() => {
                 </div>
               </section>
 
+              <section v-if="tournament?.stages_info?.length" class="space-y-6">
+                <h2 class="text-2xl font-black text-neutral-900 dark:text-white uppercase tracking-tight">Format & Babak</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div v-for="stage in tournament.stages_info" :key="stage.name" class="bg-white dark:bg-neutral-900/40 p-6 rounded-[2rem] border border-neutral-200 dark:border-white/5 flex flex-col gap-2 shadow-sm">
+                    <div class="flex items-center justify-between">
+                      <h4 class="font-black text-neutral-900 dark:text-white uppercase tracking-wider">{{ stage.name }}</h4>
+                      <UBadge color="primary" variant="subtle" size="xs" class="font-black uppercase tracking-widest">{{ stage.type }}</UBadge>
+                    </div>
+                    <div class="space-y-1 mt-2">
+                      <div class="flex items-center gap-2 text-xs text-neutral-500 font-medium">
+                        <UIcon name="i-lucide-swords" class="size-3.5 text-primary-500" />
+                        <span>{{ stage.rules.bo_format }}</span>
+                      </div>
+                      <div v-if="stage.rules.groups_count" class="flex items-center gap-2 text-xs text-neutral-500 font-medium">
+                        <UIcon name="i-lucide-layout-grid" class="size-3.5 text-primary-500" />
+                        <span>{{ stage.rules.groups_count }} Grup</span>
+                      </div>
+                      <div v-if="stage.rules.participants_advance" class="flex items-center gap-2 text-xs text-neutral-500 font-medium">
+                        <UIcon name="i-lucide-arrow-right-circle" class="size-3.5 text-primary-500" />
+                        <span>Lolos: {{ stage.rules.participants_advance }} Peserta</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
               <section v-if="tournament?.venue" class="bg-white dark:bg-neutral-900/40 p-8 rounded-[2rem] border border-neutral-200 dark:border-white/5 shadow-sm">
                 <div class="flex items-center gap-4 mb-6">
                   <UIcon name="i-lucide-map-pin" class="text-primary-500 size-6" />
@@ -573,8 +599,8 @@ onMounted(() => {
                      <span class="text-neutral-900 dark:text-white font-black uppercase text-xs">{{ tournament?.participant_type }}</span>
                    </div>
                    <div class="flex justify-between items-center text-sm">
-                     <span class="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">Tipe Braket</span>
-                     <span class="text-neutral-900 dark:text-white font-black uppercase text-xs">{{ tournament?.bracket_type?.replace('_', ' ') }}</span>
+                     <span class="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">Format Turnamen</span>
+                     <span class="text-neutral-900 dark:text-white font-black uppercase text-xs">{{ tournament?.format_summary || tournament?.bracket_type?.replace('_', ' ') }}</span>
                    </div>
                  </div>
 

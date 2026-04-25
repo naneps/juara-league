@@ -102,4 +102,49 @@ class Tournament extends Model
     {
         return $this->hasMany(TournamentApproval::class);
     }
+    /**
+     * Get a human-readable summary of the tournament format based on its stages.
+     */
+    public function getFormatSummary(): string
+    {
+        $stages = $this->stages;
+        
+        if ($stages->isEmpty()) {
+            return $this->bracket_type ? str_replace('_', ' ', ucwords($this->bracket_type, '_')) : 'Format belum diatur';
+        }
+
+        $types = $stages->map(function ($stage) {
+            return match ($stage->type) {
+                'single_elim' => 'Single Elimination',
+                'double_elim' => 'Double Elimination',
+                'round_robin' => 'Round Robin',
+                'swiss' => 'Swiss',
+                default => str_replace('_', ' ', ucwords($stage->type, '_')),
+            };
+        })->unique();
+
+        if ($types->count() === 1) {
+            return $types->first();
+        }
+
+        return $types->implode(' + ');
+    }
+
+    /**
+     * Get a summary list of stages for quick information.
+     */
+    public function getStagesInfo(): array
+    {
+        return $this->stages->map(function ($stage) {
+            return [
+                'name' => $stage->name,
+                'type' => $stage->type,
+                'rules' => [
+                    'bo_format' => $stage->bo_format,
+                    'groups_count' => $stage->groups_count,
+                    'participants_advance' => $stage->participants_advance,
+                ]
+            ];
+        })->toArray();
+    }
 }

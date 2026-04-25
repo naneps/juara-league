@@ -29,7 +29,7 @@ class StoreTournamentRequest extends FormRequest
             'category' => ['required', 'string'],
             'mode' => ['required', Rule::in(['open', 'invite'])],
             'venue_type' => ['required', Rule::in(['online', 'offline'])],
-            'bracket_type' => ['required', Rule::in(['single', 'double', 'round_robin', 'swiss', 'group_stage'])],
+            'bracket_type' => ['sometimes', 'nullable', Rule::in(['single', 'double', 'round_robin', 'swiss', 'group_stage'])],
             'participant_type' => ['nullable', Rule::in(['individual', 'team'])],
             'team_size' => ['nullable', 'integer', 'min:2', 'required_if:participant_type,team'],
             'venue' => ['nullable', 'string', 'max:255', 'required_if:venue_type,offline'],

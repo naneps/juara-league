@@ -192,16 +192,14 @@ class SwissGenerator
             }
         }
 
-        // Calculate Buchholz Score
-        foreach ($stats as &$stat) {
-            $stat['buchholz'] = 0;
-            foreach ($stat['opponents'] as $oppId) {
-                $stat['buchholz'] += $stats[$oppId]['points'] ?? 0;
-            }
+        // Attach participant info
+        $participants = Participant::with(['user', 'team'])->whereIn('id', array_keys($stats))->get()->keyBy('id');
+        foreach ($stats as $pid => &$stat) {
+            $stat['participant'] = $participants->get($pid);
             unset($stat['opponents']);
         }
 
-        return collect(array_values($stats));
+        return collect(array_values($stats))->sortByDesc('points')->values();
     }
 
     /**

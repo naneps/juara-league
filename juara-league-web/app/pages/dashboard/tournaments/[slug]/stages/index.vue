@@ -7,6 +7,7 @@ const slug = route.params.slug as string
 const tournamentStore = useTournamentStore()
 
 const { data: tournament } = await useAsyncData(`tournament-stages-${slug}`, () => tournamentStore.getBySlug(slug))
+const { t } = useI18n()
 </script>
 
 <template>
@@ -14,6 +15,7 @@ const { data: tournament } = await useAsyncData(`tournament-stages-${slug}`, () 
     <TournamentStageManager 
       :tournament-slug="slug" 
       :initial-stages="tournament.stages"
+      @refresh="refreshNuxtData(`tournament-stages-${slug}`)"
     />
   </div>
 </template>

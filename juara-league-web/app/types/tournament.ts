@@ -149,6 +149,16 @@ export interface Tournament {
   participant_type: ParticipantType;
   team_size?: number;
   bracket_type: BracketType;
+  format_summary?: string;
+  stages_info?: Array<{
+    name: string;
+    type: string;
+    rules: {
+      bo_format: string;
+      groups_count?: number;
+      participants_advance?: number;
+    }
+  }>;
   venue?: string;
   banner_url?: string;
   prize_pool: number | string;
@@ -184,7 +194,7 @@ export interface StoreTournamentPayload {
   venue_type: VenueType;
   participant_type: ParticipantType;
   team_size?: number;
-  bracket_type: BracketType;
+  bracket_type?: BracketType;
   max_participants: number;
   prize_pool: number;
   prize_description?: string;

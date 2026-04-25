@@ -154,13 +154,19 @@
         "name_label": "Stage Name",
         "name_placeholder": "Enter stage name...",
         "bo_label": "BO Format",
+        "match_format": "Match Format",
+        "scoring_method": "Scoring Method",
         "advance_label": "Advance Participants",
         "groups_label": "Groups Count",
         "per_group_label": "Participants / Group",
         "submit": "Save Stage",
         "select_template": "Select Stage Template",
         "select_template_desc": "Use a template for quick setup.",
-        "use_template": "Use Template"
+        "use_template": "Use Template",
+        "win_condition": "Win Condition (Race to X)",
+        "additional_rules": "Additional Rules",
+        "total_rounds": "Total Rounds",
+        "group_config": "Group Configuration"
       },
       "toast": {
         "add_success": "Stage successfully added.",
@@ -524,7 +530,9 @@
     "field_reg_start": "Starts",
     "field_reg_end": "Ends",
     "field_start_at": "Tournament Starts",
-    "field_bracket": "Bracket Format",
+    "field_bracket": "Main Format (Preset)",
+    "field_bracket_placeholder": "Select Format (Optional)",
+    "field_bracket_desc": "This format will be used to automatically create the first Stage.",
     "field_max_participants": "Max. Participants",
     "field_prize": "Total Prize (IDR)",
     "field_entry_fee": "Entry Fee (IDR)",
@@ -587,7 +595,9 @@
     "bracket_types": {
       "single": "Single Elimination",
       "double": "Double Elimination",
-      "round_robin": "Round Robin"
+      "round_robin": "Round Robin",
+      "swiss": "Swiss System",
+      "group_stage": "Group Stage + Playoffs"
     }
   },
   "tournament_join": {

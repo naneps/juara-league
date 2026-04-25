@@ -228,6 +228,22 @@ class StageController extends Controller
     }
 
     /**
+     * Get standings for a stage (Swiss or Round Robin without groups).
+     */
+    public function standings(Tournament $tournament, Stage $stage): JsonResponse
+    {
+        if ($stage->tournament_id !== $tournament->id) {
+            return response()->json(['message' => 'Stage tidak ditemukan di turnamen ini.'], 404);
+        }
+
+        $standings = $this->stageService->getStageStandings($stage);
+
+        return response()->json([
+            'data' => $standings,
+        ]);
+    }
+
+    /**
      * Auto-schedule matches in a stage.
      */
     public function autoSchedule(Request $request, Tournament $tournament, Stage $stage): JsonResponse

@@ -1,7 +1,7 @@
 <template>
   <div 
     ref="containerRef"
-    class="relative w-full h-full min-h-[600px] overflow-hidden cursor-grab active:cursor-grabbing select-none touch-none"
+    class="relative w-full h-full min-h-[600px] overflow-hidden cursor-grab active:cursor-grabbing select-none touch-none bg-neutral-50 dark:bg-neutral-950 transition-colors duration-500"
     @wheel.prevent="onWheel"
     @pointerdown="onPointerDown"
     @pointermove="onPointerMove"
@@ -9,7 +9,7 @@
     @pointerleave="onPointerUp"
   >
     <!-- Background Stardust Fixed -->
-    <div class="absolute inset-0 pointer-events-none overflow-hidden bg-white dark:bg-neutral-950 transition-colors duration-500">
+    <div class="absolute inset-0 pointer-events-none overflow-hidden">
        <div class="stardust-container dark:opacity-100 opacity-0 transition-opacity">
           <div class="star star-small"></div>
           <div class="star star-medium"></div>
@@ -20,9 +20,10 @@
 
     <!-- Zoomable Content Wrapper -->
     <div 
-      class="absolute origin-center will-change-transform transition-transform duration-75"
+      class="absolute will-change-transform"
       :style="{ 
-        transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`
+        transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
+        transformOrigin: '0 0'
       }"
     >
       <slot />
@@ -58,7 +59,6 @@
 </template>
 
 <script setup lang="ts">
-const colorMode = useColorMode()
 const containerRef = ref<HTMLElement | null>(null)
 const scale = ref(1)
 const offset = ref({ x: 0, y: 0 })
@@ -66,17 +66,32 @@ const isDragging = ref(false)
 const lastPointerPosition = ref({ x: 0, y: 0 })
 
 // Zoom Constants
-const MIN_SCALE = 0.2
-const MAX_SCALE = 3
-const ZOOM_SPEED = 0.001
+const MIN_SCALE = 0.1 // Lowered for large brackets
+const MAX_SCALE = 4
+const ZOOM_SENSITIVITY = 0.001
 
 const onWheel = (e: WheelEvent) => {
-  const delta = -e.deltaY * ZOOM_SPEED
-  const newScale = Math.min(Math.max(scale.value + delta, MIN_SCALE), MAX_SCALE)
+  if (!containerRef.value) return
+
+  const rect = containerRef.value.getBoundingClientRect()
+  const mouseX = e.clientX - rect.left
+  const mouseY = e.clientY - rect.top
+
+  const delta = -e.deltaY * ZOOM_SENSITIVITY
+  const newScale = Math.min(Math.max(scale.value * (1 + delta), MIN_SCALE), MAX_SCALE)
+  
+  // Calculate new offset to zoom towards mouse position
+  const ratio = newScale / scale.value
+  offset.value.x = mouseX - (mouseX - offset.value.x) * ratio
+  offset.value.y = mouseY - (mouseY - offset.value.y) * ratio
+  
   scale.value = newScale
 }
 
 const onPointerDown = (e: PointerEvent) => {
+  // Only drag with left click or touch
+  if (e.button !== 0 && e.pointerType === 'mouse') return
+  
   isDragging.value = true
   lastPointerPosition.value = { x: e.clientX, y: e.clientY }
   if (containerRef.value) {
@@ -104,17 +119,37 @@ const onPointerUp = (e: PointerEvent) => {
 }
 
 const zoomIn = () => {
-  scale.value = Math.min(scale.value + 0.2, MAX_SCALE)
+  if (!containerRef.value) return
+  const rect = containerRef.value.getBoundingClientRect()
+  handleZoom(1.2, rect.width / 2, rect.height / 2)
 }
 
 const zoomOut = () => {
-  scale.value = Math.max(scale.value - 0.2, MIN_SCALE)
+  if (!containerRef.value) return
+  const rect = containerRef.value.getBoundingClientRect()
+  handleZoom(0.8, rect.width / 2, rect.height / 2)
+}
+
+const handleZoom = (factor: number, centerX: number, centerY: number) => {
+  const newScale = Math.min(Math.max(scale.value * factor, MIN_SCALE), MAX_SCALE)
+  const ratio = newScale / scale.value
+  offset.value.x = centerX - (centerX - offset.value.x) * ratio
+  offset.value.y = centerY - (centerY - offset.value.y) * ratio
+  scale.value = newScale
 }
 
 const reset = () => {
   scale.value = 1
   offset.value = { x: 0, y: 0 }
 }
+
+// Initial centering
+onMounted(() => {
+  // Small delay to ensure content is rendered
+  setTimeout(() => {
+    reset()
+  }, 100)
+})
 </script>
 
 <style scoped>

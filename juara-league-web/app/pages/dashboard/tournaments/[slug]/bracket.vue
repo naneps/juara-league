@@ -102,7 +102,7 @@ const selectedMatchBoFormat = computed(() => {
         <TournamentsBracketVisualizer 
           :tournament-slug="slug" 
           :stage="selectedStage"
-          @match-click="matchDetailModalRef?.open($event)"
+          @match-click="router.push(`/dashboard/tournaments/${slug}/stages/${selectedStageId}/matches/${$event.id}`)"
         />
       </InteractiveCanvas>
     </div>

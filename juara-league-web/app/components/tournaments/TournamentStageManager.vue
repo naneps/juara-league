@@ -124,8 +124,19 @@ const fetchStages = async () => {
 const addStage = async () => {
   if (!newStage.value.name.trim()) return
   isSubmitting.value = true
+  
   try {
-    await tournamentStore.createStage(props.tournamentSlug, newStage.value)
+    // Transform payload to match backend requirements
+    const winCondition = newStage.value.settings.win_condition
+    const boNumber = (winCondition * 2) - 1
+    
+    const payload = {
+      ...newStage.value,
+      bo_format: `bo${boNumber}`,
+      participants_advance: newStage.value.settings.advance_count,
+    }
+
+    await tournamentStore.createStage(props.tournamentSlug, payload)
     await fetchStages()
     resetAddState()
     useToast().add({ title: t('common.success'), description: t('managers.stages.toast.add_success'), color: 'success' })
@@ -138,8 +149,65 @@ const addStage = async () => {
 
 const participants = ref<any[]>([])
 const isSeedingModalOpen = ref(false)
-const seedingStage = ref<Stage | null>(null)
-const localParticipants = ref<any[]>([])
+const selectedStageForSeeding = ref<Stage | null>(null)
+const manualSeeds = ref<{ participant_id: string; seed: number }[]>([])
+
+// Advance Participants State
+const isAdvanceModalOpen = ref(false)
+const isAdvancing = ref(false)
+const selectedStageToAdvance = ref<Stage | null>(null)
+const selectableParticipants = ref<any[]>([])
+const selectedAdvancingIds = ref<string[]>([])
+
+const openAdvance = async (stage: Stage) => {
+  selectedStageToAdvance.value = stage
+  isAdvanceModalOpen.value = true
+  selectedAdvancingIds.value = []
+  selectableParticipants.value = []
+  
+  try {
+    const standings = await tournamentStore.fetchStandings(props.tournamentSlug, stage.id)
+    selectableParticipants.value = standings.map((s, idx) => ({
+      id: s.participant_id,
+      name: s.participant?.team?.name || s.participant?.user?.name || 'Unknown',
+      points: s.points,
+      rank: idx + 1
+    }))
+    
+    // Pre-select top X based on advance_count
+    const topX = stage.settings?.advance_count || stage.participants_advance || 0
+    selectedAdvancingIds.value = selectableParticipants.value.slice(0, topX).map(p => p.id)
+  } catch (e) {
+    console.error('Failed to fetch selectable participants', e)
+    // Fallback to basic participants if standings fail
+    const res = await tournamentStore.fetchParticipants(props.tournamentSlug)
+    selectableParticipants.value = res.map(p => ({
+      id: p.id,
+      name: p.team?.name || p.user?.name || 'Unknown',
+      rank: '?'
+    }))
+  }
+}
+
+const confirmAdvance = async () => {
+  if (!selectedStageToAdvance.value) return
+  isAdvancing.value = true
+  const toast = useToast()
+  try {
+    await tournamentStore.advanceParticipants(
+      props.tournamentSlug, 
+      selectedStageToAdvance.value.id, 
+      selectedAdvancingIds.value
+    )
+    toast.add({ title: 'Berhasil', description: 'Peserta berhasil dilanjutkan ke babak berikutnya.', color: 'success' })
+    isAdvanceModalOpen.value = false
+    emit('refresh')
+  } catch (e: any) {
+    toast.add({ title: 'Gagal', description: e.data?.message || 'Gagal melanjutkan peserta.', color: 'error' })
+  } finally {
+    isAdvancing.value = false
+  }
+}
 
 const fetchParticipants = async () => {
   try {
@@ -393,7 +461,7 @@ onMounted(() => {
                 @click="applyTemplate(template)"
                 class="flex flex-col text-left p-5 rounded-3xl border border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-primary-500 dark:hover:border-primary-500 hover:ring-4 hover:ring-primary-500/5 transition-all group relative overflow-hidden"
               >
-                <div class="absolute -top-4 -right-4 size-24 bg-neutral-50 dark:bg-neutral-800 rounded-full group-hover:bg-primary-500/10 transition-colors" />
+                <div class="absolute -top-4 -right-4 size-24 bg-neutral-50 dark:bg-neutral-800 rounded-full group-hover:bg-primary-500/10 transition-colors"></div>
                 <div class="size-12 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4 group-hover:bg-primary-500 group-hover:text-white transition-all">
                   <UIcon :name="template.icon" class="size-6" />
                 </div>
@@ -428,9 +496,13 @@ onMounted(() => {
               </div>
 
               <!-- Match Format & Scoring -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                  <label class="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-3">{{ t('managers.stages.config.match_format') }}</label>
+              <!-- Match Format & Scoring -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+                <!-- Left Column: Match Format -->
+                <div class="space-y-6">
+                  <div>
+                    <label class="block text-xs font-black text-neutral-500 uppercase tracking-widest mb-3">{{ t('managers.stages.config.match_format') }}</label>
+                  </div>
                   <div class="space-y-2">
                     <button
                       v-for="format in matchFormats"
@@ -457,7 +529,7 @@ onMounted(() => {
 
                   <!-- BO Condition -->
                   <div v-if="newStage.settings.match_format === 'best_of'" class="mt-4 p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-800">
-                    <label class="block text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-3">Win Condition (Race to X wins)</label>
+                    <label class="block text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-3">{{ t('managers.stages.config.win_condition') }}</label>
                     <div class="grid grid-cols-4 gap-2">
                       <button
                         v-for="opt in boOptions"
@@ -476,8 +548,11 @@ onMounted(() => {
                   </div>
                 </div>
 
-                <div>
-                  <label class="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-3">{{ t('managers.stages.config.scoring_method') }}</label>
+                <!-- Right Column: Scoring & Advance -->
+                <div class="space-y-6">
+                  <div>
+                    <label class="block text-xs font-black text-neutral-500 uppercase tracking-widest mb-3">{{ t('managers.stages.config.scoring_method') }}</label>
+                  </div>
                   <div class="space-y-2">
                     <button
                       v-for="method in scoringMethods"
@@ -496,49 +571,83 @@ onMounted(() => {
                       <p class="text-[10px] text-neutral-400 dark:text-neutral-500">{{ method.description }}</p>
                     </button>
                   </div>
-                </div>
-              </div>
 
-              <!-- Rules & Advance -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
-                <div class="space-y-4">
-                  <label class="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-3">Additional Rules</label>
-                  <div class="flex items-center justify-between p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/30">
-                    <div class="flex items-center gap-2">
-                      <UIcon name="i-lucide-divide" class="size-4 text-neutral-400" />
-                      <span class="text-xs font-bold text-neutral-600 dark:text-neutral-400">Allow Draws</span>
-                    </div>
-                    <UToggle v-model="newStage.settings.rules.allow_draw" color="primary" />
-                  </div>
-                  <div class="flex items-center justify-between p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/30">
-                    <div class="flex items-center gap-2">
-                      <UIcon name="i-lucide-timer" class="size-4 text-neutral-400" />
-                      <span class="text-xs font-bold text-neutral-600 dark:text-neutral-400">Extra Time</span>
-                    </div>
-                    <UToggle v-model="newStage.settings.rules.extra_time" color="primary" />
-                  </div>
-                </div>
-
-                <div class="space-y-6">
-                  <div>
-                    <label class="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-2">{{ t('managers.stages.config.advance_label') }}</label>
-                    <UInput v-model.number="newStage.settings.advance_count" type="number" placeholder="4" icon="i-lucide-arrow-up-right" size="lg" class="w-full" />
-                  </div>
-                  <div v-if="newStage.type === 'swiss'">
-                    <label class="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-2">Total Rounds</label>
-                    <UInput v-model.number="newStage.settings.rounds" type="number" placeholder="Automatic" icon="i-lucide-hash" size="lg" class="w-full" />
+                  <!-- Advance Participants -->
+                  <div class="pt-2">
+                    <label class="block text-xs font-black text-neutral-500 uppercase tracking-widest mb-3">{{ t('managers.stages.config.advance_label') }}</label>
+                    <UInput v-model.number="newStage.settings.advance_count" type="number" placeholder="4" icon="i-lucide-arrow-up-right" size="xl" class="w-full" />
                   </div>
                 </div>
               </div>
 
-              <div v-if="newStage.type === 'round_robin'" class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-2">{{ t('managers.stages.config.groups_label') }}</label>
-                  <UInput v-model.number="newStage.groups_count" type="number" placeholder="2" size="lg" class="w-full" />
-                </div>
-                <div>
-                  <label class="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-2">{{ t('managers.stages.config.per_group_label') }}</label>
-                  <UInput v-model.number="newStage.participants_per_group" type="number" placeholder="4" size="lg" class="w-full" />
+              <!-- Rules & Specific Config -->
+              <div class="pt-8 mt-8 border-t border-neutral-100 dark:border-neutral-800">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+                  <div class="space-y-4">
+                    <label class="block text-xs font-black text-neutral-500 uppercase tracking-widest mb-3">{{ t('managers.stages.config.additional_rules') }}</label>
+                    <div 
+                      class="flex items-center justify-between p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/30 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800/50 transition-all border border-transparent hover:border-primary-500/20"
+                      @click="newStage.settings.rules.allow_draw = !newStage.settings.rules.allow_draw"
+                    >
+                      <div class="flex items-center gap-4">
+                        <div class="size-10 rounded-xl bg-white dark:bg-neutral-800 flex items-center justify-center border border-neutral-200 dark:border-white/10 shadow-sm">
+                          <UIcon name="i-lucide-divide" class="size-5 text-neutral-400" />
+                        </div>
+                        <div>
+                          <p class="text-xs font-bold text-neutral-900 dark:text-neutral-100">Allow Draws</p>
+                          <p class="text-[10px] text-neutral-500">Enable tie results for matches</p>
+                        </div>
+                      </div>
+                      <UToggle v-model="newStage.settings.rules.allow_draw" color="primary" @click.stop />
+                    </div>
+
+                    <div 
+                      class="flex items-center justify-between p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/30 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800/50 transition-all border border-transparent hover:border-primary-500/20"
+                      @click="newStage.settings.rules.extra_time = !newStage.settings.rules.extra_time"
+                    >
+                      <div class="flex items-center gap-4">
+                        <div class="size-10 rounded-xl bg-white dark:bg-neutral-800 flex items-center justify-center border border-neutral-200 dark:border-white/10 shadow-sm">
+                          <UIcon name="i-lucide-timer" class="size-5 text-neutral-400" />
+                        </div>
+                        <div>
+                          <p class="text-xs font-bold text-neutral-900 dark:text-neutral-100">Extra Time</p>
+                          <p class="text-[10px] text-neutral-500">Add overtime if score is tied</p>
+                        </div>
+                      </div>
+                      <UToggle v-model="newStage.settings.rules.extra_time" color="primary" @click.stop />
+                    </div>
+
+                    <div 
+                      class="flex items-center justify-between p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/30 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800/50 transition-all border border-transparent hover:border-primary-500/20"
+                      @click="newStage.settings.rules.penalties = !newStage.settings.rules.penalties"
+                    >
+                      <div class="flex items-center gap-4">
+                        <div class="size-10 rounded-xl bg-white dark:bg-neutral-800 flex items-center justify-center border border-neutral-200 dark:border-white/10 shadow-sm">
+                          <UIcon name="i-lucide-target" class="size-5 text-neutral-400" />
+                        </div>
+                        <div>
+                          <p class="text-xs font-bold text-neutral-900 dark:text-neutral-100">Penalties</p>
+                          <p class="text-[10px] text-neutral-500">Decide winner via penalty shootout</p>
+                        </div>
+                      </div>
+                      <UToggle v-model="newStage.settings.rules.penalties" color="primary" @click.stop />
+                    </div>
+                  </div>
+
+                  <div class="space-y-4">
+                    <template v-if="newStage.type === 'swiss'">
+                      <label class="block text-xs font-black text-neutral-500 uppercase tracking-widest mb-3">{{ t('managers.stages.config.total_rounds') }}</label>
+                      <UInput v-model.number="newStage.settings.rounds" type="number" placeholder="Automatic" icon="i-lucide-hash" size="xl" class="w-full" />
+                    </template>
+                    
+                    <template v-if="newStage.type === 'round_robin'">
+                      <label class="block text-xs font-black text-neutral-500 uppercase tracking-widest mb-3">{{ t('managers.stages.config.group_config') }}</label>
+                      <div class="grid grid-cols-2 gap-4">
+                        <UInput v-model.number="newStage.groups_count" type="number" :placeholder="t('managers.stages.config.groups_label')" size="xl" class="w-full" />
+                        <UInput v-model.number="newStage.participants_per_group" type="number" :placeholder="t('managers.stages.config.per_group_label')" size="xl" class="w-full" />
+                      </div>
+                    </template>
+                  </div>
                 </div>
               </div>
 
@@ -663,6 +772,18 @@ onMounted(() => {
                   {{ t('managers.stages.actions.reset') }}
                 </UButton>
 
+                <!-- Advance Participants (only completed) -->
+                <UButton
+                  v-if="stage.status === 'completed'"
+                  color="success"
+                  variant="solid"
+                  size="sm"
+                  icon="i-lucide-arrow-right-circle"
+                  @click.stop="openAdvance(stage)"
+                >
+                  {{ t('managers.stages.actions.advance') || 'Lanjutkan Peserta' }}
+                </UButton>
+
                 <!-- Delete (only pending) -->
                 <UButton
                   v-if="stage.status === 'pending'"
@@ -703,11 +824,11 @@ onMounted(() => {
             <p class="text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-2">{{ t('managers.stages.tips.pattern') }}</p>
             <div class="space-y-3">
               <div class="flex items-start gap-2">
-                <div class="size-1.5 rounded-full bg-primary-500 mt-1.5 shrink-0" />
+                <div class="size-1.5 rounded-full bg-primary-500 mt-1.5 shrink-0"></div>
                 <p class="text-[11px] text-neutral-500 leading-relaxed">{{ t('managers.stages.tips.p1') }}</p>
               </div>
               <div class="flex items-start gap-2">
-                <div class="size-1.5 rounded-full bg-primary-500 mt-1.5 shrink-0" />
+                <div class="size-1.5 rounded-full bg-primary-500 mt-1.5 shrink-0"></div>
                 <p class="text-[11px] text-neutral-500 leading-relaxed">{{ t('managers.stages.tips.p2') }}</p>
               </div>
             </div>
@@ -985,6 +1106,68 @@ onMounted(() => {
             class="rounded-2xl font-bold uppercase tracking-widest text-[10px] py-2"
             @click="isDeleteModalOpen = false"
           />
+        </div>
+      </template>
+    </UModal>
+    <!-- Advance Participants Modal -->
+    <UModal v-model:open="isAdvanceModalOpen" :ui="{ content: 'rounded-[2rem] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-white/5 shadow-2xl' }">
+      <template #body>
+        <div class="p-8">
+          <div class="flex items-center gap-4 mb-8">
+            <div class="size-14 rounded-2xl bg-success-500/10 flex items-center justify-center border border-success-500/20">
+              <UIcon name="i-lucide-arrow-right-circle" class="size-8 text-success-500" />
+            </div>
+            <div>
+              <h3 class="text-xl font-black text-neutral-900 dark:text-white uppercase tracking-tight">{{ t('managers.stages.advance_modal.title') || 'Lanjutkan Peserta' }}</h3>
+              <p class="text-xs font-bold text-neutral-400 uppercase tracking-widest">{{ selectedStageToAdvance?.name }}</p>
+            </div>
+          </div>
+
+          <div class="bg-neutral-50 dark:bg-neutral-950 rounded-2xl p-4 mb-6 border border-neutral-200 dark:border-white/5">
+            <p class="text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-2">{{ t('managers.stages.advance_modal.pilih_peserta') || 'PIlih Peserta untuk Lanjut' }}</p>
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-bold text-neutral-700 dark:text-neutral-200">{{ selectedAdvancingIds.length }} / {{ selectedStageToAdvance?.settings?.advance_count || selectedStageToAdvance?.participants_advance }} Terpilih</span>
+              <UBadge color="neutral" variant="subtle" size="xs">Recommended by Ranking</UBadge>
+            </div>
+          </div>
+
+          <div class="space-y-2 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
+            <div 
+              v-for="p in selectableParticipants" 
+              :key="p.id"
+              class="flex items-center gap-4 p-3 rounded-xl border border-neutral-100 dark:border-white/5 transition-all hover:bg-neutral-50 dark:hover:bg-white/5"
+              :class="{ 'bg-primary-500/5 border-primary-500/20': selectedAdvancingIds.includes(p.id) }"
+            >
+              <UCheckbox v-model="selectedAdvancingIds" :value="p.id" />
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-bold text-neutral-900 dark:text-white truncate">{{ p.name }}</p>
+                <p class="text-[10px] text-neutral-400 font-medium">Ranking #{{ p.rank }} • {{ p.points ?? 0 }} Points</p>
+              </div>
+              <UIcon v-if="selectedAdvancingIds.includes(p.id)" name="i-lucide-check-circle-2" class="size-4 text-primary-500" />
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <template #footer>
+        <div class="flex justify-end gap-3 w-full">
+          <UButton 
+            color="neutral" 
+            variant="ghost" 
+            class="font-bold uppercase tracking-wider text-xs"
+            @click="isAdvanceModalOpen = false"
+          >
+            {{ t('common.cancel') }}
+          </UButton>
+          <UButton 
+            color="success" 
+            class="font-black uppercase tracking-wider text-xs shadow-lg shadow-success-500/20 px-6"
+            :loading="isAdvancing"
+            :disabled="selectedAdvancingIds.length === 0"
+            @click="confirmAdvance"
+          >
+            {{ t('managers.stages.advance_modal.confirm') || 'Lanjutkan Ke Babak Berikutnya' }}
+          </UButton>
         </div>
       </template>
     </UModal>

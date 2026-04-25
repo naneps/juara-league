@@ -117,7 +117,7 @@ const formattedDate = computed(() => {
             <UIcon :name="tournament.participant_type === 'team' ? 'i-lucide-users' : 'i-lucide-user'" class="size-3.5 text-neutral-400 dark:text-neutral-500" />
             <span class="truncate">{{ tournament.participant_type === 'team' ? $t('tournament_form.participants.team') + (tournament.team_size ? ` (${tournament.team_size})` : '') : $t('tournament_form.participants.individual') }}</span>
             <span class="text-neutral-300 dark:text-neutral-700">•</span>
-            <span class="truncate">{{ $t(`tournament_card.bracket_types.${tournament.bracket_type}`) }}</span>
+            <span class="truncate">{{ tournament.format_summary || $t(`tournament_card.bracket_types.${tournament.bracket_type}`) }}</span>
           </div>
         </div>
         

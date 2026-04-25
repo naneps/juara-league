@@ -36,6 +36,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/tournaments/{tournament:slug}/stages/{stage}', [StageController::class, 'show']);
     Route::get('/tournaments/{tournament:slug}/stages/{stage}/matches', [MatchController::class, 'index']);
     Route::get('/tournaments/{tournament:slug}/stages/{stage}/matches/{match}', [MatchController::class, 'show']);
+    Route::get('/tournaments/{tournament:slug}/stages/{stage}/standings', [StageController::class, 'standings']);
     Route::get('/tournaments/{tournament:slug}/stages/{stage}/groups/{group}/standings', [GroupController::class, 'standings']);
     Route::get('/tournaments/{tournament:slug}/participants', [ParticipantController::class, 'index']);
 

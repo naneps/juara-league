@@ -3,6 +3,7 @@ import { useTournamentStore } from '~/stores/tournamentStore'
 import type { Stage, TournamentMatch } from '~/types/tournament'
 
 const route = useRoute()
+const router = useRouter()
 const slug = route.params.slug as string
 const tournamentStore = useTournamentStore()
 const toast = useToast()
@@ -247,7 +248,7 @@ const modalBoFormat = computed(() => selectedStage.value?.config?.bo_format || '
         <!-- Top Section: Clickable for Detail -->
         <div 
           class="p-5 flex-1 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors"
-          @click="openMatchDetail(match)"
+          @click="router.push(`/dashboard/tournaments/${slug}/stages/${selectedStageId}/matches/${match.id}`)"
         >
           <!-- Status & Round Header -->
           <div class="flex items-center justify-between mb-4">
@@ -293,7 +294,7 @@ const modalBoFormat = computed(() => selectedStage.value?.config?.bo_format || '
 
         <!-- Bottom Section: Separate Actions -->
         <div class="px-5 py-3 border-t border-neutral-100 dark:border-white/5 flex justify-between items-center bg-neutral-50/30 dark:bg-black/20">
-           <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2">
               <button
                 type="button"
                 class="size-8 flex items-center justify-center rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-500 hover:text-indigo-500 hover:bg-indigo-500/10 transition-all shadow-sm"
@@ -301,13 +302,12 @@ const modalBoFormat = computed(() => selectedStage.value?.config?.bo_format || '
               >
                 <UIcon name="i-lucide-calendar-clock" class="size-4" />
               </button>
-              <button 
-                type="button"
+              <NuxtLink 
+                :to="`/dashboard/tournaments/${slug}/stages/${selectedStageId}/matches/${match.id}`"
                 class="text-[10px] font-black text-neutral-500 uppercase tracking-widest hover:text-primary-500 transition-colors px-2 py-1"
-                @click="openMatchDetail(match)"
               >
                 {{ $t('match.manage') }}
-              </button>
+              </NuxtLink>
            </div>
            <UIcon name="i-lucide-arrow-right" class="text-primary-500 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
@@ -318,7 +318,7 @@ const modalBoFormat = computed(() => selectedStage.value?.config?.bo_format || '
     <TournamentsTournamentScheduleViewer
       v-else-if="viewMode === 'calendar'"
       :matches="matches"
-      @select-match="openMatchDetail"
+      @select-match="router.push(`/dashboard/tournaments/${slug}/stages/${selectedStageId}/matches/${$event.id}`)"
       @schedule-match="openMatchSchedule"
     />
 

@@ -219,6 +219,18 @@ class StageService
     }
 
     /**
+     * Get standings for a stage based on its format.
+     */
+    public function getStageStandings(Stage $stage): Collection
+    {
+        return match ($stage->type) {
+            'swiss' => (new \App\Services\BracketGenerators\SwissGenerator())->calculateStandings($stage),
+            'round_robin' => (new \App\Services\GroupService())->calculateGroupStandings($stage->groups->first()),
+            default => collect([]),
+        };
+    }
+
+    /**
      * Advance participants to the next stage.
      *
      * @param Stage $stage The current (completed) stage

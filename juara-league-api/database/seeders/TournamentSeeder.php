@@ -96,6 +96,7 @@ class TournamentSeeder extends Seeder
             'type'          => 'single_elim',
             'status'        => 'pending',
             'order'         => 1,
+            'participants_advance' => 1,
             'settings'      => [
                 'match_format'   => 'best_of',
                 'win_condition'  => 2,   // Race to 2 = BO3
@@ -149,6 +150,7 @@ class TournamentSeeder extends Seeder
             'type'          => 'single_elim',
             'status'        => 'pending',
             'order'         => 1,
+            'participants_advance' => 1,
             'settings'      => [
                 'match_format'   => 'single_game',
                 'win_condition'  => 1,
@@ -203,6 +205,7 @@ class TournamentSeeder extends Seeder
             'order'                => 1,
             'groups_count'         => 1,
             'participants_per_group' => 8,
+            'participants_advance' => 4,
             'settings'             => [
                 'match_format'   => 'leg',
                 'win_condition'  => 1,
@@ -255,6 +258,7 @@ class TournamentSeeder extends Seeder
             'type'          => 'double_elim',
             'status'        => 'pending',
             'order'         => 1,
+            'participants_advance' => 1,
             'settings'      => [
                 'match_format'   => 'best_of',
                 'win_condition'  => 3,   // Race to 3 = BO5
@@ -308,6 +312,7 @@ class TournamentSeeder extends Seeder
             'type'          => 'swiss',
             'status'        => 'pending',
             'order'         => 1,
+            'participants_advance' => 4,
             'settings'      => [
                 'match_format'   => 'best_of',
                 'win_condition'  => 2,   // BO3
@@ -370,6 +375,7 @@ class TournamentSeeder extends Seeder
             'order'                => 1,
             'groups_count'         => 4,
             'participants_per_group' => 4,
+            'participants_advance' => 8,
             'settings'             => [
                 'match_format'   => 'single_game',
                 'win_condition'  => 1,
@@ -393,6 +399,7 @@ class TournamentSeeder extends Seeder
             'type'          => 'single_elim',
             'status'        => 'pending',
             'order'         => 2,
+            'participants_advance' => 1,
             'settings'      => [
                 'match_format'   => 'single_game',
                 'win_condition'  => 1,
@@ -435,6 +442,7 @@ class TournamentSeeder extends Seeder
             'type'          => 'single_elim',
             'status'        => 'pending',
             'order'         => 1,
+            'participants_advance' => 1,
             'settings'      => [
                 'match_format'   => 'best_of',
                 'win_condition'  => 1,  // BO1
@@ -470,6 +478,7 @@ class TournamentSeeder extends Seeder
             'type'          => 'double_elim',
             'status'        => 'pending',
             'order'         => 1,
+            'participants_advance' => 1,
             'settings'      => [
                 'match_format'   => 'best_of',
                 'win_condition'  => 2,  // BO3
@@ -544,32 +553,42 @@ class TournamentSeeder extends Seeder
 
     private function simulateCompleted(Stage $stage): void
     {
-        $safe = 60;
+        $safe = 100;
         while ($safe-- > 0) {
-            // Find upcoming matches with both participants in pivot table
+            // 1. Find matches that can be started (upcoming with both participants)
             $playable = $stage->matches()
                 ->where('status', 'upcoming')
                 ->whereHas('matchParticipants', fn($q) => $q->where('slot', 1))
                 ->whereHas('matchParticipants', fn($q) => $q->where('slot', 2))
-                ->with('matchParticipants')
                 ->get();
 
-            if ($playable->isEmpty()) break;
-
             foreach ($playable as $match) {
+                $this->matchService->updateMatch($match, ['status' => 'ongoing']);
+            }
+
+            // 2. Find ongoing matches and play a game
+            $ongoing = $stage->matches()
+                ->where('status', 'ongoing')
+                ->with(['matchParticipants', 'games'])
+                ->get();
+
+            if ($playable->isEmpty() && $ongoing->isEmpty()) break;
+
+            foreach ($ongoing as $match) {
                 $p1 = $match->matchParticipants->firstWhere('slot', 1);
                 $p2 = $match->matchParticipants->firstWhere('slot', 2);
 
                 if (!$p1 || !$p2) continue;
 
-                $this->matchService->updateMatch($match, ['status' => 'ongoing']);
-
+                $nextGameNum = ($match->games->max('game_number') ?? 0) + 1;
+                
+                // Randomly pick a winner for this game
                 $winnerParticipantId = rand(0, 1) === 0 ? $p1->participant_id : $p2->participant_id;
                 $s1 = $winnerParticipantId === $p1->participant_id ? rand(10, 13) : rand(0, 9);
                 $s2 = $winnerParticipantId === $p2->participant_id ? rand(10, 13) : rand(0, 9);
 
                 $this->matchService->inputGameResult($match, [
-                    'game_number'  => 1,
+                    'game_number'  => $nextGameNum,
                     'winner_id'    => $winnerParticipantId,
                     'score_p1'     => $s1,
                     'score_p2'     => $s2,

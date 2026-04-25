@@ -90,6 +90,16 @@ const nextGameNumber = computed(() => {
   return (selectedMatch.value.games.length || 0) + 1
 })
 
+const scoringMethod = computed(() => selectedMatch.value?.stage?.settings?.scoring_method || 'result_based')
+
+// Auto-pick winner if scores are entered
+watch([gameScoreP1, gameScoreP2], ([s1, s2]) => {
+  if (scoringMethod.value === 'score_based' && s1 !== undefined && s2 !== undefined) {
+    if (s1 > s2) gameWinnerId.value = selectedMatch.value?.participant_1_id || ''
+    else if (s2 > s1) gameWinnerId.value = selectedMatch.value?.participant_2_id || ''
+  }
+})
+
 const canInputGame = computed(() => {
   return selectedMatch.value?.status === 'ongoing' && nextGameNumber.value <= maxGames.value && gameWinnerId.value
 })
@@ -351,7 +361,7 @@ defineExpose({ open })
                 </div>
              </div>
 
-             <div class="grid grid-cols-2 gap-4">
+             <div v-if="scoringMethod !== 'result_based'" class="grid grid-cols-2 gap-4">
                 <UInput v-model.number="gameScoreP1" type="number" :placeholder="$t('match.score_p1')" size="xl" :ui="{ rounded: 'rounded-2xl', base: 'bg-white dark:bg-neutral-900' }" />
                 <UInput v-model.number="gameScoreP2" type="number" :placeholder="$t('match.score_p2')" size="xl" :ui="{ rounded: 'rounded-2xl', base: 'bg-white dark:bg-neutral-900' }" />
              </div>
