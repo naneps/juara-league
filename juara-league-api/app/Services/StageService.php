@@ -29,8 +29,7 @@ class StageService
      */
     public function getStageDetail(Stage $stage): Stage
     {
-        $stage->load(['matches.participant1.user', 'matches.participant1.team',
-                       'matches.participant2.user', 'matches.participant2.team',
+        $stage->load(['matches.matchParticipants',
                        'matches.winner', 'groups.matches']);
 
         return $stage;

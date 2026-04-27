@@ -25,6 +25,7 @@
     "matches": "Pertandingan",
     "bracket": "Bracket",
     "standings": "Klasemen",
+    "prizes": "Hadiah",
     "staff": "Staf",
     "title_matches": "Daftar Pertandingan",
     "subtitle_matches": "Kelola dan input skor pertandingan secara langsung lewat list.",
@@ -36,7 +37,66 @@
     "start_stage_prompt": "Mulai babak di menu 'Babak' untuk generate jadwal.",
     "title_bracket": "Bagan Pertandingan",
     "subtitle_bracket": "Visualisasi struktur turnamen dan input skor langsung dari bagan.",
-    "no_active_stage": "Belum ada babak yang aktif."
+    "no_active_stage": "Belum ada babak yang aktif.",
+    "stats": {
+      "tournament_progress": "Progres Turnamen",
+      "completed": "Selesai",
+      "matches": "Pertandingan",
+      "active": "Aktif",
+      "active_stage": "Tahapan Aktif",
+      "stage_progress": "Progres Tahapan"
+    }
+  },
+  "tournament_detail": {
+    "stats": {
+      "participants": "Peserta Terdaftar",
+      "from": "dari",
+      "prize": "Total Hadiah",
+      "prize_pool_sub": "Prize pool",
+      "revenue": "Estimasi Pendapatan",
+      "projected": "Proyeksi",
+      "reg_close": "Penutupan Pendaftaran",
+      "reg_deadline": "Batas waktu daftar",
+      "fee": "Entry Fee",
+      "kickoff": "Kickoff",
+      "per_participant": "Per peserta",
+      "first_day": "Hari pertama pertandingan",
+      "free": "Gratis"
+    },
+    "sections": {
+      "rules": "Deskripsi & Peraturan",
+      "prizes": "Rincian Hadiah"
+    },
+    "empty": {
+      "desc": "Belum ada deskripsi untuk turnamen ini.",
+      "prizes": "Belum ada rincian hadiah.",
+      "not_found": "Turnamen tidak ditemukan."
+    },
+    "notices": {
+      "under_review": "Sedang Ditinjau",
+      "under_review_desc": "Turnamen ini memerlukan peninjauan manual oleh tim Juara League. Anda bisa melanjutkan persiapan babak (stage) dan detail lainnya, namun fitur Publish akan terbuka setelah disetujui.",
+      "rejected": "Turnamen Ditolak",
+      "rejected_desc": "Mohon maaf, turnamen Anda tidak disetujui oleh platform. Silakan hubungi dukungan atau periksa kembali deskripsi turnamen Anda."
+    },
+    "publish_modal": {
+      "title": "Konfirmasi Publish",
+      "subtitle": "Anda yakin mempublikasikan turnamen ini?",
+      "after_publish": "Setelah dipublikasi:",
+      "item1": "Dapat dilihat oleh semua orang secara publik.",
+      "item2": "Pendaftar dapat mulai mendaftar ke turnamen.",
+      "item3": "Beberapa pengaturan tidak dapat diubah lagi.",
+      "confirm": "Ya, Publish"
+    },
+    "toast": {
+      "reviewing": "Menunggu Review",
+      "reviewing_desc": "Turnamen Anda sedang menunggu peninjauan dari tim platform.",
+      "rejected": "Turnamen Ditolak",
+      "rejected_desc": "Maaf, turnamen ini tidak disetujui untuk dipublikasikan.",
+      "publish_success": "Berhasil dipublish!",
+      "publish_success_desc": "Turnamen sekarang terbuka untuk pendaftaran.",
+      "publish_failed": "Gagal mempublikasikan turnamen"
+    },
+    "live_subtitle": "Update skor & monitor pertandingan aktif"
   },
   "match": {
     "round": "Round",
@@ -166,7 +226,12 @@
         "win_condition": "Syarat Menang (Race to X)",
         "additional_rules": "Aturan Tambahan",
         "total_rounds": "Total Ronde",
-        "group_config": "Konfigurasi Grup"
+        "group_config": "Konfigurasi Grup",
+        "rules": {
+          "draw": "Izinkan Seri",
+          "extra_time": "Perpanjangan Waktu",
+          "penalties": "Adu Penalti"
+        }
       },
       "toast": {
         "add_success": "Babak berhasil ditambahkan.",
@@ -206,7 +271,44 @@
         "shuffle": "Acak Peserta",
         "seed_manual": "Seeding Manual",
         "reset": "Reset Bracket",
-        "view_bracket": "Lihat Bracket"
+        "view_bracket": "Lihat Bracket",
+        "advance": "Lanjutkan Peserta"
+      },
+      "seeding_modal": {
+        "title": "Seeding Manual",
+        "subtitle": "Atur urutan untuk menentukan lawan di Round 1",
+        "list_label": "Daftar Peserta (Tarik untuk urutkan)",
+        "seed_order": "Urutan Seed",
+        "preview_title": "Preview Round 1",
+        "submit": "Simpan & Terapkan Matchup",
+        "footnote": "*Preview ini berdasarkan standar algoritma turnamen {type}."
+      },
+      "advance_modal": {
+        "title": "Lanjutkan Peserta",
+        "pilih_peserta": "Pilih Peserta untuk Lanjut",
+        "selected_count": "{count} / {total} Terpilih",
+        "recommended": "Rekomendasi Berdasarkan Peringkat",
+        "confirm": "Lanjutkan Ke Babak Berikutnya",
+        "toast_success": "Peserta berhasil dilanjutkan ke babak berikutnya.",
+        "toast_failed": "Gagal melanjutkan peserta."
+      },
+      "reset_modal": {
+        "title": "Reset Bracket?",
+        "desc": "Aksi ini akan menghapus semua jadwal pertandingan dan bagan yang sudah ada.",
+        "warning": "Pastikan belum ada skor yang masuk!",
+        "confirm": "Ya, Reset Bracket"
+      },
+      "start_modal": {
+        "title": "Mulai Babak?",
+        "desc": "Ini akan mengunci daftar peserta dan meng-generate bagan pertandingan secara otomatis.",
+        "warning": "Format dan urutan tidak bisa diubah lagi!",
+        "confirm": "Gass, Mulai Sekarang",
+        "cancel": "Nanti Dulu"
+      },
+      "delete_modal": {
+        "title": "Hapus Babak?",
+        "desc": "Data babak ini akan dihapus permanen. Aksi ini tidak dapat dibatalkan.",
+        "confirm": "Ya, Hapus Permanen"
       }
     },
     "roles": {
@@ -541,6 +643,8 @@
     "field_entry_fee_free": "Gratis",
     "field_prize_desc": "Detail Pembagian Hadiah",
     "field_prize_desc_placeholder": "Juara 1: Rp 1.000.000\nJuara 2: Rp 500.000...",
+    "field_prizes_breakdown": "Pembagian Hadiah",
+    "field_prizes_breakdown_desc": "Atur pembagian hadiah untuk tiap juara.",
     "field_venue": "Lokasi / Venue",
     "field_venue_placeholder": "Nama gedung, jalan, kota...",
     "modes": {
@@ -632,55 +736,6 @@
     "dark": "Gelap",
     "logout": "Keluar",
     "fallback_name": "Juara User"
-  },
-  "tournament_detail": {
-    "notices": {
-      "under_review": "Sedang Ditinjau",
-      "under_review_desc": "Turnamen ini memerlukan peninjauan manual oleh tim Juara League. Anda bisa melanjutkan persiapan babak (stage) dan detail lainnya, namun fitur Publish akan terbuka setelah disetujui.",
-      "rejected": "Turnamen Ditolak",
-      "rejected_desc": "Mohon maaf, turnamen Anda tidak disetujui oleh platform. Silakan hubungi dukungan atau periksa kembali deskripsi turnamen Anda."
-    },
-    "publish_modal": {
-      "title": "Konfirmasi Publish",
-      "subtitle": "Anda yakin mempublikasikan turnamen ini?",
-      "after_publish": "Setelah dipublikasi:",
-      "item1": "Dapat dilihat oleh semua orang secara publik.",
-      "item2": "Pendaftar dapat mulai mendaftar ke turnamen.",
-      "item3": "Beberapa pengaturan tidak dapat diubah lagi.",
-      "confirm": "Ya, Publish"
-    },
-    "stats": {
-      "participants": "Peserta",
-      "prize": "Total Hadiah",
-      "fee": "Entry Fee",
-      "reg_close": "Reg. Tutup",
-      "kickoff": "Kickoff",
-      "from": "dari",
-      "prize_pool_sub": "Prize pool",
-      "per_participant": "Per peserta",
-      "reg_deadline": "Batas akhir pendaftaran",
-      "first_day": "Hari pertama pertandingan",
-      "free": "Gratis"
-    },
-    "sections": {
-      "rules": "Deskripsi & Aturan",
-      "prizes": "Breakdown Hadiah"
-    },
-    "empty": {
-      "desc": "Belum ada deskripsi.",
-      "prizes": "Belum ada rincian hadiah.",
-      "not_found": "Turnamen tidak ditemukan."
-    },
-    "toast": {
-      "reviewing": "Menunggu Review",
-      "reviewing_desc": "Turnamen Anda sedang menunggu peninjauan dari tim platform.",
-      "rejected": "Turnamen Ditolak",
-      "rejected_desc": "Maaf, turnamen ini tidak disetujui untuk dipublikasikan.",
-      "publish_success": "Berhasil dipublish!",
-      "publish_success_desc": "Turnamen sekarang terbuka untuk pendaftaran.",
-      "publish_failed": "Gagal mempublikasikan turnamen"
-    },
-    "live_subtitle": "Update skor & monitor pertandingan aktif"
   },
   "guide": {
     "scoring": {

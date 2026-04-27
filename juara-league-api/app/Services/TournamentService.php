@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Repositories\Contracts\TournamentRepositoryInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class TournamentService
 {
@@ -33,32 +34,71 @@ class TournamentService
 
     public function createTournament(User $user, array $data): Tournament
     {
-        $data['user_id'] = $user->id;
-        $data['slug'] = $this->generateUniqueSlug($data['title']);
-        $data['status'] = 'draft'; // Always start as draft per SRS
+        return DB::transaction(function () use ($user, $data) {
+            $data['user_id'] = $user->id;
+            $data['slug'] = $this->generateUniqueSlug($data['title']);
+            $data['status'] = 'draft'; // Always start as draft per SRS
 
-        $tournament = $this->tournamentRepository->create($data);
+            $prizes = $data['prizes'] ?? [];
+            unset($data['prizes']);
 
-        // Evaluate approval status
-        $this->approvalService->evaluate($tournament);
+            $tournament = $this->tournamentRepository->create($data);
 
-        return $tournament;
+            // Save prizes
+            if (!empty($prizes)) {
+                foreach ($prizes as $index => $prizeData) {
+                    $tournament->prizes()->create([
+                        'tier_name' => $prizeData['tier_name'],
+                        'prize_amount' => $prizeData['prize_amount'] ?? 0,
+                        'description' => $prizeData['description'] ?? null,
+                        'rank' => $prizeData['rank'] ?? ($index + 1),
+                        'order' => $prizeData['order'] ?? $index,
+                    ]);
+                }
+            }
+
+            // Evaluate approval status
+            $this->approvalService->evaluate($tournament);
+
+            return $tournament;
+        });
     }
 
     public function updateTournament(Tournament $tournament, array $data): Tournament
     {
-        if (isset($data['title']) && $data['title'] !== $tournament->title) {
-            $data['slug'] = $this->generateUniqueSlug($data['title']);
-        }
-
-        // BR03: sport_id cannot be changed after publication
-        if (isset($data['sport_id']) && $data['sport_id'] !== $tournament->sport_id) {
-            if ($tournament->status !== 'draft') {
-                throw new TournamentException('Sport cannot be changed after publication.', 'BR03_VIOLATION', 409);
+        return DB::transaction(function () use ($tournament, $data) {
+            if (isset($data['title']) && $data['title'] !== $tournament->title) {
+                $data['slug'] = $this->generateUniqueSlug($data['title']);
             }
-        }
 
-        return $this->tournamentRepository->update($tournament, $data);
+            // BR03: sport_id cannot be changed after publication
+            if (isset($data['sport_id']) && $data['sport_id'] !== $tournament->sport_id) {
+                if ($tournament->status !== 'draft') {
+                    throw new TournamentException('Sport cannot be changed after publication.', 'BR03_VIOLATION', 409);
+                }
+            }
+
+            $prizes = $data['prizes'] ?? null;
+            unset($data['prizes']);
+
+            $updatedTournament = $this->tournamentRepository->update($tournament, $data);
+
+            // Sync prizes if provided
+            if ($prizes !== null) {
+                $updatedTournament->prizes()->delete();
+                foreach ($prizes as $index => $prizeData) {
+                    $updatedTournament->prizes()->create([
+                        'tier_name' => $prizeData['tier_name'],
+                        'prize_amount' => $prizeData['prize_amount'] ?? 0,
+                        'description' => $prizeData['description'] ?? null,
+                        'rank' => $prizeData['rank'] ?? ($index + 1),
+                        'order' => $prizeData['order'] ?? $index,
+                    ]);
+                }
+            }
+
+            return $updatedTournament;
+        });
     }
 
     public function deleteTournament(Tournament $tournament): bool
@@ -130,13 +170,10 @@ class TournamentService
      */
     public function getTournamentStats(Tournament $tournament): array
     {
-        $matchesTotal = \App\Models\TournamentMatch::whereHas('stage', function($q) use ($tournament) {
-            $q->where('tournament_id', $tournament->id);
-        })->count();
-
-        $matchesCompleted = \App\Models\TournamentMatch::whereHas('stage', function($q) use ($tournament) {
-            $q->where('tournament_id', $tournament->id);
-        })->where('status', 'completed')->count();
+        $stageIds = $tournament->stages()->pluck('id')->toArray();
+        
+        $matchesTotal = \App\Models\TournamentMatch::whereIn('stage_id', $stageIds)->count();
+        $matchesCompleted = \App\Models\TournamentMatch::whereIn('stage_id', $stageIds)->where('status', 'completed')->count();
 
         $activeStage = $tournament->stages()->where('status', 'ongoing')->first();
         $stageProgress = 0;

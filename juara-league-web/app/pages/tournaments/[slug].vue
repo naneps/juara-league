@@ -182,6 +182,20 @@ const formatCurrency = (amount?: number) => {
   }).format(amount)
 }
 
+const getRankIcon = (rank: number) => {
+  if (rank === 1) return 'i-lucide-trophy'
+  if (rank === 2) return 'i-lucide-medal'
+  if (rank === 3) return 'i-lucide-award'
+  return 'i-lucide-star'
+}
+
+const getRankColorClass = (rank: number) => {
+  if (rank === 1) return 'bg-amber-500/10 text-amber-600 border-amber-500/20'
+  if (rank === 2) return 'bg-slate-400/10 text-slate-500 border-slate-400/20'
+  if (rank === 3) return 'bg-orange-500/10 text-orange-600 border-orange-500/20'
+  return 'bg-neutral-100 text-neutral-500 border-neutral-200'
+}
+
 
 // Bracket state
 const selectedStageId = ref<string | null>(null)
@@ -563,6 +577,40 @@ onMounted(() => {
                       </div>
                     </div>
                   </div>
+                </div>
+              </section>
+
+              <section v-if="tournament?.prizes?.length || tournament?.prize_description" class="space-y-6">
+                <h2 class="text-2xl font-black text-neutral-900 dark:text-white uppercase tracking-tight">Daftar Hadiah</h2>
+                <div v-if="tournament?.prizes?.length" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div 
+                    v-for="prize in tournament.prizes" 
+                    :key="prize.id" 
+                    class="bg-white dark:bg-neutral-900/40 p-6 rounded-[2rem] border border-neutral-200 dark:border-white/5 flex items-center justify-between shadow-sm group hover:border-amber-500/30 transition-all"
+                  >
+                    <div class="flex items-center gap-4">
+                      <div 
+                        class="size-16 rounded-3xl flex items-center justify-center border shadow-sm transition-transform group-hover:scale-110 duration-300"
+                        :class="getRankColorClass(prize.rank)"
+                      >
+                        <UIcon :name="getRankIcon(prize.rank)" class="size-8" />
+                      </div>
+                      <div>
+                        <div class="flex items-center gap-2">
+                          <h4 class="font-black text-neutral-900 dark:text-white uppercase tracking-tight">{{ prize.tier_name }}</h4>
+                          <UBadge v-if="prize.rank <= 3" color="primary" variant="subtle" size="xs" class="font-black uppercase tracking-widest px-1.5">Top {{ prize.rank }}</UBadge>
+                        </div>
+                        <p class="text-sm font-black text-primary-600 dark:text-primary-400 mt-0.5 tracking-tight">{{ formatCurrency(prize.prize_amount) }}</p>
+                        <p v-if="prize.description" class="text-[10px] text-neutral-500 font-bold uppercase tracking-wide mt-1">{{ prize.description }}</p>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <p class="text-xl font-black text-primary-500 italic">{{ formatCurrency(Number(prize.prize_amount)) }}</p>
+                    </div>
+                  </div>
+                </div>
+                <div v-if="tournament?.prize_description" class="bg-white dark:bg-neutral-900/40 p-8 rounded-[2rem] border border-neutral-200 dark:border-white/5 shadow-sm mt-4">
+                   <p class="text-neutral-600 dark:text-neutral-400 font-medium whitespace-pre-wrap leading-relaxed">{{ tournament.prize_description }}</p>
                 </div>
               </section>
 

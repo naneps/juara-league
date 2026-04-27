@@ -153,7 +153,7 @@ const modalBoFormat = computed(() => selectedStage.value?.config?.bo_format || '
           :loading="isAutoScheduling"
           class="rounded-2xl shrink-0"
         >
-          Auto Schedule
+          {{ $t('dashboard.auto_schedule') }}
         </UButton>
 
         <UButton
@@ -260,7 +260,7 @@ const modalBoFormat = computed(() => selectedStage.value?.config?.bo_format || '
                  <span class="size-1.5 rounded-full bg-primary-500 animate-pulse"></span>
                  {{ $t('match.live') }}
               </span>
-              <span v-else class="uppercase">{{ match.status }}</span>
+              <span v-else class="uppercase">{{ $t('match.' + match.status) }}</span>
             </UBadge>
           </div>
 

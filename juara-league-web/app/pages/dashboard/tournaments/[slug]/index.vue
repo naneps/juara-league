@@ -18,6 +18,33 @@ const refresh = async () => {
 
 const isPublishing = ref(false)
 const isPublishModalOpen = ref(false)
+const isPrizeModalOpen = ref(false)
+const isSavingPrizes = ref(false)
+const prizesState = ref<any[]>([])
+
+const openPrizeModal = () => {
+  prizesState.value = JSON.parse(JSON.stringify(tournament.value?.prizes || []))
+  isPrizeModalOpen.value = true
+}
+
+const savePrizes = async () => {
+  if (!tournament.value) return
+  isSavingPrizes.value = true
+  try {
+    const total = prizesState.value.reduce((sum, p) => sum + (Number(p.prize_amount) || 0), 0)
+    await tournamentStore.updateTournament(tournament.value.slug, {
+      prizes: prizesState.value,
+      prize_pool: total > 0 ? total : tournament.value.prize_pool
+    } as any)
+    toast.add({ title: t('common.success'), description: 'Pembagian hadiah berhasil diperbarui', color: 'success' })
+    isPrizeModalOpen.value = false
+    await refresh()
+  } catch (e: any) {
+    toast.add({ title: t('common.error'), description: e.data?.message || 'Gagal memperbarui hadiah', color: 'error' })
+  } finally {
+    isSavingPrizes.value = false
+  }
+}
 
 const handlePublish = async () => {
   if (tournament.value?.approval_status === 'pending_review') {
@@ -75,6 +102,20 @@ const getParticipantName = (p: any) => {
   if (!p) return t('match.bracket.tbd')
   const participant = p.participant || p 
   return participant.team?.name || participant.user?.name || t('match.bracket.tbd')
+}
+
+const getRankIcon = (rank: number) => {
+  if (rank === 1) return 'i-lucide-trophy'
+  if (rank === 2) return 'i-lucide-medal'
+  if (rank === 3) return 'i-lucide-award'
+  return 'i-lucide-star'
+}
+
+const getRankColorClass = (rank: number) => {
+  if (rank === 1) return 'bg-amber-500/10 text-amber-600 border-amber-500/20'
+  if (rank === 2) return 'bg-slate-400/10 text-slate-500 border-slate-400/20'
+  if (rank === 3) return 'bg-orange-500/10 text-orange-600 border-orange-500/20'
+  return 'bg-neutral-100 text-neutral-500 border-neutral-200'
 }
 </script>
 
@@ -271,7 +312,7 @@ const getParticipantName = (p: any) => {
         v-for="stat in [
           { label: $t('tournament_detail.stats.participants'),      value: String(tournament.participants_count ?? 0),                                                           sub: `${$t('tournament_detail.stats.from')} ${tournament.max_participants}`, icon: 'i-lucide-users' },
           { label: $t('tournament_detail.stats.prize'), value: tournament.prize_pool ? formatCurrency(tournament.prize_pool) : '—',                                  sub: $t('tournament_detail.stats.prize_pool_sub'),                         icon: 'i-lucide-trophy' },
-          { label: $t('tournament_detail.stats.revenue'),    value: stats?.revenue ? formatCurrency(stats.revenue) : '—', sub: $t('tournament_detail.stats.projected'),                        icon: 'i-lucide-trending-up' },
+          { label: $t('tournament_detail.stats.revenue'),    value: stats?.revenue !== undefined ? formatCurrency(stats.revenue) : '—', sub: $t('tournament_detail.stats.projected'),                        icon: 'i-lucide-trending-up' },
           { label: $t('tournament_detail.stats.reg_close'),   value: formatDate(tournament.registration_end_at),                                                            sub: $t('tournament_detail.stats.reg_deadline'),             icon: 'i-lucide-timer' },
         ]"
         :key="stat.label"
@@ -327,10 +368,42 @@ const getParticipantName = (p: any) => {
             <UIcon name="i-lucide-trophy" class="size-4 text-amber-500" />
             {{ $t('tournament_detail.sections.prizes') }}
           </h3>
+          <UButton
+            size="xs"
+            color="neutral"
+            variant="ghost"
+            icon="i-lucide-pencil"
+            @click="openPrizeModal"
+          >
+            {{ $t('common.edit') }}
+          </UButton>
         </div>
         <div class="px-6 py-5">
+          <div v-if="tournament.prizes && tournament.prizes.length > 0" class="space-y-3">
+             <div 
+               v-for="prize in tournament.prizes" 
+               :key="prize.id"
+               class="flex items-center justify-between p-3 rounded-xl bg-neutral-50 dark:bg-white/[0.02] border border-neutral-100 dark:border-white/5 transition-all hover:bg-amber-500/5 hover:border-amber-500/20"
+             >
+                <div class="flex items-center gap-3">
+                  <div 
+                    class="size-10 rounded-xl flex items-center justify-center border shadow-sm"
+                    :class="getRankColorClass(prize.rank)"
+                  >
+                    <UIcon :name="getRankIcon(prize.rank)" class="size-5" />
+                  </div>
+                  <div>
+                    <p class="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-tight leading-none mb-1">{{ prize.tier_name }}</p>
+                    <p v-if="prize.description" class="text-[10px] text-neutral-500 leading-none">{{ prize.description }}</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="text-sm font-black text-primary-500 italic">{{ formatCurrency(prize.prize_amount) }}</p>
+                </div>
+             </div>
+          </div>
           <p
-            v-if="tournament.prize_description"
+            v-else-if="tournament.prize_description"
             class="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed whitespace-pre-wrap font-mono bg-neutral-50 dark:bg-neutral-800/50 p-4 rounded-xl border border-neutral-100 dark:border-white/5"
           >
             {{ tournament.prize_description }}
@@ -419,6 +492,51 @@ const getParticipantName = (p: any) => {
           @click="confirmPublish"
         >
           {{ $t('tournament_detail.publish_modal.confirm') }}
+        </UButton>
+      </div>
+    </template>
+  </UModal>
+
+  <!-- Prize Management Modal -->
+  <UModal v-model:open="isPrizeModalOpen" class="w-full sm:max-w-2xl" :ui="{ content: 'rounded-[1.5rem] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-white/5 shadow-2xl' }">
+    <template #body>
+      <div class="p-2 space-y-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="size-12 rounded-2xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
+              <UIcon name="i-lucide-trophy" class="text-amber-500 size-6" />
+            </div>
+            <div>
+              <h3 class="text-xl font-black text-neutral-900 dark:text-white uppercase tracking-wider leading-tight">Kelola Pembagian Hadiah</h3>
+              <p class="text-sm text-neutral-500 font-medium">Atur detail hadiah untuk setiap peringkat pemenang.</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+          <TournamentsTournamentPrizeManager v-model="prizesState" />
+        </div>
+      </div>
+    </template>
+
+    <template #footer>
+      <div class="flex justify-end gap-3 w-full">
+        <UButton 
+          color="neutral" 
+          variant="ghost" 
+          class="font-bold uppercase tracking-wider"
+          @click="isPrizeModalOpen = false"
+          :disabled="isSavingPrizes"
+        >
+          {{ $t('common.cancel') }}
+        </UButton>
+        <UButton 
+          color="primary" 
+          class="font-black uppercase tracking-wider shadow-lg shadow-primary-500/20 px-6"
+          :loading="isSavingPrizes"
+          @click="savePrizes"
+        >
+          {{ $t('common.save') }}
         </UButton>
       </div>
     </template>

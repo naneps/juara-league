@@ -82,21 +82,21 @@ const handleLogout = async () => {
                   <span class="text-sm font-bold text-neutral-900 dark:text-white leading-none">{{ user?.name }}</span>
                   <span class="text-[10px] text-neutral-500 uppercase tracking-wider font-bold">Organizer</span>
                 </div>
-                <UDropdown :items="[[
+                <UDropdownMenu :items="[
                   { label: user?.name, slot: 'header', disabled: true },
                   { label: 'Dashboard', icon: 'i-lucide-layout-dashboard', to: '/dashboard' },
                   { label: 'Turnamen Saya', icon: 'i-lucide-trophy', to: '/dashboard/tournaments' },
                   { label: 'Buat Turnamen', icon: 'i-lucide-plus-circle', to: '/dashboard/tournaments/create' },
                   { label: 'Setting Profil', icon: 'i-lucide-user', to: '/dashboard/settings' },
-                  { label: 'Keluar', icon: 'i-lucide-log-out', click: () => isLogoutModalOpen = true }
-                ]]">
+                  { label: 'Keluar', icon: 'i-lucide-log-out', onSelect: () => isLogoutModalOpen = true }
+                ]">
                   <UAvatar 
                     :src="user?.avatar || `https://i.pravatar.cc/150?u=${user?.email}`" 
                     :alt="user?.name" 
                     size="sm"
                     class="ring-2 ring-primary-500/50 cursor-pointer"
                   />
-                </UDropdown>
+                </UDropdownMenu>
               </div>
             </template>
             <template v-else>

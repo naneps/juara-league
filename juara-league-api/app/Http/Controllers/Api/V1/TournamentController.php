@@ -116,22 +116,14 @@ class TournamentController extends Controller
     {
         $matches = $this->tournamentService->getUserOngoingMatches($request->user()->id);
         
-        return response()->json([
-            'data' => $matches
-        ]);
+        return TournamentMatchResource::collection($matches);
     }
 
     /**
      * Get tournament statistics.
      */
-    public function stats(Request $request, string $slug): JsonResponse
+    public function stats(Request $request, Tournament $tournament): JsonResponse
     {
-        $tournament = $this->tournamentService->getTournamentBySlug($slug);
-        
-        if (!$tournament) {
-             throw new \App\Exceptions\TournamentException('Turnamen tidak ditemukan.', 'TOURNAMENT_NOT_FOUND', 404);
-        }
-
         $stats = $this->tournamentService->getTournamentStats($tournament);
 
         return response()->json([

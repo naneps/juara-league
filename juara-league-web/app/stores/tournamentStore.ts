@@ -12,7 +12,7 @@ export const useTournamentStore = defineStore('tournament', () => {
     isLoading.value = true
     error.value = null
     try {
-      const response = await useApi<{ data: Tournament[] }>('/api/v1/tournaments?include=sport')
+      const response = await useApi<{ data: Tournament[] }>('/api/v1/tournaments?include=sport,prizes')
       tournaments.value = response.data
     } catch (e: any) {
       error.value = e.message || 'Gagal mengambil data turnamen'
@@ -26,7 +26,7 @@ export const useTournamentStore = defineStore('tournament', () => {
     isLoading.value = true
     error.value = null
     try {
-      const response = await useApi<{ data: Tournament[] }>('/api/v1/my-tournaments?include=sport')
+      const response = await useApi<{ data: Tournament[] }>('/api/v1/my-tournaments?include=sport,prizes')
       myTournaments.value = response.data
     } catch (e: any) {
       error.value = e.message || 'Gagal mengambil data turnamen Anda'
@@ -58,7 +58,7 @@ export const useTournamentStore = defineStore('tournament', () => {
   const getBySlug = async (slug: string) => {
     isLoading.value = true
     try {
-      const response = await useApi<{ data: Tournament }>(`/api/v1/tournaments/${slug}?include=stages.groups,participants,staff,sport`)
+      const response = await useApi<{ data: Tournament }>(`/api/v1/tournaments/${slug}?include=stages.groups,participants,staff,sport,prizes`)
       return response.data
     } catch (e: any) {
       error.value = e.message || 'Turnamen tidak ditemukan'
@@ -363,7 +363,7 @@ export const useTournamentStore = defineStore('tournament', () => {
   const getById = async (id: number | string) => {
     isLoading.value = true
     try {
-      const response = await useApi<{ data: Tournament }>(`/api/v1/tournaments/${id}?include=sport`)
+      const response = await useApi<{ data: Tournament }>(`/api/v1/tournaments/${id}?include=sport,prizes`)
       return response.data
     } catch (e: any) {
       error.value = e.message || 'Turnamen tidak ditemukan'

@@ -37,8 +37,19 @@ const state = reactive<StoreTournamentPayload>({
   registration_end_at: '',
   start_at: '',
   venue: 'Online',
-  banner_url: ''
+  banner_url: '',
+  prizes: []
 })
+
+// Sync prize_pool with prizes breakdown
+watch(() => state.prizes, (newPrizes) => {
+  if (newPrizes && newPrizes.length > 0) {
+    const total = newPrizes.reduce((sum, p) => sum + (Number(p.prize_amount) || 0), 0)
+    if (total > 0) {
+      state.prize_pool = total
+    }
+  }
+}, { deep: true })
 
 watch(() => state.venue_type, (newType) => {
   if (newType === 'online') {
@@ -81,6 +92,7 @@ onMounted(async () => {
         state.venue = tournament.venue || ''
         state.banner_url = tournament.banner_url || ''
         state.venue_type = (tournament as any).venue_type || (state.venue?.toLowerCase() === 'online' ? 'online' : 'offline')
+        state.prizes = tournament.prizes || []
       }
     } else if (!state.sport_id && sports.value && sports.value.length > 0) {
       state.sport_id = sports.value[0]?.id || ''
@@ -459,9 +471,8 @@ const onSubmit = async () => {
                       />
                     </UFormField>
                     <UFormField :label="$t('tournament_form.field_entry_fee')" name="entry_fee">
-                      <UInput
-                        v-model.number="state.entry_fee"
-                        type="number"
+                      <CommonCurrencyInput
+                        v-model="state.entry_fee"
                         size="xl"
                         icon="i-lucide-ticket"
                         :placeholder="$t('tournament_form.field_entry_fee_free')"
@@ -470,15 +481,49 @@ const onSubmit = async () => {
                     </UFormField>
                   </div>
 
-                  <UFormField :label="$t('tournament_form.field_prize_desc')" name="prize_description">
-                    <UTextarea
-                      v-model="state.prize_description"
-                      :placeholder="$t('tournament_form.field_prize_desc_placeholder')"
-                      :rows="3"
-                      size="xl"
-                      class="w-full"
-                    />
-                  </UFormField>
+                  <div class="p-6 rounded-2xl bg-primary-500/5 border border-primary-500/10 space-y-4">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <div class="size-8 rounded-lg bg-primary-500/10 flex items-center justify-center">
+                          <UIcon name="i-lucide-trophy" class="text-primary-500 size-5" />
+                        </div>
+                        <div>
+                          <h4 class="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wider">{{ $t('tournament_form.field_prizes_breakdown') || 'Pembagian Hadiah' }}</h4>
+                          <p class="text-[10px] text-neutral-500 font-medium">{{ $t('tournament_form.field_prizes_breakdown_desc') || 'Atur pembagian hadiah untuk tiap juara.' }}</p>
+                        </div>
+                      </div>
+                      <div class="text-right">
+                        <span class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">Total Prize Pool</span>
+                        <span class="text-lg font-black text-primary-500 italic">{{ formatCurrency(state.prize_pool) }}</span>
+                      </div>
+                    </div>
+
+                    <div class="h-px w-full bg-primary-500/10" />
+
+                    <TournamentsTournamentPrizeManager v-model="state.prizes" />
+                    
+                    <div v-if="state.prizes.length === 0" class="space-y-4">
+                      <UFormField :label="$t('tournament_form.field_prize_pool')" name="prize_pool">
+                        <CommonCurrencyInput
+                          v-model="state.prize_pool"
+                          size="xl"
+                          icon="i-lucide-trophy"
+                          placeholder="0"
+                          class="w-full"
+                        />
+                      </UFormField>
+
+                      <UFormField :label="$t('tournament_form.field_prize_desc')" name="prize_description">
+                        <UTextarea
+                          v-model="state.prize_description"
+                          :placeholder="$t('tournament_form.field_prize_desc_placeholder')"
+                          :rows="3"
+                          size="xl"
+                          class="w-full"
+                        />
+                      </UFormField>
+                    </div>
+                  </div>
 
                   <Transition
                     enter-active-class="transition-all duration-300 ease-out"

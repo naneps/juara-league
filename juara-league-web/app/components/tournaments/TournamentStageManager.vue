@@ -199,11 +199,11 @@ const confirmAdvance = async () => {
       selectedStageToAdvance.value.id, 
       selectedAdvancingIds.value
     )
-    toast.add({ title: 'Berhasil', description: 'Peserta berhasil dilanjutkan ke babak berikutnya.', color: 'success' })
+    toast.add({ title: t('common.success'), description: t('managers.stages.advance_modal.toast_success'), color: 'success' })
     isAdvanceModalOpen.value = false
     emit('refresh')
   } catch (e: any) {
-    toast.add({ title: 'Gagal', description: e.data?.message || 'Gagal melanjutkan peserta.', color: 'error' })
+    toast.add({ title: t('common.error'), description: e.data?.message || t('managers.stages.advance_modal.toast_failed'), color: 'error' })
   } finally {
     isAdvancing.value = false
   }
@@ -594,7 +594,7 @@ onMounted(() => {
                           <UIcon name="i-lucide-divide" class="size-5 text-neutral-400" />
                         </div>
                         <div>
-                          <p class="text-xs font-bold text-neutral-900 dark:text-neutral-100">Allow Draws</p>
+                          <p class="text-xs font-bold text-neutral-900 dark:text-neutral-100">{{ t('managers.stages.config.rules.draw') }}</p>
                           <p class="text-[10px] text-neutral-500">Enable tie results for matches</p>
                         </div>
                       </div>
@@ -610,7 +610,7 @@ onMounted(() => {
                           <UIcon name="i-lucide-timer" class="size-5 text-neutral-400" />
                         </div>
                         <div>
-                          <p class="text-xs font-bold text-neutral-900 dark:text-neutral-100">Extra Time</p>
+                          <p class="text-xs font-bold text-neutral-900 dark:text-neutral-100">{{ t('managers.stages.config.rules.extra_time') }}</p>
                           <p class="text-[10px] text-neutral-500">Add overtime if score is tied</p>
                         </div>
                       </div>
@@ -626,7 +626,7 @@ onMounted(() => {
                           <UIcon name="i-lucide-target" class="size-5 text-neutral-400" />
                         </div>
                         <div>
-                          <p class="text-xs font-bold text-neutral-900 dark:text-neutral-100">Penalties</p>
+                          <p class="text-xs font-bold text-neutral-900 dark:text-neutral-100">{{ t('managers.stages.config.rules.penalties') }}</p>
                           <p class="text-[10px] text-neutral-500">Decide winner via penalty shootout</p>
                         </div>
                       </div>
@@ -781,7 +781,7 @@ onMounted(() => {
                   icon="i-lucide-arrow-right-circle"
                   @click.stop="openAdvance(stage)"
                 >
-                  {{ t('managers.stages.actions.advance') || 'Lanjutkan Peserta' }}
+                  {{ t('managers.stages.actions.advance') }}
                 </UButton>
 
                 <!-- Delete (only pending) -->
@@ -858,8 +858,8 @@ onMounted(() => {
               <UIcon name="i-lucide-list-ordered" class="size-7 text-primary-500" />
             </div>
             <div>
-              <h3 class="text-xl font-black text-neutral-900 dark:text-white uppercase tracking-tight leading-none">Manual Seeding</h3>
-              <p class="text-[11px] font-medium text-neutral-500 mt-1.5 uppercase tracking-widest">Atur urutan untuk menentukan lawan di Round 1</p>
+              <h3 class="text-xl font-black text-neutral-900 dark:text-white uppercase tracking-tight leading-none">{{ t('managers.stages.seeding_modal.title') }}</h3>
+              <p class="text-[11px] font-medium text-neutral-500 mt-1.5 uppercase tracking-widest">{{ t('managers.stages.seeding_modal.subtitle') }}</p>
             </div>
           </div>
 
@@ -867,8 +867,8 @@ onMounted(() => {
             <!-- Left: Draggable List -->
             <div class="space-y-4">
               <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-black text-neutral-400 uppercase tracking-widest">Daftar Peserta (Tarik untuk urutkan)</span>
-                <UBadge variant="subtle" color="primary" class="rounded-full text-[9px] px-2 py-0">Seed Order</UBadge>
+                <span class="text-[10px] font-black text-neutral-400 uppercase tracking-widest">{{ t('managers.stages.seeding_modal.list_label') }}</span>
+                <UBadge variant="subtle" color="primary" class="rounded-full text-[9px] px-2 py-0">{{ t('managers.stages.seeding_modal.seed_order') }}</UBadge>
               </div>
               <div class="space-y-2 max-h-[450px] overflow-y-auto pr-2 custom-scrollbar">
                 <div 
@@ -899,7 +899,7 @@ onMounted(() => {
                 <div class="size-8 rounded-xl bg-primary-500/20 flex items-center justify-center">
                   <UIcon name="i-lucide-swords" class="size-4 text-primary-500" />
                 </div>
-                <h4 class="text-sm font-black text-neutral-900 dark:text-white uppercase tracking-widest">Preview Round 1</h4>
+                <h4 class="text-sm font-black text-neutral-900 dark:text-white uppercase tracking-widest">{{ t('managers.stages.seeding_modal.preview_title') }}</h4>
               </div>
 
               <div class="flex-grow overflow-y-auto custom-scrollbar pr-2">
@@ -946,7 +946,7 @@ onMounted(() => {
               
               <div class="mt-6 pt-4 border-t border-neutral-100 dark:border-white/5 shrink-0">
                 <p class="text-[9px] text-neutral-400 font-medium italic text-center leading-normal">
-                  *Preview ini berdasarkan standar algoritma turnamen {{ seedingStage?.type === 'round_robin' ? 'Snake Draft' : 'Balanced Seeding' }}.
+                  {{ t('managers.stages.seeding_modal.footnote', { type: seedingStage?.type === 'round_robin' ? 'Snake Draft' : 'Balanced Seeding' }) }}
                 </p>
               </div>
             </div>
@@ -973,7 +973,7 @@ onMounted(() => {
             :loading="isSubmitting" 
             @click="saveSeeding"
           >
-            Simpan & Terapkan Matchup
+            {{ t('managers.stages.seeding_modal.submit') }}
           </UButton>
         </div>
       </template>
@@ -990,12 +990,12 @@ onMounted(() => {
             <UIcon name="i-lucide-alert-triangle" class="size-10 text-warning-500" />
           </div>
           
-          <h3 class="text-2xl font-black text-neutral-900 dark:text-white uppercase tracking-tight mb-2 relative z-10">Reset Bracket?</h3>
+          <h3 class="text-2xl font-black text-neutral-900 dark:text-white uppercase tracking-tight mb-2 relative z-10">{{ t('managers.stages.reset_modal.title') }}</h3>
           <p class="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2 relative z-10 leading-relaxed px-4">
-            Aksi ini akan menghapus semua jadwal pertandingan dan bagan yang sudah ada.
+            {{ t('managers.stages.reset_modal.desc') }}
           </p>
           <p class="text-[10px] font-black text-warning-500 uppercase tracking-widest relative z-10">
-            Pastikan belum ada skor yang masuk!
+            {{ t('managers.stages.reset_modal.warning') }}
           </p>
         </div>
       </template>
@@ -1006,7 +1006,7 @@ onMounted(() => {
             color="warning"
             block
             size="xl"
-            label="Ya, Reset Bracket"
+            :label="t('managers.stages.reset_modal.confirm')"
             class="rounded-2xl font-black uppercase tracking-widest py-4 shadow-xl shadow-warning-500/20"
             :loading="isResetting"
             @click="resetStage"
@@ -1016,7 +1016,7 @@ onMounted(() => {
             variant="ghost"
             block
             size="xl"
-            label="Batal"
+            :label="t('common.cancel')"
             class="rounded-2xl font-bold uppercase tracking-widest text-[10px] py-2"
             @click="isResetModalOpen = false"
           />
@@ -1035,12 +1035,12 @@ onMounted(() => {
             <UIcon name="i-lucide-play" class="size-10 text-primary-500" />
           </div>
           
-          <h3 class="text-2xl font-black text-neutral-900 dark:text-white uppercase tracking-tight mb-2 relative z-10">Mulai Babak?</h3>
+          <h3 class="text-2xl font-black text-neutral-900 dark:text-white uppercase tracking-tight mb-2 relative z-10">{{ t('managers.stages.start_modal.title') }}</h3>
           <p class="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2 relative z-10 leading-relaxed px-4">
-            Ini akan mengunci daftar peserta dan meng-generate bagan pertandingan secara otomatis.
+            {{ t('managers.stages.start_modal.desc') }}
           </p>
           <p class="text-[10px] font-black text-primary-500 uppercase tracking-widest relative z-10">
-            Format dan urutan tidak bisa diubah lagi!
+            {{ t('managers.stages.start_modal.warning') }}
           </p>
         </div>
       </template>
@@ -1051,7 +1051,7 @@ onMounted(() => {
             color="primary"
             block
             size="xl"
-            label="Gass, Mulai Sekarang"
+            :label="t('managers.stages.start_modal.confirm')"
             class="rounded-2xl font-black uppercase tracking-widest py-4 shadow-xl shadow-primary-500/20"
             :loading="isStarting"
             @click="startStage"
@@ -1061,7 +1061,7 @@ onMounted(() => {
             variant="ghost"
             block
             size="xl"
-            label="Nanti Dulu"
+            :label="t('managers.stages.start_modal.cancel')"
             class="rounded-2xl font-bold uppercase tracking-widest text-[10px] py-2"
             @click="isStartModalOpen = false"
           />
@@ -1080,9 +1080,9 @@ onMounted(() => {
             <UIcon name="i-lucide-trash-2" class="size-10 text-error-500" />
           </div>
           
-          <h3 class="text-2xl font-black text-neutral-900 dark:text-white uppercase tracking-tight mb-2 relative z-10">Hapus Babak?</h3>
+          <h3 class="text-2xl font-black text-neutral-900 dark:text-white uppercase tracking-tight mb-2 relative z-10">{{ t('managers.stages.delete_modal.title') }}</h3>
           <p class="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-6 relative z-10 leading-relaxed px-4">
-            Data babak ini akan dihapus permanen. Aksi ini tidak dapat dibatalkan.
+            {{ t('managers.stages.delete_modal.desc') }}
           </p>
         </div>
       </template>
@@ -1093,7 +1093,7 @@ onMounted(() => {
             color="error"
             block
             size="xl"
-            label="Ya, Hapus Permanen"
+            :label="t('managers.stages.delete_modal.confirm')"
             class="rounded-2xl font-black uppercase tracking-widest py-4 shadow-xl shadow-error-500/20"
             @click="removeStage"
           />
@@ -1102,7 +1102,7 @@ onMounted(() => {
             variant="ghost"
             block
             size="xl"
-            label="Batal"
+            :label="t('common.cancel')"
             class="rounded-2xl font-bold uppercase tracking-widest text-[10px] py-2"
             @click="isDeleteModalOpen = false"
           />
@@ -1118,16 +1118,18 @@ onMounted(() => {
               <UIcon name="i-lucide-arrow-right-circle" class="size-8 text-success-500" />
             </div>
             <div>
-              <h3 class="text-xl font-black text-neutral-900 dark:text-white uppercase tracking-tight">{{ t('managers.stages.advance_modal.title') || 'Lanjutkan Peserta' }}</h3>
+              <h3 class="text-xl font-black text-neutral-900 dark:text-white uppercase tracking-tight">{{ t('managers.stages.advance_modal.title') }}</h3>
               <p class="text-xs font-bold text-neutral-400 uppercase tracking-widest">{{ selectedStageToAdvance?.name }}</p>
             </div>
           </div>
 
           <div class="bg-neutral-50 dark:bg-neutral-950 rounded-2xl p-4 mb-6 border border-neutral-200 dark:border-white/5">
-            <p class="text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-2">{{ t('managers.stages.advance_modal.pilih_peserta') || 'PIlih Peserta untuk Lanjut' }}</p>
+            <p class="text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-2">{{ t('managers.stages.advance_modal.pilih_peserta') }}</p>
             <div class="flex items-center justify-between">
-              <span class="text-sm font-bold text-neutral-700 dark:text-neutral-200">{{ selectedAdvancingIds.length }} / {{ selectedStageToAdvance?.settings?.advance_count || selectedStageToAdvance?.participants_advance }} Terpilih</span>
-              <UBadge color="neutral" variant="subtle" size="xs">Recommended by Ranking</UBadge>
+              <span class="text-sm font-bold text-neutral-700 dark:text-neutral-200">
+                {{ t('managers.stages.advance_modal.selected_count', { count: selectedAdvancingIds.length, total: selectedStageToAdvance?.settings?.advance_count || selectedStageToAdvance?.participants_advance }) }}
+              </span>
+              <UBadge color="neutral" variant="subtle" size="xs">{{ t('managers.stages.advance_modal.recommended') }}</UBadge>
             </div>
           </div>
 
@@ -1166,7 +1168,7 @@ onMounted(() => {
             :disabled="selectedAdvancingIds.length === 0"
             @click="confirmAdvance"
           >
-            {{ t('managers.stages.advance_modal.confirm') || 'Lanjutkan Ke Babak Berikutnya' }}
+            {{ t('managers.stages.advance_modal.confirm') }}
           </UButton>
         </div>
       </template>

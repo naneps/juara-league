@@ -126,6 +126,16 @@ export interface Participant {
   updated_at: string;
 }
 
+export interface TournamentPrize {
+  id?: string;
+  tournament_id?: string;
+  tier_name: string;
+  prize_amount: number;
+  description?: string;
+  rank?: number;
+  order: number;
+}
+
 export interface UserParticipation {
   id: string;
   status: 'pending' | 'approved' | 'rejected';
@@ -170,6 +180,7 @@ export interface Tournament {
   registration_end_at?: string;
   start_at?: string;
   stages?: Stage[];
+  prizes?: TournamentPrize[];
   participants?: Participant[];
   staff?: any[];
   participants_count?: number;
@@ -204,6 +215,7 @@ export interface StoreTournamentPayload {
   start_at?: string;
   venue?: string;
   banner_url?: string;
+  prizes?: TournamentPrize[];
 }
 
 export interface Team {

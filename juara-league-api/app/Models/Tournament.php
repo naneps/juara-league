@@ -102,6 +102,14 @@ class Tournament extends Model
     {
         return $this->hasMany(TournamentApproval::class);
     }
+
+    /**
+     * Get the prizes for the tournament.
+     */
+    public function prizes()
+    {
+        return $this->hasMany(TournamentPrize::class)->orderBy('order');
+    }
     /**
      * Get a human-readable summary of the tournament format based on its stages.
      */

@@ -32,14 +32,21 @@ export const useApi = <T = any>(path: string, options: any = {}) => {
       }
 
       if (response.status === 401) {
-        // Only clear the session if we're on a page that strictly requires it
-        // and we aren't currently in the middle of an auth process
-        const currentPath = useRoute().path
+        const route = useRoute()
+        const currentPath = route.path
         const isAuthPage = currentPath === '/login' || currentPath === '/register' || currentPath.startsWith('/auth/')
         
-        if (!isAuthPage && currentPath !== '/') {
-          token.value = null
-          user.value = null
+        // Clear stale session data
+        token.value = null
+        user.value = null
+
+        // Only redirect to login if we are on a protected page
+        const isProtectedRoute = currentPath.startsWith('/dashboard') || 
+                               currentPath.startsWith('/admin') || 
+                               route.meta.middleware === 'auth' ||
+                               (Array.isArray(route.meta.middleware) && route.meta.middleware.includes('auth'))
+        
+        if (isProtectedRoute && !isAuthPage) {
           navigateTo('/login')
         }
       }

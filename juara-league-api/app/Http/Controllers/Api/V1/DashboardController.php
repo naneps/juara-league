@@ -50,8 +50,7 @@ class DashboardController extends Controller
         // 3. Upcoming Matches (Next 48 hours)
         $upcomingMatches = TournamentMatch::with([
                 'stage.tournament', 
-                'participant1.team', 'participant1.user',
-                'participant2.team', 'participant2.user'
+                'matchParticipants'
             ])
             ->whereHas('stage.tournament', function($q) use ($user) {
                 $q->where('user_id', $user->id);
@@ -76,9 +75,9 @@ class DashboardController extends Controller
                 'pending_participants' => $pendingParticipantsCount,
                 'matches_today' => $matchesTodayCount,
             ],
-            'recent_participants' => $recentParticipants,
-            'upcoming_matches' => $upcomingMatches,
-            'recent_tournaments' => $recentTournaments,
+            'recent_participants' => \App\Http\Resources\ParticipantResource::collection($recentParticipants),
+            'upcoming_matches' => \App\Http\Resources\TournamentMatchResource::collection($upcomingMatches),
+            'recent_tournaments' => \App\Http\Resources\TournamentResource::collection($recentTournaments),
         ]);
     }
 }

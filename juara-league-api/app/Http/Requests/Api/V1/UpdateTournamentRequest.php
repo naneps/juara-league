@@ -39,8 +39,14 @@ class UpdateTournamentRequest extends FormRequest
             'entry_fee' => ['nullable', 'integer', 'min:0'],
             'max_participants' => ['sometimes', 'integer', 'min:2'],
             'registration_start_at' => ['nullable', 'date'],
-            'registration_end_at' => ['nullable', 'date', 'after:registration_start_at'],
-            'start_at' => ['nullable', 'date', 'after:registration_end_at'],
+            'registration_end_at' => ['nullable', 'date', 'after_or_equal:registration_start_at'],
+            'start_at' => ['nullable', 'date', 'after_or_equal:registration_end_at'],
+            'prizes' => ['nullable', 'array'],
+            'prizes.*.tier_name' => ['required', 'string', 'max:255'],
+            'prizes.*.prize_amount' => ['nullable', 'numeric', 'min:0'],
+            'prizes.*.description' => ['nullable', 'string'],
+            'prizes.*.rank' => ['nullable', 'integer'],
+            'prizes.*.order' => ['nullable', 'integer'],
         ];
     }
 }

@@ -25,6 +25,7 @@
     "matches": "Matches",
     "bracket": "Bracket",
     "standings": "Standings",
+    "prizes": "Prizes",
     "staff": "Staff",
     "title_matches": "Match List",
     "subtitle_matches": "Manage and input match scores directly via this list.",
@@ -36,7 +37,66 @@
     "start_stage_prompt": "Start the stage in the 'Stages' menu to generate schedule.",
     "title_bracket": "Tournament Bracket",
     "subtitle_bracket": "Visual representation and direct score management.",
-    "no_active_stage": "No active stages available."
+    "no_active_stage": "No active stages available.",
+    "stats": {
+      "tournament_progress": "Tournament Progress",
+      "completed": "Completed",
+      "matches": "Matches",
+      "active": "Active",
+      "active_stage": "Active Stage",
+      "stage_progress": "Stage Progress"
+    }
+  },
+  "tournament_detail": {
+    "stats": {
+      "participants": "Registered Participants",
+      "from": "from",
+      "prize": "Total Prize",
+      "prize_pool_sub": "Prize pool",
+      "revenue": "Estimated Revenue",
+      "projected": "Projected",
+      "reg_close": "Registration Closing",
+      "reg_deadline": "Reg. deadline",
+      "fee": "Entry Fee",
+      "kickoff": "Kickoff",
+      "per_participant": "Per participant",
+      "first_day": "First day of competition",
+      "free": "Free"
+    },
+    "sections": {
+      "rules": "Description & Rules",
+      "prizes": "Prize Details"
+    },
+    "empty": {
+      "desc": "No description available for this tournament.",
+      "prizes": "No prize details yet.",
+      "not_found": "Tournament not found."
+    },
+    "notices": {
+      "under_review": "Under Review",
+      "under_review_desc": "This tournament requires manual review by the Juara League team. You can continue preparing stages and other details, but the Publish feature will be available once approved.",
+      "rejected": "Tournament Rejected",
+      "rejected_desc": "Sorry, your tournament was not approved by the platform. Please contact support or re-check your tournament description."
+    },
+    "publish_modal": {
+      "title": "Confirm Publish",
+      "subtitle": "Are you sure you want to publish this tournament?",
+      "after_publish": "After publishing:",
+      "item1": "Visible to everyone publicly.",
+      "item2": "Participants can start registering.",
+      "item3": "Some settings cannot be changed anymore.",
+      "confirm": "Yes, Publish"
+    },
+    "toast": {
+      "reviewing": "Awaiting Review",
+      "reviewing_desc": "Your tournament is waiting for review from our team.",
+      "rejected": "Tournament Rejected",
+      "rejected_desc": "Sorry, this tournament has been rejected.",
+      "publish_success": "Successfully published!",
+      "publish_success_desc": "Tournament is now open for registration.",
+      "publish_failed": "Failed to publish"
+    },
+    "live_subtitle": "Update scores & monitor active matches"
   },
   "match": {
     "round": "Round",
@@ -166,7 +226,12 @@
         "win_condition": "Win Condition (Race to X)",
         "additional_rules": "Additional Rules",
         "total_rounds": "Total Rounds",
-        "group_config": "Group Configuration"
+        "group_config": "Group Configuration",
+        "rules": {
+          "draw": "Allow Draws",
+          "extra_time": "Extra Time",
+          "penalties": "Penalties"
+        }
       },
       "toast": {
         "add_success": "Stage successfully added.",
@@ -206,7 +271,44 @@
         "shuffle": "Shuffle Participants",
         "seed_manual": "Manual Seeding",
         "reset": "Reset Bracket",
-        "view_bracket": "View Bracket"
+        "view_bracket": "View Bracket",
+        "advance": "Advance Participants"
+      },
+      "seeding_modal": {
+        "title": "Manual Seeding",
+        "subtitle": "Set the order to determine opponents in Round 1",
+        "list_label": "Participant List (Drag to reorder)",
+        "seed_order": "Seed Order",
+        "preview_title": "Preview Round 1",
+        "submit": "Save & Apply Matchup",
+        "footnote": "*This preview is based on the standard {type} tournament algorithm."
+      },
+      "advance_modal": {
+        "title": "Advance Participants",
+        "pilih_peserta": "Select Participants to Advance",
+        "selected_count": "{count} / {total} Selected",
+        "recommended": "Recommended by Ranking",
+        "confirm": "Advance to Next Stage",
+        "toast_success": "Participants successfully advanced to the next stage.",
+        "toast_failed": "Failed to advance participants."
+      },
+      "reset_modal": {
+        "title": "Reset Bracket?",
+        "desc": "This action will delete all existing match schedules and brackets.",
+        "warning": "Make sure no scores have been entered yet!",
+        "confirm": "Yes, Reset Bracket"
+      },
+      "start_modal": {
+        "title": "Start Stage?",
+        "desc": "This will lock the participant list and automatically generate the match bracket.",
+        "warning": "Format and order cannot be changed after this!",
+        "confirm": "Let's Go, Start Now",
+        "cancel": "Not Now"
+      },
+      "delete_modal": {
+        "title": "Delete Stage?",
+        "desc": "This stage data will be permanently deleted. This action cannot be undone.",
+        "confirm": "Yes, Delete Permanently"
       }
     },
     "roles": {
@@ -539,6 +641,8 @@
     "field_entry_fee_free": "Free",
     "field_prize_desc": "Prize Distribution Details",
     "field_prize_desc_placeholder": "1st Place: Rp 1,000,000\n2nd Place: Rp 500,000...",
+    "field_prizes_breakdown": "Prize Breakdown",
+    "field_prizes_breakdown_desc": "Set up prize distribution for each winner.",
     "field_venue": "Location / Venue",
     "field_venue_placeholder": "Building name, street, city...",
     "modes": {
@@ -630,55 +734,6 @@
     "dark": "Dark",
     "logout": "Logout",
     "fallback_name": "Juara User"
-  },
-  "tournament_detail": {
-    "notices": {
-      "under_review": "Under Review",
-      "under_review_desc": "This tournament requires manual review by the Juara League team. You can continue preparing stages and other details, but the Publish feature will be available once approved.",
-      "rejected": "Tournament Rejected",
-      "rejected_desc": "Sorry, your tournament was not approved by the platform. Please contact support or re-check your tournament description."
-    },
-    "publish_modal": {
-      "title": "Confirm Publish",
-      "subtitle": "Are you sure you want to publish this tournament?",
-      "after_publish": "After publishing:",
-      "item1": "Visible to everyone publicly.",
-      "item2": "Participants can start registering.",
-      "item3": "Some settings cannot be changed anymore.",
-      "confirm": "Yes, Publish"
-    },
-    "stats": {
-      "participants": "Participants",
-      "prize": "Total Prize",
-      "fee": "Entry Fee",
-      "reg_close": "Reg. Closing",
-      "kickoff": "Kickoff",
-      "from": "from",
-      "prize_pool_sub": "Prize pool",
-      "per_participant": "Per participant",
-      "reg_deadline": "Registration deadline",
-      "first_day": "First day of competition",
-      "free": "Free"
-    },
-    "sections": {
-      "rules": "Description & Rules",
-      "prizes": "Prize Breakdown"
-    },
-    "empty": {
-      "desc": "No description yet.",
-      "prizes": "No prize details yet.",
-      "not_found": "Tournament not found."
-    },
-    "toast": {
-      "reviewing": "Awaiting Review",
-      "reviewing_desc": "Your tournament is waiting for review from our team.",
-      "rejected": "Tournament Rejected",
-      "rejected_desc": "Sorry, this tournament has been rejected.",
-      "publish_success": "Successfully published!",
-      "publish_success_desc": "Tournament is now open for registration.",
-      "publish_failed": "Failed to publish"
-    },
-    "live_subtitle": "Update scores & monitor active matches"
   },
   "guide": {
     "scoring": {

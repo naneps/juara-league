@@ -33,6 +33,20 @@ const formattedDate = computed(() => {
     return props.tournament.start_at
   }
 })
+
+const getRankIcon = (rank: number) => {
+  if (rank === 1) return 'i-lucide-trophy'
+  if (rank === 2) return 'i-lucide-medal'
+  if (rank === 3) return 'i-lucide-award'
+  return 'i-lucide-star'
+}
+
+const getRankColorClass = (rank: number) => {
+  if (rank === 1) return 'text-amber-500'
+  if (rank === 2) return 'text-slate-400'
+  if (rank === 3) return 'text-orange-500'
+  return 'text-neutral-500'
+}
 </script>
 
 <template>
@@ -75,95 +89,89 @@ const formattedDate = computed(() => {
     </div>
 
     <!-- Content -->
-    <div class="p-6 flex flex-col flex-grow relative">
-      <div class="flex items-center gap-2 mb-3">
-        <div class="px-2 py-0.5 bg-primary-500/10 rounded ring-1 ring-primary-500/20">
-          <span class="text-[9px] font-black text-primary-500 dark:text-primary-400 uppercase tracking-widest">{{ tournament.sport?.name || tournament.category }}</span>
+    <div class="p-4 flex flex-col flex-grow relative">
+      <div class="flex items-center gap-2 mb-1.5">
+        <div class="px-1.5 py-0.5 bg-primary-500/10 rounded ring-1 ring-primary-500/20">
+          <span class="text-[8px] font-black text-primary-500 dark:text-primary-400 uppercase tracking-widest">{{ tournament.sport?.name || tournament.category }}</span>
         </div>
-        <span v-if="tournament.sport && tournament.category" class="text-neutral-300 dark:text-neutral-700">/</span>
-        <span v-if="tournament.sport && tournament.category" class="text-[9px] font-bold text-neutral-500 uppercase tracking-widest">{{ tournament.category }}</span>
-        <span class="text-neutral-300 dark:text-neutral-700">/</span>
-        <span class="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">{{ formattedDate }}</span>
+        <span class="text-[9px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">{{ formattedDate }}</span>
       </div>
 
-      <h3 class="text-xl font-black text-neutral-900 dark:text-white leading-tight mb-4 group-hover:text-primary-500 transition-colors line-clamp-2 tracking-tight">
+      <h3 class="text-base font-black text-neutral-900 dark:text-white leading-tight mb-3 group-hover:text-primary-500 transition-colors line-clamp-1 tracking-tight">
         {{ tournament.title }}
       </h3>
 
-      <!-- Stats Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 mt-auto">
-        <div class="flex flex-col gap-1.5">
-          <span class="text-[9px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">{{ $t('tournament_card.prize_pool') }}</span>
-          <div class="flex items-center gap-2">
-            <div class="p-1 bg-yellow-500/10 rounded-md ring-1 ring-yellow-500/20">
-              <UIcon name="i-lucide-trophy" class="text-yellow-500 size-4" />
-            </div>
-            <span class="text-sm font-black text-neutral-900 dark:text-white tracking-tight break-all">{{ formatCurrency(tournament.prize_pool) }}</span>
+      <!-- Stats Grid (Compact) -->
+      <div class="grid grid-cols-2 gap-x-4 gap-y-3 mt-auto mb-4">
+        <div class="flex flex-col gap-0.5">
+          <span class="text-[7px] font-bold text-neutral-400 uppercase tracking-widest">{{ $t('tournament_card.prize_pool') }}</span>
+          <div class="flex items-center gap-1">
+            <UIcon name="i-lucide-trophy" class="text-yellow-500 size-3" />
+            <span class="text-[11px] font-black text-neutral-900 dark:text-white">{{ formatCurrency(tournament.prize_pool) }}</span>
           </div>
         </div>
-        <div class="flex flex-col gap-1.5">
-          <span class="text-[9px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">{{ $t('tournament_card.slots') }}</span>
-          <div class="flex items-center gap-2">
-            <div class="p-1 bg-primary-500/10 rounded-md ring-1 ring-primary-500/20">
-              <UIcon name="i-lucide-users-2" class="text-primary-500 dark:text-primary-400 size-4" />
-            </div>
-            <span class="text-sm font-black text-neutral-900 dark:text-white tracking-tight">{{ tournament.current_participants ?? 0 }}/{{ tournament.max_participants }}</span>
+        <div class="flex flex-col gap-0.5">
+          <span class="text-[7px] font-bold text-neutral-400 uppercase tracking-widest">{{ $t('tournament_card.slots') }}</span>
+          <div class="flex items-center gap-1">
+            <UIcon name="i-lucide-users-2" class="text-primary-500 size-3" />
+            <span class="text-[11px] font-black text-neutral-900 dark:text-white">{{ (tournament.current_participants ?? 0) || (tournament.participants_count ?? 0) }}/{{ tournament.max_participants }}</span>
           </div>
         </div>
-
-        <div class="flex flex-col gap-1.5">
-          <span class="text-[9px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">{{ $t('tournament_card.type_format') }}</span>
-          <div class="flex items-center gap-1.5 text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-            <UIcon :name="tournament.participant_type === 'team' ? 'i-lucide-users' : 'i-lucide-user'" class="size-3.5 text-neutral-400 dark:text-neutral-500" />
-            <span class="truncate">{{ tournament.participant_type === 'team' ? $t('tournament_form.participants.team') + (tournament.team_size ? ` (${tournament.team_size})` : '') : $t('tournament_form.participants.individual') }}</span>
+        <div class="flex flex-col gap-0.5">
+          <span class="text-[7px] font-bold text-neutral-400 uppercase tracking-widest">{{ $t('tournament_card.type_format') }}</span>
+          <div class="flex items-center gap-1 text-[10px] font-bold text-neutral-700 dark:text-neutral-300">
+            <span class="truncate">{{ tournament.participant_type === 'team' ? $t('tournament_form.participants.team') : $t('tournament_form.participants.individual') }}</span>
             <span class="text-neutral-300 dark:text-neutral-700">•</span>
             <span class="truncate">{{ tournament.format_summary || $t(`tournament_card.bracket_types.${tournament.bracket_type}`) }}</span>
           </div>
         </div>
-        
-        <div class="flex flex-col gap-1.5">
-          <span class="text-[9px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">{{ $t('tournament_card.location_venue') }}</span>
-          <div class="flex items-center gap-1.5 text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-            <UIcon :name="tournament.venue?.toLowerCase() === 'online' ? 'i-lucide-globe' : 'i-lucide-map-pin'" class="size-3.5 text-neutral-400 dark:text-neutral-500" />
+        <div class="flex flex-col gap-0.5">
+          <span class="text-[7px] font-bold text-neutral-400 uppercase tracking-widest">{{ $t('tournament_card.location_venue') }}</span>
+          <div class="flex items-center gap-1 text-[10px] font-bold text-neutral-700 dark:text-neutral-300">
+            <UIcon :name="tournament.venue?.toLowerCase() === 'online' ? 'i-lucide-globe' : 'i-lucide-map-pin'" class="size-3 text-neutral-400" />
             <span class="truncate">{{ tournament.venue || 'TBA' }}</span>
           </div>
         </div>
       </div>
 
-      <div class="h-px bg-neutral-100 dark:bg-white/5 my-5"></div>
-
-      <!-- Footer Info -->
-      <div class="flex flex-col gap-5">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2.5">
-            <div class="relative flex-shrink-0">
-              <UAvatar 
-                v-if="tournament.user"
-                :src="tournament.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(tournament.user.name)}&background=random`" 
-                :alt="tournament.user.name" 
-                size="sm"
-                class="ring-1 ring-neutral-200 dark:ring-white/10 rounded-lg shadow-sm"
-              />
-            </div>
-            <div v-if="tournament.user" class="flex flex-col min-w-0 flex-1 pr-2">
-              <span class="text-xs font-bold text-neutral-800 dark:text-neutral-200 truncate">{{ tournament.user.name }}</span>
-              <span class="text-[9px] font-medium text-neutral-400 dark:text-neutral-500 uppercase tracking-wide">{{ $t('tournament_card.organizer_label') }}</span>
-            </div>
-          </div>
-
-          <div class="text-right shrink-0 bg-neutral-50 dark:bg-neutral-800/50 px-3 py-1.5 rounded-lg border border-neutral-100 dark:border-white/5">
-            <span class="block text-[8px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-0.5">{{ $t('tournament_card.entry_fee_label') }}</span>
-            <span class="text-xs sm:text-sm font-black text-primary-600 dark:text-primary-400">{{ tournament.entry_fee == 0 ? $t('tournament_card.free') : formatCurrency(tournament.entry_fee) }}</span>
-          </div>
+      <!-- Mini Prize Breakdown (Small & Sleek) -->
+      <div v-if="tournament.prizes && tournament.prizes.length > 0" class="flex flex-wrap gap-1.5 mb-4 border-t border-neutral-100 dark:border-white/5 pt-4">
+        <div 
+          v-for="prize in tournament.prizes.slice(0, 3)" 
+          :key="prize.id"
+          class="flex items-center gap-1 px-2 py-1 rounded-lg bg-neutral-50 dark:bg-white/[0.03] border border-neutral-100 dark:border-white/5"
+        >
+          <UIcon :name="getRankIcon(prize.rank)" :class="getRankColorClass(prize.rank)" class="size-3" />
+          <span class="text-[9px] font-black text-neutral-900 dark:text-white">{{ formatCurrency(prize.prize_amount) }}</span>
         </div>
+        <div v-if="tournament.prizes.length > 3" class="text-[8px] font-bold text-neutral-400 py-1">
+          +{{ tournament.prizes.length - 3 }}
+        </div>
+      </div>
 
-        <!-- Action Button (Visual only, overlapping is handled by main NuxtLink) -->
-        <div class="w-full flex items-center justify-center py-3 bg-neutral-900 dark:bg-white/5 group-hover:bg-primary-500 text-white rounded-xl font-bold text-sm tracking-widest uppercase transition-all duration-300 shadow-md transform group-hover:-translate-y-0.5 relative overflow-hidden group-hover:shadow-[0_4px_20px_-5px_rgba(var(--color-primary-500),0.5)]">
-          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none"></div>
-          <span class="flex items-center gap-2 relative z-10 transition-transform duration-300 group-hover:scale-105">
-            {{ actionText || $t('tournament_card.view_tournament') }} <UIcon :name="actionIcon" class="size-4" />
+      <!-- Footer (Organizer & Entry Fee) -->
+      <div class="flex items-center justify-between pt-3 border-t border-neutral-100 dark:border-white/5 mt-auto">
+        <div class="flex items-center gap-2 min-w-0">
+          <UAvatar 
+            v-if="tournament.user"
+            :src="tournament.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(tournament.user.name)}&background=random`" 
+            size="2xs"
+            class="ring-1 ring-neutral-200 dark:ring-white/10 rounded-md"
+          />
+          <span class="text-[10px] font-bold text-neutral-700 dark:text-neutral-300 truncate">{{ tournament.user?.name }}</span>
+        </div>
+        <div class="text-right shrink-0">
+          <span class="text-[11px] font-black" :class="tournament.entry_fee == 0 ? 'text-emerald-500' : 'text-primary-600 dark:text-primary-400'">
+            {{ tournament.entry_fee == 0 ? $t('tournament_card.free') : formatCurrency(tournament.entry_fee) }}
           </span>
         </div>
+      </div>
+
+      <!-- Compact Action Strip -->
+      <div class="mt-4 w-full h-8 flex items-center justify-center bg-neutral-900 dark:bg-white/5 group-hover:bg-primary-500 text-white rounded-lg font-black text-[10px] tracking-widest uppercase transition-all duration-300 shadow-sm relative overflow-hidden">
+        <span class="flex items-center gap-1.5 relative z-10 transition-transform duration-300 group-hover:scale-105">
+          {{ actionText || $t('tournament_card.view_tournament') }} <UIcon :name="actionIcon" class="size-3" />
+        </span>
       </div>
     </div>
     
